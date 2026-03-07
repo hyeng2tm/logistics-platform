@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { DataTable, Column } from '../../components/common/DataTable';
-import { InputField, SelectField } from '../../components/common/FormFields';
-import { Map, Save, Calendar, Truck, User, Search } from 'lucide-react';
+import { InputField, SelectField, DatePicker } from '../../components/common/FormFields';
+import { Map, Save, Truck, User, Search } from 'lucide-react';
 import { apiClient } from '../../utils/apiClient';
 import { useModal } from '../../contexts/ModalContext';
 import './Allocation.css';
@@ -37,6 +37,7 @@ const Allocation: React.FC = () => {
     // UI State
     const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set());
     const [selectedVehicle, setSelectedVehicle] = useState<string>('');
+    const [deadlineDate, setDeadlineDate] = useState<Date | null>(new Date());
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -183,22 +184,27 @@ const Allocation: React.FC = () => {
                              <InputField 
                                 label={t('dispatch.allocation.order_no_search')} 
                                 placeholder="ORD-..." 
-                                className="allocation-search-item" 
+                                className="mb-0" 
+                                fullWidth={false}
                              />
                              <InputField 
                                 label={t('dispatch.allocation.dest_search')} 
                                 placeholder={t('dispatch.allocation.dest_search')} 
-                                className="allocation-search-item" 
+                                className="mb-0" 
+                                fullWidth={false}
                              />
-                             <div className="form-group allocation-search-item">
-                                 <label className="form-label">{t('dispatch.allocation.deadline_label')}</label>
-                                 <div className="form-input allocation-date-picker">
-                                     <Calendar size={16} className="allocation-date-icon" /> {t('dispatch.allocation.all_today')}
-                                 </div>
-                             </div>
-                             <div className="allocation-search-actions">
-                                <button className="btn btn-primary allocation-filter-btn" onClick={fetchOrders}>
-                                    <Search size={18} /> {t('dispatch.common.search')}
+                             <DatePicker 
+                                label={t('dispatch.allocation.deadline_label')} 
+                                selected={deadlineDate}
+                                onChange={(date) => setDeadlineDate(date)}
+                                placeholderText={t('dispatch.allocation.all_today')}
+                                className="mb-0" 
+                                fullWidth={false}
+                             />
+                             <div className="filter-actions">
+                                <button className="btn btn-primary w-full" onClick={fetchOrders}>
+                                    <Search size={18} />
+                                    {t('common.search')}
                                 </button>
                              </div>
                         </div>

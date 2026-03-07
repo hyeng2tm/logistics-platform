@@ -29,7 +29,7 @@ export const useSystemMessages = () => {
 };
 
 export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [rawMessages, setRawMessages] = useState<SystemMessage[]>([]);
   const [processedMessages, setProcessedMessages] = useState<Record<string, string>>({});
@@ -72,14 +72,14 @@ export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [rawMessages, i18n.language, i18n.resolvedLanguage]);
 
   const getMessage = useCallback((key: string, values?: (string | number)[], fallback?: string) => {
-    let msg = processedMessages[key] || fallback || key;
+    let msg = processedMessages[key] || t(key) || fallback || key;
     if (values && values.length > 0) {
       values.forEach((val, index) => {
         msg = msg.replace(`{${index}}`, String(val));
       });
     }
     return msg;
-  }, [processedMessages]);
+  }, [processedMessages, t]);
 
   const value: MessageContextType = {
     messages: processedMessages,

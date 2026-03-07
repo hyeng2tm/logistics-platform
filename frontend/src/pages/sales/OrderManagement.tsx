@@ -275,6 +275,7 @@ const OrderManagement: React.FC = () => {
                            value={searchOrderNum} 
                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchOrderNum(e.target.value)} 
                            placeholder={t('sales.order.search_placeholder')} 
+                           fullWidth={false}
                         />
                         <SelectField
                             label={t('sales.order.fields.status')}
@@ -284,6 +285,7 @@ const OrderManagement: React.FC = () => {
                             ]}
                              value={searchStatus}
                              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSearchStatus(e.target.value)}
+                             fullWidth={false}
                         />
                         <DateRangePicker 
                            label={t('sales.order.fields.order_date')} 

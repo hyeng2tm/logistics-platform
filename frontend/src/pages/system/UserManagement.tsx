@@ -277,6 +277,7 @@ const UserManagement: React.FC = () => {
                 { value: 'CS팀', label: 'CS팀' }
               ]} 
               className="mb-0"
+              fullWidth={false}
             />
             <SelectField 
               label={t('user.filter.role')} 
@@ -290,6 +291,7 @@ const UserManagement: React.FC = () => {
                 { value: 'ROLE_CS', label: 'CS' },
               ]} 
               className="mb-0"
+              fullWidth={false}
             />
             <SelectField 
               label={t('user.filter.status')} 
@@ -301,6 +303,7 @@ const UserManagement: React.FC = () => {
                 { value: 'inactive', label: t('user.status.inactive') },
               ]} 
               className="mb-0"
+              fullWidth={false}
             />
             <InputField 
               label={t('user.filter.search')} 
@@ -309,6 +312,7 @@ const UserManagement: React.FC = () => {
               onChange={(e) => setFilterSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               className="mb-0" 
+              fullWidth={false}
             />
             <button className="btn btn-primary" onClick={handleFilter}><Search size={18} /> {t('user.filter.apply')}</button>
           </div>

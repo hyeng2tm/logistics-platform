@@ -19,6 +19,7 @@
     "save": "保存",
     "delete": "削除",
     "input_error": "入力エラー",
+    "max_tabs_reached": "タブの最大数（8）に達しました。これ以上メニューを開くことはできません。",
     "save_complete": "保存完了",
     "save_failed": "保存失敗",
     "save_failed_msg": "保存に失敗しました: ",

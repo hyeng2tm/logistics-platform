@@ -19,6 +19,7 @@
     "save": "Save",
     "delete": "Delete",
     "input_error": "Input Error",
+    "max_tabs_reached": "Maximum number of tabs (8) reached. No more menus can be opened.",
     "save_complete": "Save Complete",
     "save_failed": "Save Failed",
     "save_failed_msg": "Failed to save: ",

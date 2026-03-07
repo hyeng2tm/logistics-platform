@@ -209,12 +209,13 @@ const ClientManagement: React.FC = () => {
 
             <div className="flex flex-col gap-24">
                 <Card title={t('sales.client.filter_title')}>
-                    <div className="filter-panel horizontal grid-4">
+                    <div className="filter-panel horizontal grid-5">
                         <InputField 
                            label={t('sales.client.fields.name')} 
                            value={searchName} 
                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchName(e.target.value)} 
                            placeholder={t('sales.client.search_placeholder')} 
+                           fullWidth={false}
                         />
                         <SelectField
                             label={t('sales.client.fields.status')}
@@ -225,6 +226,7 @@ const ClientManagement: React.FC = () => {
                                 { value: 'active', label: t('sales.client.status_active') },
                                 { value: 'inactive', label: t('sales.client.status_inactive') }
                             ]}
+                            fullWidth={false}
                         />
                         <div className="filter-actions">
                             <button className="btn btn-primary" onClick={handleSearch}>

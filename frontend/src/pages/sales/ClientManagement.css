@@ -49,7 +49,6 @@
 .filter-actions {
     display: flex;
     align-items: flex-end;
-    grid-column: 5;
 }
 
 .filter-actions .btn {

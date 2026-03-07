@@ -31,7 +31,6 @@
 .routing-search-actions {
     display: flex;
     align-items: flex-end;
-    grid-column: 5;
 }
 
 .routing-search-btn {

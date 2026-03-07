@@ -175,6 +175,7 @@ const Routing: React.FC = () => {
                              <InputField 
                                 label={t('dispatch.routing.search_placeholder')} 
                                 placeholder={t('dispatch.routing.search_placeholder')} 
+                                fullWidth={false}
                              />
                              <SelectField
                                  label={t('dispatch.routing.status_label')}
@@ -184,6 +185,7 @@ const Routing: React.FC = () => {
                                      { value: 'in_transit', label: t('dispatch.routing.status.in_transit') },
                                      { value: 'completed', label: t('dispatch.routing.status.completed') },
                                  ]}
+                                 fullWidth={false}
                              />
                              <div className="routing-search-actions">
                                 <button className="btn btn-primary routing-search-btn" onClick={fetchRoutes}>

@@ -19,6 +19,7 @@
     "save": "保存",
     "delete": "删除",
     "input_error": "输入错误",
+    "max_tabs_reached": "已达到最大标签数（8）。无法再打开更多菜单。",
     "save_complete": "保存成功",
     "save_failed": "保存失败",
     "save_failed_msg": "保存失败: ",

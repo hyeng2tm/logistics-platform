@@ -296,7 +296,7 @@ const Outbound: React.FC = () => {
 
             <div className="flex flex-col gap-24">
                 <Card title="출고 검색 필터">
-                    <div className="filter-panel horizontal grid-4">
+                    <div className="filter-panel horizontal grid-5">
                          <InputField 
                             label={t('inventory.stock.filter_keyword')} 
                             placeholder={t('inventory.stock.filter_keyword_placeholder')} 

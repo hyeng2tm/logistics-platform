@@ -180,7 +180,7 @@ const StockStatus: React.FC = () => {
                 </div>
 
                 <Card title={t('inventory.stock.filter_title')}>
-                    <div className="filter-panel horizontal grid-4">
+                    <div className="filter-panel horizontal grid-5">
                          <SelectField
                              label={t('inventory.common.client')}
                              options={[

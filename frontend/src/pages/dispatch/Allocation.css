@@ -16,7 +16,6 @@
 .allocation-search-actions {
     display: flex;
     align-items: flex-end;
-    grid-column: 5;
 }
 
 .allocation-filter-btn {
@@ -178,6 +177,3 @@
     line-height: 1.5;
 }
 
-.allocation-helper-icon {
-    flex-shrink: 0;
-}
