@@ -6,8 +6,8 @@ import Callback from "./pages/Callback";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import MainLayout from "./components/layout/MainLayout";
 import { MultiTabProvider } from "./components/layout/MultiTabContext";
-import { ModalProvider } from "./contexts/ModalContext";
-import { MessageProvider } from "./contexts/MessageContext";
+import { ModalProvider } from "./contexts/ModalProvider";
+import { MessageProvider } from "./contexts/MessageProvider";
 import "./App.css";
 
 // Templates Demo Routes

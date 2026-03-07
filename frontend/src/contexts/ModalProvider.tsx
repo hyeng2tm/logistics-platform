@@ -1,37 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Info, TriangleAlert } from 'lucide-react';
 import { useSystemMessages } from './MessageContext';
-
-type ModalType = 'alert' | 'confirm' | 'info';
-
-interface ModalOptions {
-  title: string;
-  message: string;
-  messageValues?: (string | number)[];
-  type?: ModalType;
-  onConfirm?: () => void;
-  onCancel?: () => void;
-  confirmText?: string;
-  cancelText?: string;
-}
-
-interface ModalContextType {
-  showAlert: (options: Omit<ModalOptions, 'type' | 'onCancel' | 'cancelText'>) => void;
-  showConfirm: (options: Omit<ModalOptions, 'type'>) => void;
-  showInfo: (options: Omit<ModalOptions, 'type' | 'onCancel' | 'cancelText'>) => void;
-  closeModal: () => void;
-}
-
-const ModalContext = createContext<ModalContextType | undefined>(undefined);
-
-export const useModal = () => {
-  const context = useContext(ModalContext);
-  if (!context) {
-    throw new Error('useModal must be used within a ModalProvider');
-  }
-  return context;
-};
+import { ModalOptions, ModalContext } from './ModalContext';
 
 export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t } = useTranslation();

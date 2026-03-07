@@ -1,32 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../utils/apiClient';
 import { useAuth } from '../auth/AuthContext';
+import { SystemMessage, MessageContextType, MessageContext } from './MessageContext';
 
-
-interface SystemMessage {
-  messageKey: string;
-  category: string;
-  description: string;
-  translations: Record<string, string>;
-}
-
-interface MessageContextType {
-  messages: Record<string, string>;
-  getMessage: (key: string, values?: (string | number)[], fallback?: string) => string;
-  refreshMessages: () => Promise<void>;
-  isLoading: boolean;
-}
-
-const MessageContext = createContext<MessageContextType | undefined>(undefined);
-
-export const useSystemMessages = () => {
-  const context = useContext(MessageContext);
-  if (!context) {
-    throw new Error('useSystemMessages must be used within a MessageProvider');
-  }
-  return context;
-};
 
 export const MessageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
