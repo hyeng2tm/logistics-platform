@@ -1,0 +1,156 @@
+
+.inbound-working-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.inbound-working-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.inbound-asn-info {
+    flex: 1 1 300px;
+    background: #F8FAFC;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.inbound-asn-title {
+    margin: 0 0 12px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.inbound-asn-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.inbound-asn-label {
+    color: var(--text-tertiary);
+}
+
+.inbound-asn-value {
+    color: var(--text-primary);
+}
+
+.inbound-asn-value.important {
+    font-weight: 600;
+}
+
+.inbound-asn-value.accent {
+    font-weight: 600;
+    color: var(--accent-blue);
+}
+
+.inbound-work-inputs {
+    flex: 2 1 400px;
+}
+
+.inbound-qty-input {
+    border-color: var(--accent-blue);
+    border-width: 2px;
+}
+
+.inbound-info-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.inbound-item-name {
+    font-weight: 600;
+}
+
+.inbound-sku-name {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.inbound-progress-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inbound-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+.inbound-progress-received {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.inbound-progress-expected {
+    color: var(--text-tertiary);
+}
+
+.inbound-progress-bg {
+    width: 100%;
+    height: 6px;
+    background: #E2E8F0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.inbound-progress-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+    background: var(--accent-blue);
+    width: var(--progress-width, 0%);
+}
+
+.inbound-progress-bar.completed {
+    background: #05CD99;
+}
+
+.inbound-status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: #F1F5F9;
+    color: #475569;
+}
+
+.inbound-status-badge.status-expected { background-color: #F8FAFC; color: #64748B; }
+.inbound-status-badge.status-receiving { background-color: #E0F2FE; color: #0284C7; }
+.inbound-status-badge.status-completed { background-color: #E6F9F4; color: #05CD99; }
+.inbound-status-badge.status-discrepancy { background-color: #FEE2E2; color: #DC2626; }
+
+.inbound-action-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    width: 100px;
+}
+
+.inbound-loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* Filter Panel Standardized */
+
+.filter-panel.horizontal .form-field-group {
+    margin-bottom: 0;
+}
+
+.filter-actions {
+    grid-column: 5;
+    display: flex;
+    align-items: flex-end;
+}
+
+.filter-actions .btn {
+    width: 100%;
+    height: 42px;
+}

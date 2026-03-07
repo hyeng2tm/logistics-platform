@@ -1,0 +1,31 @@
+{
+  "groups": [
+    {
+      "name": "app",
+      "type": "com.logistics.platform.config.AppProperties",
+      "sourceType": "com.logistics.platform.config.AppProperties"
+    },
+    {
+      "name": "app.cors",
+      "type": "com.logistics.platform.config.AppProperties$Cors",
+      "sourceType": "com.logistics.platform.config.AppProperties",
+      "sourceMethod": "getCors()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "com.logistics.platform.config.AppProperties$Cors"
+    },
+    {
+      "name": "app.version",
+      "type": "java.lang.String",
+      "sourceType": "com.logistics.platform.config.AppProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

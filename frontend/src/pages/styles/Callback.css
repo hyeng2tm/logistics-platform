@@ -1,0 +1,12 @@
+.callback-container {
+  padding: 2rem;
+}
+
+.callback-error-container {
+  padding: 2rem;
+  color: red;
+}
+
+.callback-back-button {
+  margin-top: 1rem;
+}

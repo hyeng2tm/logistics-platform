@@ -1,0 +1,82 @@
+
+
+.client-status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.client-status-badge.active {
+    background-color: #E6F9F4;
+    color: #05CD99;
+}
+
+.client-status-badge.inactive {
+    background-color: #FFF0F1;
+    color: #FF5A5F;
+}
+
+.client-action-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+
+.client-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.client-editor-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+
+.filter-panel.horizontal .form-field-group {
+    margin-bottom: 0;
+}
+
+.filter-item {
+    width: 100%;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+    grid-column: 5;
+}
+
+.filter-actions .btn {
+    width: 100%;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.client-table-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-msg-loading {
+    padding: 24px;
+    text-align: center;
+}
+
+.form-actions-end {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    gap: 8px;
+}

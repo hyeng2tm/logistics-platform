@@ -1,0 +1,100 @@
+version: '3.8'
+services:
+  mysql:
+    image: bitnamilegacy/mysql:8.0
+    container_name: logistics-mysql-primary
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=logistics_db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_REPLICATION_MODE=master
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_REPLICATION_PASSWORD=repl_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/bitnami/mysql/data
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-replica:
+    image: bitnamilegacy/mysql:8.0
+    container_name: logistics-mysql-replica
+    environment:
+      - MYSQL_REPLICATION_MODE=slave
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_REPLICATION_PASSWORD=repl_password
+      - MYSQL_MASTER_HOST=mysql
+      - MYSQL_MASTER_ROOT_PASSWORD=root
+    ports:
+      - "3308:3306"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-server:
+    build:
+      context: ./auth-server
+      dockerfile: Dockerfile
+    container_name: logistics-auth-server
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
+      # dev 프로파일 기본값 오버라이드 (필요 시)
+      # DB_USERNAME: user
+      # DB_PASSWORD: password
+      # KEYSTORE_PASSWORD: changeit
+    volumes:
+      - auth_keys:/app/keys
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: logistics-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
+      # dev 프로파일 기본값 오버라이드 (필요 시)
+      # DB_USERNAME: user
+      # DB_PASSWORD: password
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+      auth-server:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: logistics-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+      - auth-server
+
+volumes:
+  mysql_data:
+  auth_keys:

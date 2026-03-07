@@ -1,0 +1,119 @@
+.stock-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.stock-stat-card {
+    padding: 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.stock-stat-card.critical-bg {
+    background: var(--status-danger-light, #FEE2E2);
+    border: 1px solid #FCA5A5;
+}
+
+.stock-stat-label {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.stock-stat-label.critical {
+    color: #B91C1C;
+}
+
+.stock-stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stock-stat-value.healthy {
+    color: #10B981;
+}
+
+.stock-stat-value.warning {
+    color: #F59E0B;
+}
+
+.stock-stat-value.critical {
+    color: #DC2626;
+}
+
+.stock-info-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.stock-item-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stock-category-name {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.stock-location-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.stock-qty-total {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stock-qty-available {
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.qty-status-critical {
+    color: #EF4444;
+}
+
+.qty-status-warning {
+    color: #F59E0B;
+}
+
+.qty-status-healthy {
+    color: #10B981;
+}
+
+.stock-qty-allocated {
+    color: var(--text-tertiary);
+}
+
+.stock-loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* Filter Panel Standardized */
+
+.filter-panel.horizontal .form-field-group {
+    margin-bottom: 0;
+}
+
+.filter-actions {
+    grid-column: 5;
+    display: flex;
+    align-items: flex-end;
+}
+
+.filter-actions .btn {
+    width: 100%;
+    height: 42px;
+}
