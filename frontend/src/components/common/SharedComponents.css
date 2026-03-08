@@ -141,6 +141,16 @@
   padding: 4px;
   border-radius: 6px;
   transition: var(--transition);
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-collapse-toggle:focus,
+.card-collapse-toggle:focus-visible,
+.card-collapse-toggle:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .card-collapse-toggle:hover {
