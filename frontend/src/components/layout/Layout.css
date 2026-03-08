@@ -351,9 +351,8 @@
 .tab-actions-wrapper {
   display: flex;
   align-items: center;
-  padding-left: 12px;
-  border-left: 1px solid rgba(0, 0, 0, 0.05);
-  margin-left: 12px;
+  padding-left: 4px;
+  margin-left: 2px;
   height: 32px;
   margin-bottom: 8px;
 }
