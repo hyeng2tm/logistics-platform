@@ -14,6 +14,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { tabs, activeTabId, setActiveTabId, closeTab, closeAllTabs } = useMultiTab();
   const { isMobile } = useDeviceDetect();
   const { t, i18n } = useTranslation();
@@ -26,11 +27,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleCollapse = () => setIsSidebarCollapsed(!isSidebarCollapsed);
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
     <div className="layout-wrapper">
-      <Sidebar isOpen={isSidebarOpen || !isMobile} onClose={closeSidebar} />
+      <Sidebar 
+        isOpen={isSidebarOpen || !isMobile} 
+        isCollapsed={isSidebarCollapsed && !isMobile}
+        onClose={closeSidebar} 
+        onToggleCollapse={toggleCollapse}
+      />
       
       <div className="layout-content">
         <Header onMenuToggle={toggleSidebar} />
@@ -41,7 +48,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             {tabs.map(tab => (
               <div 
                 key={tab.id}
-                className={classNames('tab-item', { active: tab.id === activeTabId })}
+                className={classNames('tab-item', { 
+                  active: tab.id === activeTabId,
+                  'is-dashboard': tab.id === '/' || tab.path === '/' || tab.titleKey === 'common.dashboard'
+                })}
                 onClick={() => setActiveTabId(tab.id)}
               >
                 <span className="tab-title" title={getTabDisplayTitle(tab)}>{getTabDisplayTitle(tab)}</span>

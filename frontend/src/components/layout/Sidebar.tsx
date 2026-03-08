@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useMultiTab } from './MultiTabContext';
-import { ChevronDown, ChevronRight, Home, Box, Truck, Settings, Star, Layers, LayoutTemplate, ShieldAlert, Users, List } from 'lucide-react';
+import { ChevronDown, ChevronRight, Home, Box, Truck, Settings, Star, Layers, LayoutTemplate, ShieldAlert, Users, List, Menu, X } from 'lucide-react';
 import classNames from 'classnames';
 
 export type MenuItemType = {
@@ -36,10 +36,12 @@ const FAVORITE_MENU: MenuItemType[] = [
 
 interface SidebarProps {
   isOpen: boolean;
+  isCollapsed?: boolean;
   onClose: () => void;
+  onToggleCollapse?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, onToggleCollapse }) => {
   const { t, i18n: i18nInstance } = useTranslation();
   const [menuMode, setMenuMode] = useState<'base' | 'favorite'>('base');
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
@@ -78,13 +80,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     return buildTree(null);
   }, [apiMenus, i18nInstance.language, i18nInstance.resolvedLanguage]);
 
-  const toggleMenu = (id: string) => {
-    setOpenMenus(prev => ({ ...prev, [id]: !prev[id] }));
+  const toggleMenu = (id: string, depth: number) => {
+    if (isCollapsed) return; // Don't expand menus when collapsed
+    
+    setOpenMenus(prev => {
+      // If expanding a top-level menu (depth 1), close others
+      if (depth === 1 && !prev[id]) {
+        return { [id]: true };
+      }
+      // Otherwise toggle as usual (keeps nested sub-menus functional)
+      return { ...prev, [id]: !prev[id] };
+    });
   };
 
-  const handleMenuClick = (item: MenuItemType) => {
+  const handleMenuClick = (item: MenuItemType, depth: number) => {
     if (item.children) {
-      toggleMenu(item.id);
+      toggleMenu(item.id, depth);
     } else if (item.path) {
       // item.title is already translated via DB fields or it's an i18n key
       openTab({ 
@@ -103,28 +114,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const renderMenuItems = (items: MenuItemType[], depth = 1) => {
     return items.map(item => {
       const hasChildren = !!item.children && item.children.length > 0;
-      const isOpen = openMenus[item.id];
+      const isOpenMenu = openMenus[item.id];
       const isActive = location.pathname === item.path;
 
       return (
         <div key={item.id} className={classNames('menu-item-container', `depth-${depth}`)}>
           <div 
             className={classNames('menu-item', { active: isActive && !hasChildren })}
-            onClick={() => handleMenuClick(item)}
+            onClick={() => handleMenuClick(item, depth)}
+            title={isCollapsed ? t(item.title) : undefined}
           >
             <div className="menu-item-left">
               {item.icon && <span className="menu-icon">{item.icon}</span>}
-              <span className="menu-title">{t(item.title)}</span>
+              {!isCollapsed && <span className="menu-title">{t(item.title)}</span>}
             </div>
-            {hasChildren && (
+            {hasChildren && !isCollapsed && (
               <div className="menu-chevron">
-                {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isOpenMenu ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
               </div>
             )}
           </div>
           
-          {hasChildren && (
-            <div className={classNames('menu-children', `depth-${depth}`, { open: isOpen })}>
+          {hasChildren && !isCollapsed && (
+            <div className={classNames('menu-children', `depth-${depth}`, { open: isOpenMenu })}>
               {renderMenuItems(item.children!, depth + 1)}
             </div>
           )}
@@ -136,12 +148,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   return (
     <>
       <div className={classNames('sidebar-overlay', { open: isOpen })} onClick={onClose}></div>
-      <aside className={classNames('layout-sidebar', { open: isOpen })}>
+      <aside className={classNames('layout-sidebar', { open: isOpen, collapsed: isCollapsed })}>
         <div className="sidebar-logo">
-          <Layers className="me-2 sidebar-logo-icon" />
-          Logistics OS
+          {!isCollapsed && (
+            <div className="logo-content">
+              <Layers className="me-2 sidebar-logo-icon" />
+              <span className="sidebar-logo-text">Logistics OS</span>
+            </div>
+          )}
+          {onToggleCollapse && (
+            <button 
+              className="sidebar-inner-toggle"
+              onClick={onToggleCollapse}
+              title={t('common.toggle_sidebar', '사이드바 토글')}
+            >
+              <div className={classNames('animated-icon-wrapper', { 'is-collapsed': isCollapsed })}>
+                <Menu className="icon-hamburger" size={24} />
+                <X className="icon-close" size={24} />
+              </div>
+            </button>
+          )}
         </div>
-        
+
         <div className="sidebar-toggle-group">
           <button 
             className={classNames('sidebar-toggle-btn', { active: menuMode === 'base' })}
