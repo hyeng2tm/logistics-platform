@@ -14,7 +14,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { tabs, activeTabId, setActiveTabId, closeTab } = useMultiTab();
+  const { tabs, activeTabId, setActiveTabId, closeTab, closeAllTabs } = useMultiTab();
   const { isMobile } = useDeviceDetect();
   const { t, i18n } = useTranslation();
 
@@ -59,6 +59,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 )}
               </div>
             ))}
+            {tabs.length > 1 && (
+              <div className="tab-actions-wrapper">
+                <button 
+                  className="tab-action-btn close-all" 
+                  title={t('common.close_all', '전체 닫기')}
+                  onClick={closeAllTabs}
+                  aria-label={t('common.close_all', '전체 닫기')}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
           </div>
         )}
 

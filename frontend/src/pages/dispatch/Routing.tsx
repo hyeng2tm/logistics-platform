@@ -170,7 +170,7 @@ const Routing: React.FC = () => {
             <div className="routing-main-grid">
                 {/* Left side: Route Status List */}
                 <div className="routing-routes-section flex flex-col gap-24">
-                    <Card title={t('dispatch.routing.search_title')}>
+                    <Card title={t('dispatch.routing.search_title')} collapsible>
                         <div className="filter-panel horizontal grid-4">
                              <InputField 
                                 label={t('dispatch.routing.search_placeholder')} 

@@ -274,7 +274,7 @@ const Inbound: React.FC = () => {
             </Modal>
 
             <div className="flex flex-col gap-24">
-                <Card title="입고 검색 필터">
+                <Card title="입고 검색 필터" collapsible>
                     <div className="filter-panel horizontal grid-5">
                          <InputField 
                             label={t('inventory.stock.filter_keyword')} 

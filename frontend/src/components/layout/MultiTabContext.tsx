@@ -27,6 +27,8 @@ interface MultiTabContextType {
   activeTabId: string;
   openTab: (tab: Omit<TabType, 'isCloseable'> & { isCloseable?: boolean }) => void;
   closeTab: (id: string) => void;
+  closeAllTabs: () => void;
+  closeOtherTabs: (id: string) => void;
   setActiveTabId: (id: string) => void;
   apiMenus: ApiMenu[];
 }
@@ -134,6 +136,32 @@ export const MultiTabProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
+  const closeAllTabs = () => {
+    const dashboardTab = tabs.find(t => t.id === '/');
+    const newTabs = dashboardTab ? [dashboardTab] : [];
+    setTabs(newTabs);
+    setActiveTabId('/');
+    navigate('/');
+  };
+
+  const closeOtherTabs = (id: string) => {
+    const dashboardTab = tabs.find(t => t.id === '/');
+    const targetTab = tabs.find(t => t.id === id);
+    
+    const newTabs = [];
+    if (dashboardTab) newTabs.push(dashboardTab);
+    if (targetTab && targetTab.id !== '/') newTabs.push(targetTab);
+    
+    setTabs(newTabs);
+    if (targetTab) {
+      setActiveTabId(targetTab.id);
+      navigate(targetTab.path);
+    } else {
+      setActiveTabId('/');
+      navigate('/');
+    }
+  };
+
   const setActiveTab = (id: string) => {
     const tab = tabs.find(t => t.id === id);
     if (tab) {
@@ -143,7 +171,16 @@ export const MultiTabProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   return (
-    <MultiTabContext.Provider value={{ tabs, activeTabId, openTab, closeTab, setActiveTabId: setActiveTab, apiMenus }}>
+    <MultiTabContext.Provider value={{ 
+      tabs, 
+      activeTabId, 
+      openTab, 
+      closeTab, 
+      closeAllTabs,
+      closeOtherTabs,
+      setActiveTabId: setActiveTab, 
+      apiMenus 
+    }}>
       {children}
     </MultiTabContext.Provider>
   );

@@ -179,7 +179,7 @@ const Allocation: React.FC = () => {
             <div className="allocation-grid">
                 {/* Left side: Orders to be allocated */}
                 <div className="allocation-orders-section flex flex-col gap-24">
-                    <Card title={t('dispatch.allocation.search_title')}>
+                    <Card title={t('dispatch.allocation.search_title')} collapsible>
                         <div className="filter-panel horizontal grid-4">
                              <InputField 
                                 label={t('dispatch.allocation.order_no_search')} 

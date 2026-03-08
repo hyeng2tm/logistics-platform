@@ -63,7 +63,7 @@ const Template1_ListSearch: React.FC = () => {
 
       <div className="template-container">
         {/* Search Filter Card */}
-        <Card title="검색 조건" headerActions={<button className="btn btn-outline filter-reset-btn"><Filter size={16}/> 필터 초기화</button>}>
+        <Card title="검색 조건" collapsible headerActions={<button className="btn btn-outline filter-reset-btn"><Filter size={16}/> 필터 초기화</button>}>
           <div className="filter-panel horizontal grid-5">
             <InputField label="배송번호" placeholder="TRK번호 입력..." fullWidth={false} />
             <InputField label="도착지" placeholder="주소 입력..." fullWidth={false} />

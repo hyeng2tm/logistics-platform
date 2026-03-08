@@ -4,8 +4,10 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/common/Card';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { InputField, SelectField } from '../../components/common/FormFields';
-import { Search, MapPin, Download, ArrowRightLeft } from 'lucide-react';
+import { Download, Search, MapPin, ArrowRightLeft } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 import './StockStatus.css';
 
@@ -137,8 +139,37 @@ const StockStatus: React.FC = () => {
         },
     ];
 
+    const handleExcelDownload = () => {
+        if (stocks.length === 0) {
+            showAlert({ title: t('common.notifications'), message: t('common.no_data') });
+            return;
+        }
+
+        const excelData = stocks.map(row => ({
+            [t('inventory.common.client')]: row.clientName,
+            [t('inventory.common.sku')]: row.sku,
+            [t('inventory.common.item_name')]: row.itemName,
+            [t('inventory.common.category')]: row.category,
+            [t('inventory.common.location')]: row.location,
+            [t('inventory.stock.col_total')]: row.totalQty,
+            [t('inventory.stock.col_available')]: row.availableQty,
+            [t('inventory.stock.col_allocated')]: row.allocatedQty,
+            [t('inventory.stock.col_updated')]: row.lastUpdated,
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Stock Status");
+
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+        
+        const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        saveAs(data, `StockStatus_${dateStr}.xlsx`);
+    };
+
     const headerActions = (
-        <button className="btn btn-outline" onClick={() => showAlert({ title: t('common.notifications'), message: t('inventory.stock.btn_excel') })}>
+        <button className="btn btn-outline" onClick={handleExcelDownload}>
             <Download size={18} /> {t('inventory.stock.btn_excel')}
         </button>
     );
@@ -179,7 +210,7 @@ const StockStatus: React.FC = () => {
                     </div>
                 </div>
 
-                <Card title={t('inventory.stock.filter_title')}>
+                <Card title={t('inventory.stock.filter_title')} collapsible>
                     <div className="filter-panel horizontal grid-5">
                          <SelectField
                              label={t('inventory.common.client')}

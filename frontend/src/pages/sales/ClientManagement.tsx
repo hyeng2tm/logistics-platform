@@ -208,7 +208,7 @@ const ClientManagement: React.FC = () => {
             </Modal>
 
             <div className="flex flex-col gap-24">
-                <Card title={t('sales.client.filter_title')}>
+                <Card title={t('sales.client.filter_title')} collapsible>
                     <div className="filter-panel horizontal grid-5">
                         <InputField 
                            label={t('sales.client.fields.name')} 

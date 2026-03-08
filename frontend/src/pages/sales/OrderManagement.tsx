@@ -268,7 +268,7 @@ const OrderManagement: React.FC = () => {
                 )}
             </Modal>
     
-                <Card title={t('sales.order.filter_title')}>
+                <Card title={t('sales.order.filter_title')} collapsible>
                     <div className="filter-panel horizontal grid-5">
                         <InputField 
                            label={t('sales.order.fields.order_no')} 

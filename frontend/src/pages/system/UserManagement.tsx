@@ -263,7 +263,7 @@ const UserManagement: React.FC = () => {
 
       <div className="flex flex-col gap-24">
         {/* Search Header Card */}
-        <Card title={t('user.filter.title')}>
+        <Card title={t('user.filter.title')} collapsible>
           <div className="filter-panel horizontal grid-5">
             <SelectField 
               label={t('user.filter.dept')} 
