@@ -187,6 +187,8 @@ const Routing: React.FC = () => {
                                  ]}
                                  fullWidth={false}
                              />
+                             {/* Spacer to push button to the 4th column */}
+                             <div></div>
                              <div className="routing-search-actions">
                                 <button className="btn btn-primary routing-search-btn" onClick={fetchRoutes}>
                                     <Search size={18} /> {t('dispatch.common.search')}
