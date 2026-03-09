@@ -65,7 +65,10 @@
     "code_management": "공통코드 관리",
     "menu_management": "메뉴/페이지 관리",
     "user_management": "사용자 관리",
-    "role_management": "권한 관리"
+    "role_management": "권한 관리",
+    "system_development": "시스템 개발",
+    "frontend_guide": "Frontend App 개발 가이드",
+    "backend_guide": "Backend 개발 가이드"
   },
   "dashboard": {
     "welcome_title": "환영합니다! 관리자님",
@@ -484,6 +487,24 @@
           "opt_success_title": "최적화 완료",
           "opt_success_msg": "효율적인 배송 순서로 재배치되었습니다. 저장 후 반영됩니다."
         }
+      }
+    },
+    "development": {
+      "frontend": {
+        "title": "Frontend App 개발 표준 가이드",
+        "desc": "물류 플랫폼 프론트엔드 개발을 위한 공통 표준 및 기술 스택 가이드입니다.",
+        "tech_stack": "핵심 기술 스택",
+        "structure": "프로젝트 폴더 구조",
+        "conventions": "개발 컨벤션",
+        "ui_standard": "UI/UX 표준"
+      },
+      "backend": {
+        "title": "Backend 개발 표준 가이드",
+        "desc": "물류 플랫폼 백엔드 API 및 데이터베이스 개발을 위한 표준 가이드입니다.",
+        "tech_stack": "백엔드 기술 스택",
+        "db_standard": "데이터베이스 설계 표준",
+        "api_standard": "API 설계 및 인터페이스 표준",
+        "security": "보안 및 권한 제어"
       }
     }
 }

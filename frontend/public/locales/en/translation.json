@@ -65,7 +65,10 @@
     "code_management": "Code Management",
     "menu_management": "Menu Management",
     "user_management": "User Management",
-    "role_management": "Role Management"
+    "role_management": "Role Management",
+    "system_development": "System Development",
+    "frontend_guide": "Frontend App Dev Guide",
+    "backend_guide": "Backend Dev Guide"
   },
   "dashboard": {
     "welcome_title": "Welcome! Admin",
@@ -484,6 +487,24 @@
           "opt_success_title": "Optimization Complete",
           "opt_success_msg": "Re-arranged to efficient delivery sequence. Changes applied after saving."
         }
+      }
+    },
+    "development": {
+      "frontend": {
+        "title": "Frontend App Development Guide",
+        "desc": "Standard guide for logistics platform frontend development and tech stack.",
+        "tech_stack": "Core Tech Stack",
+        "structure": "Project Structure",
+        "conventions": "Development Conventions",
+        "ui_standard": "UI/UX Standards"
+      },
+      "backend": {
+        "title": "Backend Development Guide",
+        "desc": "Standard guide for logistics platform backend API and database development.",
+        "tech_stack": "Backend Tech Stack",
+        "db_standard": "Database Standards",
+        "api_standard": "API Design Standards",
+        "security": "Security & Authorization"
       }
     }
 }

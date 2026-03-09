@@ -65,7 +65,10 @@
     "code_management": "代码管理",
     "menu_management": "菜单管理",
     "user_management": "用户管理",
-    "role_management": "权限管理"
+    "role_management": "权限管理",
+    "system_development": "系统开发",
+    "frontend_guide": "前端开发指南",
+    "backend_guide": "后端开发指南"
   },
   "dashboard": {
     "welcome_title": "欢迎！管理员",
@@ -484,6 +487,24 @@
           "opt_success_title": "优化完成",
           "opt_success_msg": "已重新排列为高效的配送顺序。保存后生效。"
         }
+      }
+    },
+    "development": {
+      "frontend": {
+        "title": "前端开发标准指南",
+        "desc": "物流平台前端开发的标准及技术栈指南。",
+        "tech_stack": "核心技术栈",
+        "structure": "项目结构",
+        "conventions": "开发规范",
+        "ui_standard": "UI标准"
+      },
+      "backend": {
+        "title": "后端开发标准指南",
+        "desc": "物流平台后端API及数据库开发的标准指南。",
+        "tech_stack": "后端技术栈",
+        "db_standard": "数据库设计标准",
+        "api_standard": "API设计标准",
+        "security": "安全与权限"
       }
     }
 }

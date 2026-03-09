@@ -23,6 +23,25 @@
   --transition-width: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Global Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
 /* Base Layout Wrapper */
 .layout-wrapper {
   display: flex;
@@ -217,6 +236,10 @@
   flex: 1;
   overflow-y: auto;
   padding: 0 16px 16px;
+}
+
+.sidebar-menu-wrapper::-webkit-scrollbar {
+  width: 4px;
 }
 
 .favorite-icon {

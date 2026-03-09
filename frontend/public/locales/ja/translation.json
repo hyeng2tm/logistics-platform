@@ -65,7 +65,10 @@
     "code_management": "コード管理",
     "menu_management": "メニュー管理",
     "user_management": "ユーザー管理",
-    "role_management": "権限管理"
+    "role_management": "役割管理",
+    "system_development": "システム開発",
+    "frontend_guide": "フロントエンドガイド",
+    "backend_guide": "バックエンドガイド"
   },
   "dashboard": {
     "welcome_title": "ようこそ！管理者様",
@@ -484,6 +487,24 @@
           "opt_success_title": "最適化完了",
           "opt_success_msg": "効率的な配送順序に再配置されました。保存後に反映されます。"
         }
+      }
+    },
+    "development": {
+      "frontend": {
+        "title": "フロントエンド開発標準ガイド",
+        "desc": "物流プラットフォームのフロントエンド開発のための標準および技術スタックガイドです。",
+        "tech_stack": "コア技術スタック",
+        "structure": "プロジェクト構造",
+        "conventions": "開発規約",
+        "ui_standard": "UI標準"
+      },
+      "backend": {
+        "title": "バックエンド開発標準ガイド",
+        "desc": "物流プラットフォームのバックエンドAPIおよびデータベース開発のための標準ガイドです。",
+        "tech_stack": "バックエンド技術スタック",
+        "db_standard": "データベース設計標準",
+        "api_standard": "API設計標準",
+        "security": "セキュリティと権限"
       }
     }
 }

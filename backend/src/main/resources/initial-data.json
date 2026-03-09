@@ -96,7 +96,10 @@
     { "title": "sidebar.role_management", "path": "/system/roles", "icon": null, "sortOrder": 2, "isVisible": "Y", "parentTitle": "sidebar.system_management", "translations": { "ko": "권한 확인", "en": "Role Management", "ja": "役割管理", "zh": "权限管理" } },
     { "title": "sidebar.code_management", "path": "/system/codes", "icon": null, "sortOrder": 3, "isVisible": "Y", "parentTitle": "sidebar.system_management", "translations": { "ko": "공통코드 관리", "en": "Code Management", "ja": "共通コード管理", "zh": "代码管理" } },
     { "title": "sidebar.menu_management", "path": "/system/menus", "icon": null, "sortOrder": 4, "isVisible": "Y", "parentTitle": "sidebar.system_management", "translations": { "ko": "메뉴/페이지 관리", "en": "Menu Management", "ja": "メニュー管理", "zh": "菜单管理" } },
-    { "title": "sidebar.message_management", "path": "/system/messages", "icon": null, "sortOrder": 5, "isVisible": "Y", "parentTitle": "sidebar.system_management", "translations": { "ko": "메시지 관리", "en": "Message Management", "ja": "メッセージ管理", "zh": "消息管理" } },
+    { "title": "sidebar.message_management", "path": "/system/messages", "icon": null, "sortOrder": 5, "isVisible": "Y", "parentTitle": "sidebar.system_management", "translations": { "ko": "메시지 관리", "en": "Message Management", "ja": "メッセージ 관리", "zh": "消息管理" } },
+    { "title": "sidebar.system_development", "path": null, "icon": "Layers", "sortOrder": 6, "isVisible": "Y", "parentTitle": "sidebar.system_management", "translations": { "ko": "시스템 개발", "en": "System Development", "ja": "システム開発", "zh": "系统开发" } },
+    { "title": "sidebar.frontend_guide", "path": "/system/development/frontend", "icon": null, "sortOrder": 1, "isVisible": "Y", "parentTitle": "sidebar.system_development", "translations": { "ko": "Frontend App 개발 가이드", "en": "Frontend App Dev Guide", "ja": "フロントエンドガイド", "zh": "前端开发指南" } },
+    { "title": "sidebar.backend_guide", "path": "/system/development/backend", "icon": null, "sortOrder": 2, "isVisible": "Y", "parentTitle": "sidebar.system_development", "translations": { "ko": "Backend 개발 가이드", "en": "Backend Dev Guide", "ja": "バックエンドガイド", "zh": "后端开发指南" } },
     { "title": "common.settings", "path": "/settings", "icon": "Settings", "sortOrder": 6, "isVisible": "Y", "parentTitle": null, "translations": { "ko": "설정", "en": "Settings", "ja": "設定", "zh": "设置" } }
   ],
   "messages": [

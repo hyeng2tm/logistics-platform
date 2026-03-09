@@ -26,6 +26,8 @@ import RoleManagement from './pages/system/RoleManagement';
 import CodeManagement from './pages/system/CodeManagement';
 import MenuManagement from './pages/system/MenuManagement';
 import MessageManagement from './pages/system/MessageManagement';
+import FrontendGuide from './pages/system/development/FrontendGuide';
+import BackendGuide from './pages/system/development/BackendGuide';
 
 // Domains Routes
 import ClientManagement from './pages/sales/ClientManagement';
@@ -100,6 +102,8 @@ function App() {
                           <Route path="/system/codes" element={<CodeManagement />} />
                           <Route path="/system/menus" element={<MenuManagement />} />
                           <Route path="/system/messages" element={<MessageManagement />} />
+                          <Route path="/system/development/frontend" element={<FrontendGuide />} />
+                          <Route path="/system/development/backend" element={<BackendGuide />} />
   
                           {/* Domain Routes */}
                           <Route path="/sales/clients" element={<ClientManagement />} />
