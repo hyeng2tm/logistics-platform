@@ -95,6 +95,17 @@ services:
       - backend
       - auth-server
 
+  frontend-next:
+    build:
+      context: ./frontend-next
+      dockerfile: Dockerfile
+    container_name: logistics-frontend-next
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+      - auth-server
+
 volumes:
   mysql_data:
   auth_keys:

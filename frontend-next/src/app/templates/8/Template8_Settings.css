@@ -1,0 +1,105 @@
+.settings-container {
+  display: grid;
+  grid-template-columns: minmax(200px, 250px) 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  border-left: 3px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.settings-nav-button.active {
+  background: var(--accent-light);
+  color: var(--accent-blue);
+  border-left-color: var(--accent-blue);
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatar-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-info-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.settings-divider {
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.profile-fields-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.notification-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.notification-checkbox {
+  width: 20px;
+  height: 20px;
+}
+
+.security-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+}
+
+.account-info-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

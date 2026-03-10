@@ -14,10 +14,12 @@ import java.util.Map;
 public class MenuResponse {
     private Long id;
     private Long parentId;
-    private String title; // i18n key
+    private String menuKey; // i18n key
     private Map<String, String> translations;
     private String path;
     private String icon;
     private Integer sortOrder;
     private String isVisible;
+    private String isPc;
+    private String isMobile;
 }

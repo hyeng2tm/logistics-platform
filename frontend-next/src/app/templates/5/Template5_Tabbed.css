@@ -1,0 +1,38 @@
+.template5-tab-container {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+}
+
+.tab-button.active {
+  border-bottom-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.tab-content-title {
+  margin-top: 0;
+}
+
+.tab-content-desc {
+  color: var(--text-secondary);
+}
+
+.timeline-list {
+  padding-left: 20px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

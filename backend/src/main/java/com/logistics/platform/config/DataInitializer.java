@@ -141,7 +141,7 @@ public class DataInitializer {
                                         // For simplicity, let's assume parents are defined before children in JSON or
                                         // handled by title lookup
                                         for (JsonNode node : root.get("menus")) {
-                                                String title = node.get("title").asText();
+                                                String menuKey = node.get("menuKey").asText();
                                                 String path = node.has("path") && !node.get("path").isNull()
                                                                 ? node.get("path").asText()
                                                                 : null;
@@ -157,15 +157,18 @@ public class DataInitializer {
 
                                                 Long parentId = null;
                                                 if (parentTitle != null) {
-                                                        parentId = menuRepository.findByTitle(parentTitle)
-                                                                        .map(Menu::getId).orElse(null);
+                                                        java.util.List<Menu> parents = menuRepository
+                                                                        .findByMenuKey(parentTitle);
+                                                        if (!parents.isEmpty()) {
+                                                                parentId = parents.get(0).getId();
+                                                        }
                                                 }
 
                                                 Map<String, String> translations = objectMapper.convertValue(
                                                                 node.get("translations"),
                                                                 new TypeReference<Map<String, String>>() {
                                                                 });
-                                                upsertMenu(title, path, icon, sortOrder, isVisible, parentId,
+                                                upsertMenu(menuKey, path, icon, sortOrder, isVisible, parentId,
                                                                 translations);
                                         }
                                 }
@@ -187,9 +190,13 @@ public class DataInitializer {
                                         }
                                 }
 
-                                // 8. Cleanup obsolete menus
-                                menuRepository.findByTitle("sidebar.master_code").ifPresent(menuRepository::delete);
-                                menuRepository.findByTitle("sidebar.detail_code").ifPresent(menuRepository::delete);
+                                // 8. Cleanup obsolete and duplicate menus
+                                menuRepository.findAll().stream()
+                                                .filter(m -> m.getMenuKey() == null || m.getMenuKey().trim().isEmpty())
+                                                .forEach(menuRepository::delete);
+
+                                menuRepository.findByMenuKey("sidebar.master_code").forEach(menuRepository::delete);
+                                menuRepository.findByMenuKey("sidebar.detail_code").forEach(menuRepository::delete);
 
                         } catch (Exception e) {
                                 System.err.println("Error initializing data from JSON: " + e.getMessage());
@@ -199,16 +206,36 @@ public class DataInitializer {
 
         }
 
-        private Menu upsertMenu(String title, String path, String icon, int sortOrder, String isVisible, Long parentId,
+        private Menu upsertMenu(String menuKey, String path, String icon, int sortOrder, String isVisible,
+                        Long parentId,
                         Map<String, String> translations) {
-                Menu menu = menuRepository.findByTitle(title).orElse(new Menu());
+                java.util.List<Menu> existingMenus = menuRepository.findByMenuKey(menuKey);
+                Menu menu;
+                if (existingMenus.isEmpty()) {
+                        menu = new Menu();
+                } else {
+                        menu = existingMenus.get(0);
+                        // Cleanup duplicates if any
+                        if (existingMenus.size() > 1) {
+                                System.out.println("Cleaning up " + (existingMenus.size() - 1)
+                                                + " duplicate menus for key: " + menuKey);
+                                for (int i = 1; i < existingMenus.size(); i++) {
+                                        Menu toDelete = existingMenus.get(i);
+                                        if (toDelete != null) {
+                                                menuRepository.delete(toDelete);
+                                        }
+                                }
+                        }
+                }
 
-                menu.setTitle(title);
+                menu.setMenuKey(menuKey);
                 menu.setPath(path);
                 menu.setIcon(icon);
                 menu.setSortOrder(sortOrder);
                 menu.setIsVisible(isVisible);
                 menu.setParentId(parentId);
+                menu.setIsPc("Y");
+                menu.setIsMobile("Y");
 
                 // Update translations
                 if (translations != null) {

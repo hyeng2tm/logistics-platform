@@ -7,7 +7,7 @@ import java.util.List;
 
 @Repository
 public interface MenuRepository extends JpaRepository<Menu, Long> {
-    java.util.Optional<Menu> findByTitle(String title);
+    java.util.List<Menu> findByMenuKey(String menuKey);
 
     List<Menu> findAllByOrderByParentIdAscSortOrderAsc();
 }

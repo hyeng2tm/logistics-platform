@@ -32,6 +32,7 @@ public class SystemAdminService {
     private final DetailCodeRepository detailCodeRepository;
     private final MenuRepository menuRepository;
     private final MessageRepository messageRepository;
+    private final FavoriteMenuRepository favoriteMenuRepository;
     private final PasswordEncoder passwordEncoder;
 
     public List<UserResponse> getAllUsers() {
@@ -140,12 +141,14 @@ public class SystemAdminService {
         return MenuResponse.builder()
                 .id(menu.getId())
                 .parentId(menu.getParentId())
-                .title(menu.getTitle())
+                .menuKey(menu.getMenuKey())
                 .translations(translations)
                 .path(menu.getPath())
                 .icon(menu.getIcon())
                 .sortOrder(menu.getSortOrder())
                 .isVisible(menu.getIsVisible())
+                .isPc(menu.getIsPc())
+                .isMobile(menu.getIsMobile())
                 .build();
     }
 
@@ -297,11 +300,13 @@ public class SystemAdminService {
                 .orElse(new Menu());
 
         menu.setParentId(request.getParentId());
-        menu.setTitle(request.getTitle());
+        menu.setMenuKey(request.getMenuKey());
         menu.setPath(request.getPath());
         menu.setIcon(request.getIcon());
         menu.setSortOrder(request.getSortOrder());
         menu.setIsVisible(request.getIsVisible());
+        menu.setIsPc(request.getIsPc());
+        menu.setIsMobile(request.getIsMobile());
 
         // Update translations
         if (request.getTranslations() != null) {
@@ -353,5 +358,36 @@ public class SystemAdminService {
     @Transactional
     public void deleteMessage(Long id) {
         messageRepository.deleteById(id);
+    }
+
+    public List<Long> getFavoriteMenuIds(String userId) {
+        return favoriteMenuRepository.findByUserId(userId).stream()
+                .map(FavoriteMenu::getMenuId)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void toggleFavorite(String userId, Long menuId) {
+        Optional<FavoriteMenu> favorite = favoriteMenuRepository.findByUserIdAndMenuId(userId, menuId);
+        if (favorite.isPresent()) {
+            favoriteMenuRepository.deleteByUserIdAndMenuId(userId, menuId);
+        } else {
+            favoriteMenuRepository.save(FavoriteMenu.builder()
+                    .userId(userId)
+                    .menuId(menuId)
+                    .build());
+        }
+    }
+
+    @Transactional
+    public void updateFavorites(String userId, List<Long> menuIds) {
+        favoriteMenuRepository.deleteByUserId(userId);
+
+        for (Long menuId : menuIds) {
+            favoriteMenuRepository.save(FavoriteMenu.builder()
+                    .userId(userId)
+                    .menuId(menuId)
+                    .build());
+        }
     }
 }

@@ -10,8 +10,10 @@ import com.logistics.platform.dto.UserResponse;
 import com.logistics.platform.dto.MessageResponse;
 import com.logistics.platform.service.system.SystemAdminService;
 import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.util.List;
 
@@ -116,5 +118,30 @@ public class SystemAdminController {
     public ResponseEntity<Void> deleteMessage(@PathVariable Long id) {
         systemAdminService.deleteMessage(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/favorites")
+    public ResponseEntity<List<Long>> getFavoriteMenuIds(JwtAuthenticationToken principal) {
+        String userId = principal.getName();
+        return ResponseEntity.ok(systemAdminService.getFavoriteMenuIds(userId));
+    }
+
+    @PostMapping("/favorites/{menuId}/toggle")
+    public ResponseEntity<Void> toggleFavorite(JwtAuthenticationToken principal, @PathVariable Long menuId) {
+        String userId = principal.getName();
+        systemAdminService.toggleFavorite(userId, menuId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/favorites/bulk")
+    public ResponseEntity<Void> updateFavorites(JwtAuthenticationToken principal,
+            @RequestBody FavoritesBulkRequest request) {
+        systemAdminService.updateFavorites(principal.getName(), request.getMenuIds());
+        return ResponseEntity.ok().build();
+    }
+
+    @Data
+    public static class FavoritesBulkRequest {
+        private List<Long> menuIds;
     }
 }

@@ -21,8 +21,8 @@ public class Menu {
     @Column(name = "parent_id")
     private Long parentId; // null이면 최상위 메뉴
 
-    @Column(name = "title", nullable = false)
-    private String title; // i18n key
+    @Column(name = "menu_key", nullable = false, unique = true)
+    private String menuKey; // i18n key
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
@@ -39,4 +39,10 @@ public class Menu {
 
     @Column(name = "is_visible", length = 1)
     private String isVisible; // 'Y' or 'N'
+
+    @Column(name = "is_pc", length = 1)
+    private String isPc; // 'Y' or 'N'
+
+    @Column(name = "is_mobile", length = 1)
+    private String isMobile; // 'Y' or 'N'
 }

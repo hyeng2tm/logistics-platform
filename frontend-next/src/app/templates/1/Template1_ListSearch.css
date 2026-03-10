@@ -1,0 +1,47 @@
+.template-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: #e6f9f4;
+  color: #05cd99;
+}
+
+.status-badge.inactive {
+  background: #fdf2f2;
+  color: #f05252;
+}
+
+.status-badge.pending {
+  background: #fff5e5;
+  color: #ff9900;
+}
+
+.filter-reset-btn {
+  padding: 6px 12px !important;
+}
+
+.filter-actions {
+}
+
+.result-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-title {
+  margin: 0;
+  font-size: 1rem;
+}
