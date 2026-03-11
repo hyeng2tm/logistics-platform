@@ -509,6 +509,13 @@
         "db_standard": "Database Standards",
         "api_standard": "API Design Standards",
         "security": "Security & Authorization"
+      },
+      "auth": {
+        "title": "Auth Server Guide",
+        "desc": "Standard guide for logistics platform authentication and authorization.",
+        "architecture": "Authentication Architecture",
+        "structure": "Auth-Server Source Structure",
+        "config": "Configuration Details"
       }
     }
 }

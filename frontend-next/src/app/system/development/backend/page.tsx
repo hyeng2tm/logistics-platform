@@ -21,7 +21,7 @@ const BackendGuide: React.FC = () => {
       </header>
 
       <div className="guide-content mt-8">
-        <section className="guide-section mb-6">
+        <section className="guide-section card mb-6">
           <h2>
             <Cpu size={22} className="me-2" /> {t('development.backend.tech_stack', 'Backend Tech Stack')}
           </h2>
@@ -43,7 +43,7 @@ const BackendGuide: React.FC = () => {
               <span>Authentication & Authorization (OAuth2)</span>
             </div>
             <div className="tech-item">
-              <strong>H2 / PostgreSQL</strong>
+              <strong>MySQL 8</strong>
               <span>Relational Database Management</span>
             </div>
             <div className="tech-item">
@@ -53,7 +53,7 @@ const BackendGuide: React.FC = () => {
           </div>
         </section>
 
-        <section className="guide-section mb-6">
+        <section className="guide-section card mb-6">
           <h2>
             <Layers size={22} className="me-2" /> Architecture & Structure
           </h2>
@@ -108,12 +108,12 @@ const BackendGuide: React.FC = () => {
             <div className="arch-arrow"><ArrowDown size={16} className="inline mr-1" /> SQL Queries</div>
             
             <div className="arch-database">
-              <Database size={18} /> Database (PostgreSQL / H2)
+              <Database size={18} /> Database (MySQL 8)
             </div>
           </div>
         </section>
 
-        <section className="guide-section mb-6">
+        <section className="guide-section card mb-6">
           <h2>
             <Database size={22} className="me-2" /> {t('development.backend.db_standard', 'Database Standards')}
           </h2>
@@ -127,7 +127,20 @@ const BackendGuide: React.FC = () => {
 
 
 
-        <section className="guide-section mb-6">
+        <section className="guide-section card mb-6">
+          <h2>
+            <FileCode size={22} className="me-2" /> {t('development.backend.naming_rules', 'Naming Conventions')}
+          </h2>
+          <ul className="convention-list">
+            <li><strong>Classes & Interfaces:</strong> Use <code>PascalCase</code>. Nouns indicating the entity or purpose. (e.g., <code>UserController</code>, <code>OrderService</code>)</li>
+            <li><strong>Methods:</strong> Use <code>camelCase</code>. Verbs indicating the action. (e.g., <code>getUserById()</code>, <code>calculateTotal()</code>)</li>
+            <li><strong>Fields & Local Variables:</strong> Use <code>camelCase</code>. Descriptive nouns, avoiding single-letter names except in short loops. (e.g., <code>userList</code>, <code>totalAmount</code>)</li>
+            <li><strong>Constants (Global):</strong> Use <code>UPPER_SNAKE_CASE</code> with <code>static final</code> modifiers. (e.g., <code>MAX_LOGIN_ATTEMPTS</code>, <code>DEFAULT_TIMEOUT</code>)</li>
+            <li><strong>Booleans:</strong> Use <code>is</code>, <code>has</code>, <code>can</code>, or <code>should</code> prefixes. (e.g., <code>isActive</code>, <code>hasPermission</code>)</li>
+          </ul>
+        </section>
+
+        <section className="guide-section card mb-6">
           <h2>
             <Terminal size={22} className="me-2" /> {t('development.backend.api_standard', 'API Design')}
           </h2>
@@ -138,7 +151,7 @@ const BackendGuide: React.FC = () => {
           </ul>
         </section>
 
-        <section className="guide-section mb-6">
+        <section className="guide-section card mb-6">
           <h2>
             <FileCode size={22} className="me-2" /> {t('development.backend.crud_replication_guide', 'Standard CRUD & DB Replication Guide')}
           </h2>
@@ -328,7 +341,7 @@ public class ComplexReportingService {
           </div>
         </section>
 
-        <section className="guide-section mb-6">
+        <section className="guide-section card mb-6">
           <h2>
             <ShieldCheck size={22} className="me-2" /> {t('development.backend.security', 'Security Practices')}
           </h2>

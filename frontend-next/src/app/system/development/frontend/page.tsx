@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Layout, Layers, Smartphone, Globe, Zap, Monitor, FileCode } from 'lucide-react';
+import { Layout, Layers, Smartphone, Globe, Zap, Monitor, FileCode, MessageSquare } from 'lucide-react';
 import '../DevelopmentGuide.css';
 
 const FrontendGuide: React.FC = () => {
@@ -236,6 +236,61 @@ export default FeatureMenu;`}
 .feature-grid > div:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }`}
+          </pre>
+        </section>
+
+        <section className="guide-section card mb-6">
+          <h2>
+            <MessageSquare size={20} className="me-2" /> {t('development.frontend.modal_guide', 'Alert & Confirm (Modal) Guide')}
+          </h2>
+          <p className="mb-4 text-muted">Never use browser-native <code>alert()</code> or <code>confirm()</code>. Always use the <code>ModalContext</code> to display consistent application-styled dialogs.</p>
+          
+          <ul className="convention-list">
+            <li><strong>Import:</strong> <code>{`import { useModal } from '@/contexts/ModalContext';`}</code></li>
+            <li><strong>showAlert:</strong> Use for simple notifications (Success, Error, Info).</li>
+            <li><strong>showConfirm:</strong> Use when requiring user consideration before executing an action (Delete, Force Save).</li>
+          </ul>
+
+          <h3 className="mt-6 mb-3 text-lg font-bold text-slate-700">Modal API Usage</h3>
+          <pre className="code-block">
+{`import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useModal } from '../../../contexts/ModalContext';
+
+const MyComponent = () => {
+  const { showAlert, showConfirm } = useModal();
+  const { t } = useTranslation();
+
+  // 1. Alert Example
+  const handleSaveSuccess = () => {
+    showAlert({
+      title: t('common.notice', 'Notice'),
+      message: t('msg.save_success', 'Saved successfully.')
+    });
+  };
+
+  // 2. Confirm Example
+  const handleDelete = () => {
+    showConfirm({
+      title: t('common.delete', 'Delete'),
+      message: t('msg.delete_confirm', 'Are you sure you want to delete?'),
+      onConfirm: async () => {
+        // Execute delete API logic here...
+        showAlert({ 
+          title: t('common.notice', 'Notice'), 
+          message: t('msg.delete_success', 'Deleted successfully.') 
+        });
+      }
+    });
+  };
+  
+  return (
+    <div className="flex gap-2">
+       <button className="btn btn-primary" onClick={handleSaveSuccess}>Show Alert</button>
+       <button className="btn btn-danger" onClick={handleDelete}>Show Confirm</button>
+    </div>
+  );
+};`}
           </pre>
         </section>
 

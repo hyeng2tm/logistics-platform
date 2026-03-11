@@ -44,12 +44,8 @@ export const apiClient = {
       throw new Error(`GET ${endpoint} failed with status ${response.status}`);
     }
 
-    // Some APIs might return 204 No Content
-    if (response.status === 204) {
-      return {} as T;
-    }
-
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : ({} as T);
   },
 
   post: async <T>(
@@ -76,11 +72,8 @@ export const apiClient = {
       throw new Error(`POST ${endpoint} failed with status ${response.status}`);
     }
 
-    if (response.status === 204) {
-      return {} as T;
-    }
-
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : ({} as T);
   },
 
   put: async <T>(
@@ -107,11 +100,8 @@ export const apiClient = {
       throw new Error(`PUT ${endpoint} failed with status ${response.status}`);
     }
 
-    if (response.status === 204) {
-      return {} as T;
-    }
-
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : ({} as T);
   },
 
   delete: async <T>(
@@ -138,10 +128,7 @@ export const apiClient = {
       );
     }
 
-    if (response.status === 204) {
-      return {} as T;
-    }
-
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : ({} as T);
   },
 };

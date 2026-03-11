@@ -509,6 +509,13 @@
         "db_standard": "数据库设计标准",
         "api_standard": "API设计标准",
         "security": "安全与权限"
+      },
+      "auth": {
+        "title": "认证服务器开发指南",
+        "desc": "物流平台认证与授权的标准开发指南。",
+        "architecture": "认证架构",
+        "structure": "Auth-Server 源码结构",
+        "config": "配置详情"
       }
     }
 }

@@ -6,12 +6,15 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Star, Save, RotateCcw } from 'lucide-react';
 import { useMultiTab } from '@/contexts/MultiTabContext';
+import { useModal } from '@/contexts/ModalContext';
 import { Shuttle, ShuttleItem } from '@/components/common/Shuttle';
+
 import './Favorites.css';
 
 export default function ManageFavoritesPage() {
   const { t, i18n } = useTranslation();
   const { apiMenus, favoriteMenuIds, updateFavorites } = useMultiTab();
+  const { showAlert } = useModal();
 
   const lang = i18n.resolvedLanguage || i18n.language || 'ko';
   const baseLang = lang.split('-')[0];
@@ -49,7 +52,10 @@ export default function ManageFavoritesPage() {
   const handleSave = async () => {
     const menuIds = currentSelected.map(item => Number(item.id));
     await updateFavorites(menuIds);
-    alert(t('msg.save_success', '성공적으로 저장되었습니다.'));
+    showAlert({
+      title: t('common.notice', '알림'),
+      message: t('msg.save_success', '성공적으로 저장되었습니다.')
+    });
   };
 
   const handleReset = () => {

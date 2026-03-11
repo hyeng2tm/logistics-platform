@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import java.security.Principal;
 
 import java.util.List;
 
@@ -121,20 +121,20 @@ public class SystemAdminController {
     }
 
     @GetMapping("/favorites")
-    public ResponseEntity<List<Long>> getFavoriteMenuIds(JwtAuthenticationToken principal) {
+    public ResponseEntity<List<Long>> getFavoriteMenuIds(Principal principal) {
         String userId = principal.getName();
         return ResponseEntity.ok(systemAdminService.getFavoriteMenuIds(userId));
     }
 
     @PostMapping("/favorites/{menuId}/toggle")
-    public ResponseEntity<Void> toggleFavorite(JwtAuthenticationToken principal, @PathVariable Long menuId) {
+    public ResponseEntity<Void> toggleFavorite(Principal principal, @PathVariable("menuId") Long menuId) {
         String userId = principal.getName();
         systemAdminService.toggleFavorite(userId, menuId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/favorites/bulk")
-    public ResponseEntity<Void> updateFavorites(JwtAuthenticationToken principal,
+    public ResponseEntity<Void> updateFavorites(Principal principal,
             @RequestBody FavoritesBulkRequest request) {
         systemAdminService.updateFavorites(principal.getName(), request.getMenuIds());
         return ResponseEntity.ok().build();

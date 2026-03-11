@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.logistics.platform.config.database.annotation.Master;
 
 import java.util.List;
 import java.util.Map;
@@ -176,6 +177,7 @@ public class SystemAdminService {
 
     // CRUD for User (Profile + Auth)
     @Transactional
+    @Master
     public User saveUser(UserManagementRequest request) {
         // 1. Manage UserAuth (Credentials)
         UserAuth auth = userAuthRepository.findByUsername(request.getUsername())
@@ -211,6 +213,7 @@ public class SystemAdminService {
     }
 
     @Transactional
+    @Master
     public void deleteUser(String id) {
         userRepository.findById(id).ifPresent(user -> {
             userAuthRepository.deleteByUsername(user.getUsername());
@@ -220,17 +223,20 @@ public class SystemAdminService {
 
     // CRUD for Role
     @Transactional
+    @Master
     public Role saveRole(Role role) {
         return roleRepository.save(role);
     }
 
     @Transactional
+    @Master
     public void deleteRole(String id) {
         roleRepository.deleteById(id);
     }
 
     // CRUD for MasterCode
     @Transactional
+    @Master
     public MasterCodeResponse saveMasterCode(MasterCodeResponse request) {
         MasterCode code = masterCodeRepository.findById(request.getId() != null ? request.getId() : "")
                 .orElse(new MasterCode());
@@ -256,12 +262,14 @@ public class SystemAdminService {
     }
 
     @Transactional
+    @Master
     public void deleteMasterCode(String id) {
         masterCodeRepository.deleteById(id);
     }
 
     // CRUD for DetailCode
     @Transactional
+    @Master
     public DetailCodeResponse saveDetailCode(DetailCodeResponse request) {
         DetailCode code = detailCodeRepository.findById(request.getId() != null ? request.getId() : -1L)
                 .orElse(new DetailCode());
@@ -289,12 +297,14 @@ public class SystemAdminService {
     }
 
     @Transactional
+    @Master
     public void deleteDetailCode(Long id) {
         detailCodeRepository.deleteById(id);
     }
 
     // CRUD for Menu
     @Transactional
+    @Master
     public MenuResponse saveMenu(MenuResponse request) {
         Menu menu = menuRepository.findById(request.getId() != null ? request.getId() : -1L)
                 .orElse(new Menu());
@@ -325,12 +335,14 @@ public class SystemAdminService {
     }
 
     @Transactional
+    @Master
     public void deleteMenu(Long id) {
         menuRepository.deleteById(id);
     }
 
     // CRUD for Message
     @Transactional
+    @Master
     public MessageResponse saveMessage(MessageResponse request) {
         Message message = messageRepository.findById(request.getId() != null ? request.getId() : -1L)
                 .orElse(new Message());
@@ -356,6 +368,7 @@ public class SystemAdminService {
     }
 
     @Transactional
+    @Master
     public void deleteMessage(Long id) {
         messageRepository.deleteById(id);
     }
@@ -367,6 +380,7 @@ public class SystemAdminService {
     }
 
     @Transactional
+    @Master
     public void toggleFavorite(String userId, Long menuId) {
         Optional<FavoriteMenu> favorite = favoriteMenuRepository.findByUserIdAndMenuId(userId, menuId);
         if (favorite.isPresent()) {
@@ -380,6 +394,7 @@ public class SystemAdminService {
     }
 
     @Transactional
+    @Master
     public void updateFavorites(String userId, List<Long> menuIds) {
         favoriteMenuRepository.deleteByUserId(userId);
 

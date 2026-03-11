@@ -509,6 +509,13 @@
         "db_standard": "データベース設計標準",
         "api_standard": "API設計標準",
         "security": "セキュリティと権限"
+      },
+      "auth": {
+        "title": "認証サーバーガイド",
+        "desc": "物流プラットフォームの認証と権限付与のための標準ガイドです。",
+        "architecture": "認証アーキテクチャ",
+        "structure": "Auth-Serverソース構造",
+        "config": "設定の詳細"
       }
     }
 }
