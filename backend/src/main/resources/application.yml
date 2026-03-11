@@ -42,9 +42,16 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-    username: ENC(HToHXFcSRhGi7geBlfHXcg==)
-    password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
+    master:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
+      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
+    slave:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
+      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
   jpa:
     show-sql: false
   security:
@@ -77,9 +84,16 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: "jdbc:mysql:replication://mysql:3306,mysql-replica:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-    username: ${DB_USERNAME:user}
-    password: ${DB_PASSWORD:password}
+    master:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: "jdbc:mysql://mysql:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ${DB_USERNAME:user}
+      password: ${DB_PASSWORD:password}
+    slave:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: "jdbc:mysql://mysql-replica:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ${DB_USERNAME:user}
+      password: ${DB_PASSWORD:password}
   jpa:
     hibernate:
       ddl-auto: create
@@ -114,9 +128,16 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    master:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: ${DB_URL_MASTER}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+    slave:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: ${DB_URL_SLAVE}
+      username: ${DB_USERNAME_SLAVE:${DB_USERNAME}}
+      password: ${DB_PASSWORD_SLAVE:${DB_PASSWORD}}
   jpa:
     hibernate:
       ddl-auto: validate # 운영에서는 스키마 자동 변경 금지

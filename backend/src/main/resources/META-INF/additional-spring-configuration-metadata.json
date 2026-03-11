@@ -1,0 +1,50 @@
+{
+  "groups": [
+    {
+      "name": "spring.datasource.master",
+      "type": "com.zaxxer.hikari.HikariConfig",
+      "description": "Master database configuration",
+      "sourceType": "com.logistics.platform.config.database.DataSourceConfig"
+    },
+    {
+      "name": "spring.datasource.slave",
+      "type": "com.zaxxer.hikari.HikariConfig",
+      "description": "Slave database configuration",
+      "sourceType": "com.logistics.platform.config.database.DataSourceConfig"
+    }
+  ],
+  "properties": [
+    {
+      "name": "spring.datasource.master.driver-class-name",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "spring.datasource.master.jdbc-url",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "spring.datasource.master.username",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "spring.datasource.master.password",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "spring.datasource.slave.driver-class-name",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "spring.datasource.slave.jdbc-url",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "spring.datasource.slave.username",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "spring.datasource.slave.password",
+      "type": "java.lang.String"
+    }
+  ]
+}
