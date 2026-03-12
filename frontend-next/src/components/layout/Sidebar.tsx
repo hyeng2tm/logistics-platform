@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePathname } from 'next/navigation';
 import { useMultiTab } from '../../contexts/MultiTabContext';
-import { ChevronDown, ChevronRight, Home, Box, Truck, Settings, Star, Layers, LayoutTemplate, ShieldAlert, Users, List, Menu, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Home, Box, Truck, Settings, Star, Layers, LayoutTemplate, ShieldAlert, Users, Menu, X, Folder, Minus } from 'lucide-react';
 import classNames from 'classnames';
 
 export type MenuItemType = {
@@ -17,17 +17,19 @@ export type MenuItemType = {
   children?: MenuItemType[];
 };
 
-const mapIcon = (iconName: string | null) => {
-  switch (iconName) {
-    case 'Home': return <Home size={18} />;
-    case 'Users': return <Users size={18} />;
-    case 'Truck': return <Truck size={18} />;
-    case 'Box': return <Box size={18} />;
-    case 'Settings': return <Settings size={18} />;
-    case 'ShieldAlert': return <ShieldAlert size={18} />;
-    case 'LayoutTemplate': return <LayoutTemplate size={18} />;
-    default: return <List size={18} />;
+const mapIcon = (iconName: string | null, isUI: boolean) => {
+  if (iconName) {
+    switch (iconName) {
+      case 'Home': return <Home size={18} />;
+      case 'Users': return <Users size={18} />;
+      case 'Truck': return <Truck size={18} />;
+      case 'Box': return <Box size={18} />;
+      case 'Settings': return <Settings size={18} />;
+      case 'ShieldAlert': return <ShieldAlert size={18} />;
+      case 'LayoutTemplate': return <LayoutTemplate size={18} />;
+    }
   }
+  return isUI ? <Minus size={16} /> : <Folder size={18} />;
 };
 
 
@@ -78,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, onToggl
              titleKey: m.menuKey, // Keep the original key
              translations: m.translations,
              path: m.path || undefined,
-            icon: mapIcon(m.icon),
+            icon: mapIcon(m.icon, !!m.path),
             children: children.length > 0 ? children : undefined
           };
 
@@ -105,7 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, isCollapsed, onClose, onToggl
         titleKey: m.menuKey,
         translations: m.translations,
         path: m.path || undefined,
-        icon: mapIcon(m.icon)
+        icon: mapIcon(m.icon, !!m.path)
       };
     });
   }, [apiMenus, favoriteMenuIds, i18nInstance.language, i18nInstance.resolvedLanguage]);

@@ -289,6 +289,9 @@
 .menu-title {
   transition: opacity 0.3s, width 0.3s;
   transition-delay: 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .layout-sidebar.collapsed .menu-title {
@@ -312,6 +315,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .layout-sidebar.collapsed .menu-item-left {
@@ -321,13 +325,13 @@
 }
 
 .menu-item-container.depth-1 .menu-item {
-  padding-left: 16px;
+  margin-left: 12px;
 }
 .menu-item-container.depth-2 .menu-item {
-  padding-left: 32px;
+  margin-left: 28px;
 }
 .menu-item-container.depth-3 .menu-item {
-  padding-left: 48px;
+  margin-left: 44px;
 }
 
 .menu-children {
