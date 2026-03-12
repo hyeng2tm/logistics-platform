@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Server, Key, Unlock, Smartphone, ArrowRightLeft, FileCode, CheckCircle, FolderTree } from 'lucide-react';
+import { Card } from '../../../../components/common/Card';
 import '../DevelopmentGuide.css';
 
 const AuthServerGuide: React.FC = () => {
@@ -21,10 +22,12 @@ const AuthServerGuide: React.FC = () => {
       </header>
 
       <div className="guide-content mt-8">
-        <section className="guide-section card mb-6">
-          <h2>
-            <Server size={22} className="me-2" /> Auth Tech Stack
-          </h2>
+        <Card 
+          title={<><Server size={22} className="me-2" /> Auth Tech Stack</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <div className="tech-grid">
             <div className="tech-item">
               <strong>Spring Authorization Server</strong>
@@ -47,12 +50,14 @@ const AuthServerGuide: React.FC = () => {
               <span>Frontend Integration</span>
             </div>
           </div>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <FolderTree size={22} className="me-2" /> {t('development.auth.structure', 'Auth-Server Source Structure')}
-          </h2>
+        <Card 
+          title={<><FolderTree size={22} className="me-2" /> {t('development.auth.structure', 'Auth-Server Source Structure')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <p className="mb-4 text-slate-600 text-sm">
             The <code>auth-server</code> is an independent Spring Boot application responsible for issuing and managing OAuth2/JWT tokens.
           </p>
@@ -64,12 +69,14 @@ const AuthServerGuide: React.FC = () => {
   repository/     # Spring Data JPA interfaces
   service/        # Business logic (UserDetails / ClientDetails)`}
           </pre>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Key size={22} className="me-2" /> {t('development.auth.architecture', 'Authentication Architecture')}
-          </h2>
+        <Card 
+          title={<><Key size={22} className="me-2" /> {t('development.auth.architecture', 'Authentication Architecture')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <p className="mb-4">
             The platform relies on a centralized Authorization Server separating authentication logic from the Resource (Backend) Server.
           </p>
@@ -117,13 +124,14 @@ const AuthServerGuide: React.FC = () => {
             </div>
             
           </div>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <FileCode size={22} className="me-2" /> {t('development.auth.config', 'Configuration Details')}
-          </h2>
-
+        <Card 
+          title={<><FileCode size={22} className="me-2" /> {t('development.auth.config', 'Configuration Details')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <div className="grid grid-cols-1 gap-6">
              <div>
               <h3 className="mb-3 text-lg font-bold text-slate-700">Client Settings (Frontend Environment)</h3>
@@ -154,18 +162,20 @@ spring:
               </pre>
             </div>
           </div>
-        </section>
+        </Card>
 
-         <section className="guide-section card mb-6">
-          <h2>
-            <Unlock size={22} className="me-2" /> Security Practices
-          </h2>
+         <Card 
+          title={<><Unlock size={22} className="me-2" /> Security Practices</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <ul className="convention-list">
             <li><CheckCircle size={16} className="inline mr-2 text-green-500"/> <strong>Token Storage:</strong> Store the Access Token in Memory or HTTP-Only Cookies. Do not store it in <code>localStorage</code> due to XSS risks.</li>
             <li><CheckCircle size={16} className="inline mr-2 text-green-500"/> <strong>PKCE (Proof Key for Code Exchange):</strong> Highly recommended for public clients (like SPAs) to prevent authorization code interception attacks.</li>
             <li><CheckCircle size={16} className="inline mr-2 text-green-500"/> <strong>Refresh Token Rotation:</strong> Use rotating refresh tokens. Once a refresh token is used, it should be invalidated and a new one issued.</li>
           </ul>
-        </section>
+        </Card>
 
       </div>
     </div>

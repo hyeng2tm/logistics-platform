@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Database, Server, ShieldCheck, Cpu, Terminal, Layers, Smartphone, ArrowDown, ArrowRightLeft, FileCode } from 'lucide-react';
+import { Card } from '../../../../components/common/Card';
 import '../DevelopmentGuide.css';
 
 const BackendGuide: React.FC = () => {
@@ -21,10 +22,12 @@ const BackendGuide: React.FC = () => {
       </header>
 
       <div className="guide-content mt-8">
-        <section className="guide-section card mb-6">
-          <h2>
-            <Cpu size={22} className="me-2" /> {t('development.backend.tech_stack', 'Backend Tech Stack')}
-          </h2>
+        <Card 
+          title={<><Cpu size={22} className="me-2" /> {t('development.backend.tech_stack', 'Backend Tech Stack')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <div className="tech-grid">
             <div className="tech-item">
               <strong>Java 17 / 21</strong>
@@ -51,12 +54,14 @@ const BackendGuide: React.FC = () => {
               <span>Entity to DTO Mapping</span>
             </div>
           </div>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Layers size={22} className="me-2" /> Architecture & Structure
-          </h2>
+        <Card 
+          title={<><Layers size={22} className="me-2" /> Architecture & Structure</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <pre className="code-block">
 {`src/main/java/com/logistics/platform/
   config/         # Configuration (Security, Jackson, Init)
@@ -111,26 +116,30 @@ const BackendGuide: React.FC = () => {
               <Database size={18} /> Database (MySQL 8)
             </div>
           </div>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Database size={22} className="me-2" /> {t('development.backend.db_standard', 'Database Standards')}
-          </h2>
+        <Card 
+          title={<><Database size={22} className="me-2" /> {t('development.backend.db_standard', 'Database Standards')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <ul className="convention-list">
             <li><strong>Naming Conventions:</strong> Use <code>t_sys_</code> prefix for system/admin tables and <code>t_dom_</code> for core domain business tables.</li>
             <li><strong>Case Sensitivity:</strong> Use <code>snake_case</code> for table and column names universally in the DB.</li>
             <li><strong>Audit Logs:</strong> Include <code>created_at</code> and <code>updated_at</code> in all major tables, handled via mapped superclasses.</li>
             <li><strong>Foreign Keys:</strong> Explicitly define constraints in JPA Entities using <code>@JoinColumn</code>.</li>
           </ul>
-        </section>
+        </Card>
 
 
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <FileCode size={22} className="me-2" /> {t('development.backend.naming_rules', 'Naming Conventions')}
-          </h2>
+        <Card 
+          title={<><FileCode size={22} className="me-2" /> {t('development.backend.naming_rules', 'Naming Conventions')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <ul className="convention-list">
             <li><strong>Classes & Interfaces:</strong> Use <code>PascalCase</code>. Nouns indicating the entity or purpose. (e.g., <code>UserController</code>, <code>OrderService</code>)</li>
             <li><strong>Methods:</strong> Use <code>camelCase</code>. Verbs indicating the action. (e.g., <code>getUserById()</code>, <code>calculateTotal()</code>)</li>
@@ -138,23 +147,27 @@ const BackendGuide: React.FC = () => {
             <li><strong>Constants (Global):</strong> Use <code>UPPER_SNAKE_CASE</code> with <code>static final</code> modifiers. (e.g., <code>MAX_LOGIN_ATTEMPTS</code>, <code>DEFAULT_TIMEOUT</code>)</li>
             <li><strong>Booleans:</strong> Use <code>is</code>, <code>has</code>, <code>can</code>, or <code>should</code> prefixes. (e.g., <code>isActive</code>, <code>hasPermission</code>)</li>
           </ul>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Terminal size={22} className="me-2" /> {t('development.backend.api_standard', 'API Design')}
-          </h2>
+        <Card 
+          title={<><Terminal size={22} className="me-2" /> {t('development.backend.api_standard', 'API Design')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <ul className="convention-list">
             <li><strong>RESTful Principles:</strong> Use proper HTTP methods (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>) for CRUD operations.</li>
             <li><strong>API Versioning:</strong> All endpoints should be prefixed with <code>/api/v1/</code> to ensure backward compatibility in the future.</li>
             <li><strong>Response Structures:</strong> Return standardized payloads. Do not leak entity structures directly; convert to DTOs in the service layer.</li>
           </ul>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <FileCode size={22} className="me-2" /> {t('development.backend.crud_replication_guide', 'Standard CRUD & DB Replication Guide')}
-          </h2>
+        <Card 
+          title={<><FileCode size={22} className="me-2" /> {t('development.backend.crud_replication_guide', 'Standard CRUD & DB Replication Guide')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <p className="mb-4 text-muted">A standard approach for implementing CRUD operations utilizing Read/Write splitting (Master/Slave Data Sources) with Spring Boot&apos;s <code>AbstractRoutingDataSource</code>.</p>
 
           <div className="grid grid-cols-1 gap-6">
@@ -339,12 +352,14 @@ public class ComplexReportingService {
               </pre>
             </div>
           </div>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <ShieldCheck size={22} className="me-2" /> {t('development.backend.security', 'Security Practices')}
-          </h2>
+        <Card 
+          title={<><ShieldCheck size={22} className="me-2" /> {t('development.backend.security', 'Security Practices')}</>} 
+          collapsible 
+          defaultCollapsed 
+          className="mb-32"
+        >
           <p className="mb-4">
             Security is paramount in the logistics platform. Follow these strict guidelines when developing new endpoints.
           </p>
@@ -352,7 +367,7 @@ public class ComplexReportingService {
             <li><strong>Authorization:</strong> Always validate JWT tokens and meticulously check user roles at the controller level using <code>@PreAuthorize(&quot;hasRole(&apos;ROLE_ADMIN&apos;)&quot;)</code> or similar.</li>
             <li><strong>Password Storage:</strong> Never log passwords or sensitive API keys. Use <code>PasswordEncoder</code> for hashing when modifying user credentials.</li>
           </ul>
-        </section>
+        </Card>
       </div>
     </div>
   );

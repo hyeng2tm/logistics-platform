@@ -3,6 +3,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Layout, Layers, Smartphone, Globe, Zap, Monitor, FileCode, MessageSquare } from 'lucide-react';
+import { Card } from '../../../../components/common/Card';
 import '../DevelopmentGuide.css';
 
 const FrontendGuide: React.FC = () => {
@@ -21,10 +22,12 @@ const FrontendGuide: React.FC = () => {
       </header>
 
       <div className="guide-content mt-8">
-        <section className="guide-section card mb-6">
-          <h2>
-            <Layers size={20} className="me-2" /> {t('development.frontend.tech_stack', 'Core Technology Stack')}
-          </h2>
+        <Card 
+          title={<><Layers size={20} className="me-2" /> {t('development.frontend.tech_stack', 'Core Technology Stack')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
           <div className="tech-grid">
             <div className="tech-item">
               <strong>Next.js 15 (App Router)</strong>
@@ -43,12 +46,14 @@ const FrontendGuide: React.FC = () => {
               <span>Icon library</span>
             </div>
           </div>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Layout size={20} className="me-2" /> {t('development.frontend.structure', 'Project Structure')}
-          </h2>
+        <Card 
+          title={<><Layout size={20} className="me-2" /> {t('development.frontend.structure', 'Project Structure')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
           <pre className="code-block">
 {`src/
   app/            # App Router pages and layouts
@@ -60,12 +65,14 @@ const FrontendGuide: React.FC = () => {
   utils/          # Utility functions (API client, Formatters)
   auth/           # OAuth2 configuration & constants`}
           </pre>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Monitor size={20} className="me-2" /> {t('development.frontend.ui_frame', 'UI Frame Structure')}
-          </h2>
+        <Card 
+          title={<><Monitor size={20} className="me-2" /> {t('development.frontend.ui_frame', 'UI Frame Structure')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
           <p className="mb-4 text-muted">The Frontend React application uses a standardized layout frame.</p>
           
           <div className="ui-frame-diagram">
@@ -101,12 +108,14 @@ const FrontendGuide: React.FC = () => {
             <li><strong>Main Content Area (MultiTab):</strong> The central working area is managed by the <code>MultiTabContext</code>, allowing users to open and switch between multiple menu screens without reloading the browser.</li>
             <li><strong>Cards & Split Views:</strong> Content within a page is typically organized using <code>&lt;Card&gt;</code> components or a <code>split-view-container</code> (e.g., a List on the left and detail form on the right).</li>
           </ul>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <FileCode size={20} className="me-2" /> {t('development.frontend.menu_structure', 'Single Menu Source Structure')}
-          </h2>
+        <Card 
+          title={<><FileCode size={20} className="me-2" /> {t('development.frontend.menu_structure', 'Single Menu Source Structure')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
           <p className="mb-4 text-muted">When creating a new menu page, construct the files as follows:</p>
           <pre className="code-block">
 {`src/app/domain/feature/
@@ -234,15 +243,17 @@ export default FeatureMenu;`}
 }
 
 .feature-grid > div:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }`}
           </pre>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <MessageSquare size={20} className="me-2" /> {t('development.frontend.modal_guide', 'Alert & Confirm (Modal) Guide')}
-          </h2>
+        <Card 
+          title={<><MessageSquare size={20} className="me-2" /> {t('development.frontend.modal_guide', 'Alert & Confirm (Modal) Guide')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
           <p className="mb-4 text-muted">Never use browser-native <code>alert()</code> or <code>confirm()</code>. Always use the <code>ModalContext</code> to display consistent application-styled dialogs.</p>
           
           <ul className="convention-list">
@@ -292,12 +303,62 @@ const MyComponent = () => {
   );
 };`}
           </pre>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Zap size={20} className="me-2" /> {t('development.frontend.crud_guide', 'CRUD Implementation Guide')}
-          </h2>
+        <Card 
+          title={<><Monitor size={20} className="me-2" /> {t('development.frontend.detailed_modal', 'Detailed Form Modal (Full Sample)')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
+          <p className="mb-4 text-muted">A comprehensive example of a detailed form within a Modal using the standard grid layout.</p>
+          
+          <pre className="code-block">
+{`<Modal 
+  isOpen={isOpen} 
+  onClose={() => setIsOpen(false)}
+  title="Item Details"
+  size="lg"
+  footer={(
+    <div className="flex gap-8">
+      <button className="btn btn-outline" onClick={() => setIsOpen(false)}>Cancel</button>
+      <button className="btn btn-primary" onClick={handleSave}><Save size={16} /> Save</button>
+    </div>
+  )}
+>
+  {/* Use grid-cols-2 or grid-cols-4 for layout */}
+  <div className="grid grid-cols-2 gap-16">
+    <InputField label="ID" value={formData.id} readOnly />
+    <InputField label="Name" value={formData.name} onChange={() => {}} />
+    <InputField label="Email" value={formData.email} onChange={() => {}} />
+    <InputField label="Department" value={formData.dept} onChange={() => {}} />
+    <SelectField 
+      label="Status" 
+      value={formData.status} 
+      options={[
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' }
+      ]}
+    />
+    <SelectField 
+      label="Language" 
+      value={formData.lang} 
+      options={[
+        { value: 'ko', label: 'Korean' },
+        { value: 'en', label: 'English' }
+      ]}
+    />
+  </div>
+</Modal>`}
+          </pre>
+        </Card>
+
+        <Card 
+          title={<><Zap size={20} className="me-2" /> {t('development.frontend.crud_guide', 'CRUD Implementation Guide')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
           <p className="mb-4 text-muted">A standard approach for implementing Create, Read, Update, and Delete operations using React State, <code>apiClient</code>, and <code>ModalContext</code>.</p>
           
           <ul className="convention-list">
@@ -359,26 +420,30 @@ const handleDelete = (id: string) => {
   });
 };`}
           </pre>
-        </section>
+        </Card>
 
-        <section className="guide-section card mb-6">
-          <h2>
-            <Zap size={20} className="me-2" /> {t('development.frontend.conventions', 'Development Conventions')}
-          </h2>
+        <Card 
+          title={<><Zap size={20} className="me-2" /> {t('development.frontend.conventions', 'Development Conventions')}</>} 
+          collapsible 
+          defaultCollapsed
+          className="mb-32"
+        >
           <ul className="convention-list">
             <li><strong>Component Naming:</strong> Use PascalCase for components (e.g., <code>UserList.tsx</code>).</li>
             <li><strong>Server/Client Components:</strong> Use <code>&apos;use client&apos;</code> directive only when hooks or interactivity are needed.</li>
             <li><strong>I18n:</strong> Use <code>useTranslation</code> hook. Never hardcode strings.</li>
             <li><strong>Data Fetching:</strong> Use the central <code>apiClient</code> with async/await.</li>
           </ul>
-        </section>
+        </Card>
 
-        <section className="guide-section card">
-          <h2>
-            <Globe size={20} className="me-2" /> {t('development.frontend.ui_standard', 'UI Standard')}
-          </h2>
+        <Card 
+          title={<><Globe size={20} className="me-2" /> {t('development.frontend.ui_standard', 'UI Standard')}</>} 
+          collapsible
+          defaultCollapsed
+          className="mb-32"
+        >
           <p>Follow the established grid system (<code>grid-4</code> or <code>grid-5</code>) for filter areas and use the standard Next.js routing patterns (currently wrapped inside <code>MultiTab</code> context).</p>
-        </section>
+        </Card>
       </div>
     </div>
   );
