@@ -63,11 +63,11 @@ services:
       mysql-replica:
         condition: service_healthy
 
-  backend:
+  sys-backend:
     build:
-      context: ./backend
+      context: ./sys-backend
       dockerfile: Dockerfile
-    container_name: logistics-backend
+    container_name: logistics-sys-backend
     ports:
       - "8080:8080"
     environment:
@@ -84,6 +84,20 @@ services:
       auth-server:
         condition: service_started
 
+  batch:
+    build:
+      context: ./batch
+      dockerfile: Dockerfile
+    container_name: logistics-batch
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./frontend
@@ -92,7 +106,7 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      - sys-backend
       - auth-server
 
   frontend-next:
@@ -103,7 +117,7 @@ services:
     ports:
       - "3001:3000"
     depends_on:
-      - backend
+      - sys-backend
       - auth-server
 
 volumes:

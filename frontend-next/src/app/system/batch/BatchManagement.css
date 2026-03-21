@@ -1,0 +1,100 @@
+.batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.batch-table th,
+.batch-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.batch-table th {
+  background-color: var(--surface-hover);
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.batch-table td {
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.status-badge.running, .status-badge.NORMAL {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.status-badge.paused, .status-badge.PAUSED {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.action-cell {
+  white-space: nowrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.action-btn.pause-btn {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.action-btn.pause-btn:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.action-btn.resume-btn {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.action-btn.resume-btn:hover {
+  background-color: #10b981;
+  color: white;
+}
+
+.mono-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: var(--surface-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cron-cell {
+  min-width: 180px;
+}
+.input-cron {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text-primary);
+  width: 120px;
+}
+.input-cron:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}

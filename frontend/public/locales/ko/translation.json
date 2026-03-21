@@ -499,9 +499,9 @@
         "ui_standard": "UI/UX 표준"
       },
       "backend": {
-        "title": "Backend 개발 표준 가이드",
-        "desc": "물류 플랫폼 백엔드 API 및 데이터베이스 개발을 위한 표준 가이드입니다.",
-        "tech_stack": "백엔드 기술 스택",
+        "title": "Sys-Backend 개발 표준 가이드",
+        "desc": "물류 플랫폼 Sys-Backend API 및 데이터베이스 개발을 위한 표준 가이드입니다.",
+        "tech_stack": "Sys-Backend 기술 스택",
         "db_standard": "데이터베이스 설계 표준",
         "api_standard": "API 설계 및 인터페이스 표준",
         "security": "보안 및 권한 제어"

@@ -4,7 +4,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.logistics'
+group = 'com.logistics.batch'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -24,30 +24,17 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
-    implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.2.1'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.1'
-    // KeyStore 저장용 자체 서명 인증서 생성
-    implementation 'org.bouncycastle:bcpkix-jdk18on:1.77'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-tasks.withType(Copy).configureEach {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

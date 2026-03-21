@@ -4,12 +4,40 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
-import { Layout, MessageSquare, RefreshCcw, Server } from 'lucide-react';
+import { Layout, MessageSquare, RefreshCcw, Server, Activity, Filter, AlertCircle } from 'lucide-react';
+import { apiClient } from '../../../utils/apiClient';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  ComposedChart, Bar
+} from 'recharts';
 import './SystemMonitoring.css';
 
+interface InstanceInfo {
+  id: string;
+  status: string;
+  cpu: number;
+  memory: number;
+}
+
+interface ServerStats {
+  name?: string;
+  cpu: number;
+  memory: number;
+  status: string;
+  latency?: number;
+  tps?: number;
+  errorRate?: number;
+  instances?: InstanceInfo[];
+}
+
 interface SystemSummary {
-  systemLoad: number;
-  memoryUsage: number;
+  sysBackend: ServerStats;
+  authServer: ServerStats;
+  batchServer: ServerStats;
+  dbServer: ServerStats;
+  traceCount?: number;
+  traceAvgDuration?: number;
+  traceMaxMemory?: number;
   timestamp: string;
 }
 
@@ -20,60 +48,354 @@ interface SystemLog {
   message: string;
 }
 
+interface ExecutionTrace {
+  id: string;
+  timestamp: string;
+  serviceName: string;
+  methodName: string;
+  duration: number;
+  usedMemory: number;
+  totalMemory: number;
+  query: string;
+  status: string;
+}
+
+interface ChartPoint {
+  time: string;
+  sysLatency: number | undefined;
+  authLatency: number | undefined;
+  batchLatency: number | undefined;
+  dbLatency: number | undefined;
+  sysTps: number | undefined;
+  authTps: number | undefined;
+  batchTps: number | undefined;
+  dbTps: number | undefined;
+  sysCpu: number | undefined;
+  authCpu: number | undefined;
+  batchCpu: number | undefined;
+  dbCpu: number | undefined;
+  sysMem: number | undefined;
+  authMem: number | undefined;
+  batchMem: number | undefined;
+  dbMem: number | undefined;
+  traceCount?: number;
+  traceAvgDuration?: number;
+  traceMaxMemory?: number;
+}
+const ProgressFill = ({ progress }: { progress: number }) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.style.width = `${Math.min(100, progress)}%`;
+    }
+  }, [progress]);
+  return <div ref={ref} className="progress-fill" />;
+};
+
+const generate24hSlots = (): ChartPoint[] => {
+  const slots: ChartPoint[] = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 5) {
+      const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      slots.push({
+        time,
+        sysLatency: undefined,
+        authLatency: undefined,
+        batchLatency: undefined,
+        dbLatency: undefined,
+        sysTps: undefined,
+        authTps: undefined,
+        batchTps: undefined,
+        dbTps: undefined,
+        sysCpu: undefined,
+        authCpu: undefined,
+        batchCpu: undefined,
+        dbCpu: undefined,
+        sysMem: undefined,
+        authMem: undefined,
+        batchMem: undefined,
+        dbMem: undefined,
+        traceCount: undefined,
+        traceAvgDuration: undefined,
+        traceMaxMemory: undefined,
+      });
+    }
+  }
+  return slots;
+};
+
 export default function SystemMonitoringPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('summary');
+  const [selectedServer, setSelectedServer] = useState<'all' | 'backend' | 'auth' | 'batch' | 'db'>('all');
   
   const [summary, setSummary] = useState<SystemSummary | null>(null);
+  const [history, setHistory] = useState<ChartPoint[]>(generate24hSlots());
   const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [executionLogs, setExecutionLogs] = useState<ExecutionTrace[]>([]);
+  const [executionLogFilter, setExecutionLogFilter] = useState<string>('All');
+  const [traceHourFilter, setTraceHourFilter] = useState<string>('All');
+  const [tracePage, setTracePage] = useState<number>(1);
+
   const [loading, setLoading] = useState(true);
+
+  const uniqueServices = Array.from(new Set(executionLogs.map(log => log.serviceName)));
+  const filteredExecutionLogs = executionLogFilter === 'All' 
+    ? executionLogs 
+    : executionLogs.filter(log => log.serviceName === executionLogFilter);
+
+  const traceTableData = filteredExecutionLogs.filter(log => {
+    if (traceHourFilter === 'All') return true;
+    const h = new Date(log.timestamp).getHours();
+    return h.toString().padStart(2, '0') === traceHourFilter;
+  });
+
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(traceTableData.length / ITEMS_PER_PAGE);
+  const currentTableData = traceTableData.slice((tracePage - 1) * ITEMS_PER_PAGE, tracePage * ITEMS_PER_PAGE);
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setTracePage(1);
+  }, [executionLogFilter, traceHourFilter, executionLogs]);
+
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const startOfDayTime = startOfDay.getTime();
+
+  // Aggregate by hour for the chart
+  const hourlyData: Record<string, string | number>[] = [];
+  for (let h = 0; h <= 24; h++) {
+    const timeLabel = `${h.toString().padStart(2, '0')}:00`;
+    const slot: Record<string, string | number> = { timeLabel };
+    uniqueServices.forEach(svc => {
+       slot[`${svc}_memory`] = 0;
+       slot[`${svc}_duration`] = 0;
+    });
+    hourlyData.push(slot);
+  }
+
+  filteredExecutionLogs.forEach(log => {
+    const logTime = new Date(log.timestamp).getTime();
+    const h = Math.floor((logTime - startOfDayTime) / 3600000);
+    if (h >= 0 && h <= 24) {
+      (hourlyData[h] as Record<string, number>)[`${log.serviceName}_memory`] += log.usedMemory;
+      (hourlyData[h] as Record<string, number>)[`${log.serviceName}_duration`] += log.duration;
+    }
+  });
+
+  const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+  const serviceAggregations = executionLogs.reduce((acc, log) => {
+    if (!acc[log.serviceName]) {
+      acc[log.serviceName] = { serviceName: log.serviceName, totalMemory: 0, totalDuration: 0, count: 0 };
+    }
+    acc[log.serviceName].totalMemory += log.usedMemory;
+    acc[log.serviceName].totalDuration += log.duration;
+    acc[log.serviceName].count += 1;
+    return acc;
+  }, {} as Record<string, { serviceName: string, totalMemory: number, totalDuration: number, count: number }>);
+  const serviceAggList = Object.values(serviceAggregations);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const fetchSummary = async () => {
     try {
-      const res = await fetch('/api/v1/system/monitoring/summary');
-      if (res.ok) {
-        const data = await res.json();
-        setSummary(data);
-      }
+      const data = await apiClient.get<SystemSummary>('/api/v1/system/monitoring/summary');
+      setSummary(data);
+      
+      const now = new Date();
+      const h = now.getHours();
+      const m = Math.floor(now.getMinutes() / 5) * 5;
+      const timeLabel = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      
+      setHistory(prev => prev.map(slot => {
+        if (slot.time === timeLabel) {
+          return {
+            ...slot,
+            sysLatency: data.sysBackend.latency,
+            authLatency: data.authServer.latency,
+            batchLatency: data.batchServer.latency,
+            dbLatency: data.dbServer.latency,
+            sysTps: data.sysBackend.tps,
+            authTps: data.authServer.tps,
+            batchTps: data.batchServer.tps,
+            dbTps: data.dbServer.tps,
+            sysCpu: data.sysBackend.cpu,
+            authCpu: data.authServer.cpu,
+            batchCpu: data.batchServer.cpu,
+            dbCpu: data.dbServer.cpu,
+            sysMem: data.sysBackend.memory,
+            authMem: data.authServer.memory,
+            batchMem: data.batchServer.memory,
+            dbMem: data.dbServer.memory,
+            traceCount: data.traceCount,
+            traceAvgDuration: data.traceAvgDuration,
+            traceMaxMemory: data.traceMaxMemory,
+          };
+        }
+        return slot;
+      }));
     } catch (e) {
       console.error('Failed to fetch monitoring summary', e);
     }
   };
 
+  const fetchHistory = async () => {
+    try {
+      const data = await apiClient.get<SystemSummary[]>('/api/v1/system/monitoring/history');
+      if (data && data.length > 0) {
+        setHistory(prev => {
+          const newHistory = [...prev];
+          data.forEach(snapshot => {
+            const time = new Date(snapshot.timestamp);
+            const h = time.getHours();
+            const m = Math.floor(time.getMinutes() / 5) * 5;
+            const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            const idx = newHistory.findIndex(s => s.time === label);
+            if (idx !== -1) {
+              newHistory[idx] = {
+                time: label,
+                sysLatency: snapshot.sysBackend.latency,
+                authLatency: snapshot.authServer.latency,
+                batchLatency: snapshot.batchServer.latency,
+                dbLatency: snapshot.dbServer.latency,
+                sysTps: snapshot.sysBackend.tps,
+                authTps: snapshot.authServer.tps,
+                batchTps: snapshot.batchServer.tps,
+                dbTps: snapshot.dbServer.tps,
+                sysCpu: snapshot.sysBackend.cpu,
+                authCpu: snapshot.authServer.cpu,
+                batchCpu: snapshot.batchServer.cpu,
+                dbCpu: snapshot.dbServer.cpu,
+                sysMem: snapshot.sysBackend.memory,
+                authMem: snapshot.authServer.memory,
+                batchMem: snapshot.batchServer.memory,
+                dbMem: snapshot.dbServer.memory,
+              };
+            }
+          });
+          return newHistory;
+        });
+      }
+    } catch (e) {
+      console.error('Failed to fetch monitoring history', e);
+    }
+  };
+
   const fetchLogs = async () => {
     try {
-      const res = await fetch('/api/v1/system/monitoring/logs');
-      if (res.ok) {
-        const data = await res.json();
-        setLogs(data);
-      }
+      const data = await apiClient.get<SystemLog[]>('/api/v1/system/monitoring/logs');
+      setLogs(data);
     } catch (e) {
       console.error('Failed to fetch system logs', e);
     }
   };
 
+  const fetchExecutionLogs = async () => {
+    try {
+      const data = await apiClient.get<ExecutionTrace[]>('/api/v1/system/monitoring/execution-logs');
+      setExecutionLogs(data);
+    } catch (e) {
+      console.error('Failed to fetch execution logs', e);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([fetchSummary(), fetchLogs()]);
+    await Promise.all([fetchSummary(), fetchLogs(), fetchHistory(), fetchExecutionLogs()]);
     setLoading(false);
   };
 
   useEffect(() => {
-    // eslint-disable-next-line
     loadData();
     // Refresh every 30 seconds
-    // eslint-disable-next-line
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const renderServerCard = (id: string, stats: ServerStats | undefined, iconColor: string = 'text-primary') => {
+    if (!stats) return null;
+    
+    return (
+      <Card key={id} title={
+        <div className="flex items-center gap-8">
+          <Server size={18} className={iconColor} />
+          <span>{stats.name || id.toUpperCase()}</span>
+          <span className={`status-badge ${stats.status === 'Healthy' ? 'success' : 'danger'}`}>
+            {stats.status}
+          </span>
+        </div>
+      }>
+        <div className="card-stat-grid">
+          <div className="stat-card large">
+            <div className="stat-label">Latency (ms)</div>
+            <div className="stat-value text-accent-blue">{stats.latency?.toFixed(0) ?? '--'}</div>
+          </div>
+          <div className="stat-card large">
+            <div className="stat-label">TPS</div>
+            <div className="stat-value text-accent-blue">{stats.tps?.toFixed(1) ?? '--'}</div>
+          </div>
+          <div className="stat-card large">
+            <div className="stat-label">CPU (%)</div>
+            <div className="stat-value text-accent-blue">{stats.cpu.toFixed(1)}%</div>
+          </div>
+          <div className="stat-card large">
+            <div className="stat-label">Memory (%)</div>
+            <div className="stat-value text-accent-blue">{stats.memory}%</div>
+          </div>
+        </div>
+
+        {stats.instances && stats.instances.length > 0 && (
+          <div className="instance-list-area mt-4">
+            <div className="stat-label mb-2 flex items-center gap-4">
+              <Activity size={14} className="text-tertiary" /> {t('monitoring.active_instances', '가동 인스턴스')} ({stats.instances.length})
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {stats.instances.map(inst => (
+                <div key={inst.id} className="instance-chip" title={`CPU: ${inst.cpu.toFixed(1)}%, Mem: ${inst.memory}%`}>
+                  <div className={`status-dot ${inst.status === 'Healthy' ? 'bg-success' : 'bg-danger'}`}></div>
+                  <span className="instance-id">{inst.id.split('-').pop()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
+    );
+  };
+
+  const renderChart = (title: string, subtitle: string, keys: (keyof ChartPoint)[], unit: string = '', max?: number) => (
+    <div>
+      <h4 className="text-center text-sm mb-8">{subtitle}</h4>
+      {isMounted && (
+        <ResponsiveContainer width="100%" height={240}>
+          <LineChart data={history}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+            <XAxis dataKey="time" fontSize={10} interval={35} />
+            <YAxis fontSize={10} domain={max ? [0, max] : undefined} unit={unit} />
+            <Tooltip contentStyle={{ fontSize: '10px' }} />
+            <Legend wrapperStyle={{ fontSize: '10px' }} />
+            {(selectedServer === 'all' || selectedServer === 'backend') && <Line type="monotone" dataKey={keys[0]} name="Backend" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'auth') && <Line type="monotone" dataKey={keys[1]} name="Auth" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'batch') && <Line type="monotone" dataKey={keys[2]} name="Batch" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'db') && <Line type="monotone" dataKey={keys[3]} name="Database" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  );
 
   return (
     <div className="template-page fade-in p-6">
       <div className="flex justify-between items-center mb-6">
         <PageHeader 
           title={t('sidebar.system_monitoring', '시스템 모니터링')} 
-          description="실시간 시스템 상태 및 이벤트를 확인합니다."
+          description="주요 서버별 실시간 성능 추이 및 4대 황금 신호(Golden Signals)를 분석합니다."
           breadcrumbs={[t('sidebar.system_management', '시스템 관리'), t('sidebar.system_monitoring', '시스템 모니터링')]}
         />
         <button className="btn btn-outline flex items-center gap-8" onClick={loadData} disabled={loading}>
@@ -87,68 +409,294 @@ export default function SystemMonitoringPage() {
             className={`tab-item ${activeTab === 'summary' ? 'active' : ''}`}
             onClick={() => setActiveTab('summary')}
           >
-            <Layout size={18} /> 시스템 현황
+            <Layout size={18} /> {t('monitoring.dashboard_summary', '대시보드 요약')}
+          </button>
+          <button 
+            className={`tab-item ${activeTab === 'execution' ? 'active' : ''}`}
+            onClick={() => setActiveTab('execution')}
+          >
+            <Activity size={18} /> {t('monitoring.execution_trace', '실행 로그 (Trace)')}
           </button>
           <button 
             className={`tab-item ${activeTab === 'logs' ? 'active' : ''}`}
             onClick={() => setActiveTab('logs')}
           >
-            <MessageSquare size={18} /> 시스템 로그
+            <MessageSquare size={18} /> {t('monitoring.system_logs', '시스템 로그')}
           </button>
         </div>
 
-        <div className="tab-content-area mt-4">
-          {activeTab === 'summary' && (
-            <div className="fade-in text-secondary">
+        {activeTab === 'summary' && (
+            <div className="tab-content-area mt-4 pb-48">
+              {loading && !summary ? (
+                <div className="empty-state">
+                  <RefreshCcw size={48} className="animate-spin mb-16 opacity-20" />
+                  <p>데이터를 불러오는 중입니다...</p>
+                </div>
+              ) : summary ? (
+                <div className="fade-in">
+                  <Card title={
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex items-center gap-8">
+                        <Activity size={18} className="text-primary" />
+                        <span>주요 성능 지표 트렌드 (Golden Signals)</span>
+                      </div>
+                      <div className="flex gap-4">
+                        {[
+                          { id: 'all', label: '전체' },
+                          { id: 'backend', label: 'Backend' },
+                          { id: 'auth', label: 'Auth' },
+                          { id: 'batch', label: 'Batch' },
+                          { id: 'db', label: 'Database' }
+                        ].map(srv => (
+                          <button
+                            key={srv.id}
+                            onClick={() => setSelectedServer(srv.id as 'all' | 'backend' | 'auth' | 'batch' | 'db')}
+                            className={`filter-btn ${selectedServer === srv.id ? 'active' : ''}`}
+                          >
+                            {srv.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  }>
+                    <div className="trend-charts-container">
+                      {renderChart('CPU Usage (%)', 'CPU 사용률 추이', ['sysCpu', 'authCpu', 'batchCpu', 'dbCpu'], '%', 100)}
+                      {renderChart('Memory Usage (%)', '메모리 점유율 추이', ['sysMem', 'authMem', 'batchMem', 'dbMem'], '%', 100)}
+                      {renderChart('Response Time (ms)', '응답 시간(Latency) 추이', ['sysLatency', 'authLatency', 'batchLatency', 'dbLatency'], 'ms')}
+                      {renderChart('Request Rate (TPS)', '트래픽(TPS) 추이', ['sysTps', 'authTps', 'batchTps', 'dbTps'], 'tps')}
+                    </div>
+                  </Card>
+
+                  <div className="flex justify-between items-center mt-24 mb-16">
+                    <h3 className="tab-content-title">시스템 리소스 정보 (실시간)</h3>
+                    <span className="text-xs text-tertiary">수집 시각: {new Date(summary.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  <div className="summary-grid">
+                    {renderServerCard('sysBackend', summary.sysBackend, 'chart-text-backend')}
+                    {renderServerCard('authServer', summary.authServer, 'chart-text-auth')}
+                    {renderServerCard('batchServer', summary.batchServer, 'chart-text-batch')}
+                    {renderServerCard('dbServer', summary.dbServer, 'chart-text-db')}
+                  </div>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <AlertCircle size={48} className="mb-16 opacity-20" />
+                  <p>데이터를 불러오지 못했습니다. 서버 상태나 로그인 세션을 확인해주세요.</p>
+                  <button className="btn btn-primary mt-16" onClick={loadData}>새로고침 시도</button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'execution' && (
+            <div className="fade-in text-secondary flex flex-col gap-24">
+              <div className="filter-bar">
+                <div className="filter-group">
+                  <div className="text-xs font-bold text-secondary flex items-center gap-4">
+                    <Filter size={14} /> 서비스 필터:
+                  </div>
+                  <div className="flex gap-8">
+                    {['All', ...uniqueServices].map(svc => (
+                      <button
+                        key={svc}
+                        onClick={() => setExecutionLogFilter(svc)}
+                        className={`filter-btn ${executionLogFilter === svc ? 'active' : ''}`}
+                      >
+                        {svc === 'All' ? '전체 서비스' : svc}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <Card title="서비스별 누적 실행 지표">
+                <div className="service-summary-grid">
+                  {serviceAggList.map(agg => (
+                    <div key={agg.serviceName} className="stat-card">
+                      <div className="stat-label font-bold mb-8 text-secondary">{agg.serviceName}</div>
+                      <div className="flex justify-between items-center text-sm mb-4">
+                        <span className="text-tertiary">Total Memory:</span>
+                        <span className="font-semibold text-primary">{agg.totalMemory.toFixed(0)} MB</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm mb-4">
+                        <span className="text-tertiary">Total Duration:</span>
+                        <span className="font-semibold text-accent-blue">{agg.totalDuration} ms</span>
+                      </div>
+                      <div className="text-xs text-tertiary mt-8 border-t border-gray-100 pt-8">최근 {agg.count}건 추산</div>
+                    </div>
+                  ))}
+                  {serviceAggList.length === 0 && (
+                    <div className="col-span-full text-center text-tertiary p-16">데이터가 없습니다.</div>
+                  )}
+                </div>
+              </Card>
+
+              <Card title="서비스 실행 성능 트렌드 (금일 00시 ~ 24시, 시간당 누계)">
+                <div className="trace-chart-container">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={hourlyData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                      <XAxis 
+                        dataKey="timeLabel" 
+                        interval={3}
+                        fontSize={10} 
+                      />
+                      <YAxis yAxisId="left" fontSize={10} label={{ value: 'Total Mem (MB)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
+                      <YAxis yAxisId="right" orientation="right" fontSize={10} label={{ value: 'Total Duration (ms)', angle: 90, position: 'insideRight', fontSize: 10 }} />
+                      <Tooltip labelFormatter={(label) => `${label} ~`} />
+                      <Legend />
+                      {uniqueServices.map((svc, idx) => (
+                        <Bar 
+                          key={`bar-${svc}`} 
+                          yAxisId="right" 
+                          dataKey={`${svc}_duration`} 
+                          name={`${svc} Duration`} 
+                          stackId="duration" 
+                          fill={CHART_COLORS[idx % CHART_COLORS.length]} 
+                          opacity={0.8} 
+                          barSize={12} 
+                        />
+                      ))}
+                      {uniqueServices.map((svc, idx) => (
+                        <Line 
+                          key={`line-${svc}`} 
+                          yAxisId="left" 
+                          type="monotone" 
+                          dataKey={`${svc}_memory`} 
+                          name={`${svc} Memory`} 
+                          stroke={CHART_COLORS[idx % CHART_COLORS.length]} 
+                          strokeWidth={2} 
+                          dot={{ r: 3 }} 
+                        />
+                      ))}
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
               <Card title={
-                <div className="flex items-center gap-8">
-                  <Server size={18} className="text-primary" />
-                  <span>서버 리소스 상태</span>
-                  {summary && <span className="text-xs text-tertiary ml-8 font-normal">Last updated: {new Date(summary.timestamp).toLocaleTimeString()}</span>}
+                <div className="flex justify-between items-center w-full">
+                  <span>서비스 실행 상세 트레이스 내역</span>
+                  <select 
+                    className="form-select text-sm p-4 rounded-4 border-gray-200"
+                    value={traceHourFilter}
+                    onChange={(e) => setTraceHourFilter(e.target.value)}
+                    title="Hour Filter"
+                    aria-label="Filter by hour"
+                  >
+                    <option value="All">시간대 전체</option>
+                    {Array.from({ length: 24 }).map((_, i) => {
+                      const hourStr = i.toString().padStart(2, '0');
+                      return <option key={hourStr} value={hourStr}>{hourStr}시 ~ {(i+1).toString().padStart(2, '0')}시</option>;
+                    })}
+                  </select>
                 </div>
               }>
-                {loading && !summary ? (
-                  <div className="p-16 text-center text-tertiary">로딩 중...</div>
-                ) : summary ? (
-                  <div className="summary-grid mb-16">
-                    <div className="stat-card">
-                      <div className="stat-label">CPU Load Average</div>
-                      <div className="stat-value">{summary.systemLoad.toFixed(2)}</div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-label">Memory Usage</div>
-                      <div className="stat-value">{summary.memoryUsage}%</div>
-                    </div>
+                <div className="overflow-x-auto">
+                  <table className="trace-table">
+                    <thead>
+                      <tr>
+                        <th>Timestamp</th>
+                        <th>Service/Method</th>
+                        <th className="text-right">Duration</th>
+                        <th className="text-right">Memory (Used/Total)</th>
+                        <th>SQL Query / Note</th>
+                        <th className="text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentTableData.map(log => {
+                        const logDate = new Date(log.timestamp);
+                        const timeStr = isNaN(logDate.getTime()) ? 'Invalid' : logDate.toLocaleTimeString();
+                        return (
+                          <tr key={log.id}>
+                            <td className="text-xs text-tertiary">{timeStr}</td>
+                          <td>
+                            <div className="font-semibold text-primary">{log.serviceName}</div>
+                            <div className="text-xs text-tertiary">{log.methodName}</div>
+                          </td>
+                          <td className="text-right">
+                            <span className={`status-badge ${log.duration > 300 ? 'danger' : 'success'}`}>
+                              {log.duration}ms
+                            </span>
+                          </td>
+                          <td className="text-right">
+                            <div className="font-mono text-xs">
+                              <span className="text-primary">{log.usedMemory.toFixed(0)}MB</span> / <span className="text-tertiary">{log.totalMemory.toFixed(0)}MB</span>
+                            </div>
+                            <div className="progress-container">
+                              <ProgressFill progress={(log.usedMemory / log.totalMemory) * 100} />
+                            </div>
+                          </td>
+                          <td>
+                            <div className="query-cell" title={log.query}>
+                              {log.query}
+                            </div>
+                          </td>
+                          <td className="text-center">
+                             <span className={`status-badge ${log.status === 'Success' ? 'success' : 'danger'}`}>
+                                {log.status}
+                             </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                      {currentTableData.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="text-center text-tertiary py-32">조건에 맞는 수집된 실행 로그가 없습니다.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="pagination-bar">
+                  <span className="text-xs text-tertiary">
+                    총 <span className="font-semibold">{traceTableData.length}</span>건 중 {(tracePage - 1) * ITEMS_PER_PAGE + (traceTableData.length > 0 ? 1 : 0)} ~ {Math.min(tracePage * ITEMS_PER_PAGE, traceTableData.length)}건 표시
+                  </span>
+                  <div className="page-controls">
+                    <button 
+                      className="page-btn" 
+                      disabled={tracePage <= 1} 
+                      onClick={() => setTracePage(p => p - 1)}
+                    >
+                      이전
+                    </button>
+                    <span className="page-info">{tracePage} / {Math.max(1, totalPages)}</span>
+                    <button 
+                      className="page-btn" 
+                      disabled={tracePage >= Math.max(1, totalPages)} 
+                      onClick={() => setTracePage(p => p + 1)}
+                    >
+                      다음
+                    </button>
                   </div>
-                ) : (
-                  <div className="p-16 text-center text-danger">데이터를 불러오지 못했습니다.</div>
-                )}
+                </div>
               </Card>
             </div>
           )}
 
           {activeTab === 'logs' && (
-            <div className="fade-in text-secondary flex flex-col gap-16">
+            <div className="tab-content-area mt-4">
               <Card title="시스템 에러 로그 및 이벤트">
-                {loading && logs.length === 0 ? (
-                  <div className="p-16 text-center text-tertiary">로그를 불러오는 중...</div>
-                ) : (
-                  <div className="log-viewer">
-                    {logs.map(log => (
+                <div className="log-viewer">
+                  {loading && logs.length === 0 ? (
+                    <div className="empty-state">로그를 불러오는 중...</div>
+                  ) : logs.length > 0 ? (
+                    logs.map(log => (
                       <div key={log.id} className="log-entry">
                         <span className="log-timestamp">[{new Date(log.timestamp).toLocaleString()}]</span>
                         <span className={`log-level ${log.level}`}>{log.level}</span>
                         <span className="log-message">{log.message}</span>
                       </div>
-                    ))}
-                    {logs.length === 0 && <div className="text-center text-tertiary p-16">조회된 로그가 없습니다.</div>}
-                  </div>
-                )}
+                    ))
+                  ) : (
+                    <div className="empty-state">조회된 로그가 없습니다.</div>
+                  )}
+                </div>
               </Card>
             </div>
           )}
         </div>
       </div>
-    </div>
-  );
+    );
 }
