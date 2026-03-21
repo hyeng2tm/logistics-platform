@@ -7,6 +7,7 @@ import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { InputField, SelectField, DatePicker } from '../../../components/common/FormFields';
+import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';
 import { Search, Truck, Save, CheckCircle2 } from 'lucide-react';
 import '../../dispatch/allocation/Allocation.css'; 
 
@@ -97,7 +98,7 @@ export default function Template9Page() {
         {/* Left: Search & List */}
         <div className="allocation-orders-section flex flex-col gap-24">
           <Card title="Order Search (Standard 4-Col Grid)" collapsible>
-            <div className="filter-panel horizontal grid-4">
+            <div className="filter-panel horizontal grid-4 text-secondary">
               <InputField label="Order No" placeholder="Search..." fullWidth={false} />
               <InputField label="Customer" placeholder="Search..." fullWidth={false} />
               <DatePicker label="Delivery Date" selected={new Date()} onChange={() => {}} fullWidth={false} />
@@ -122,16 +123,18 @@ export default function Template9Page() {
               </div>
             </div>
 
-            <SelectField 
-              label="Select Vehicle"
-              value={selectedVehicle}
-              onChange={(e) => setSelectedVehicle(e.target.value)}
-              options={[
-                { value: '', label: 'Select a vehicle...' },
-                { value: '1', label: 'Truck 01 (5 Ton) - John Doe' },
-                { value: '2', label: 'Truck 02 (11 Ton) - Jane Smith' },
-              ]}
-            />
+            <div className="text-secondary">
+              <SelectField 
+                label="Select Vehicle"
+                value={selectedVehicle}
+                onChange={(e) => setSelectedVehicle(e.target.value)}
+                options={[
+                  { value: '', label: 'Select a vehicle...' },
+                  { value: '1', label: 'Truck 01 (5 Ton) - John Doe' },
+                  { value: '2', label: 'Truck 02 (11 Ton) - Jane Smith' },
+                ]}
+              />
+            </div>
 
             {selectedVehicle && (
               <div className="mt-20 p-16 rounded-lg border border-dashed border-slate-300">
@@ -157,11 +160,66 @@ export default function Template9Page() {
           <Card title="Quick Info" className="mt-24">
             <div className="flex items-start gap-12 text-sm text-secondary">
               <Truck size={24} className="text-primary shrink-0" />
-              <p>Drag and drop orders to prioritize or re-sequence delivery routes (Mock visualization).</p>
+              <p className="text-secondary">Drag and drop orders to prioritize or re-sequence delivery routes (Mock visualization).</p>
             </div>
           </Card>
         </div>
       </div>
+
+      <div className="mt-6">
+        <SourceCodeViewer code={sourceCode} />
+      </div>
     </div>
   );
 }
+
+const sourceCode = [
+  "'use client';",
+  "",
+  "import React, { useState } from 'react';",
+  "import { useTranslation } from 'react-i18next';",
+  "import { useModal } from '../../../contexts/ModalContext';",
+  "import { PageHeader } from '../../../components/common/PageHeader';",
+  "import { Card } from '../../../components/common/Card';",
+  "import { DataTable, Column } from '../../../components/common/DataTable';",
+  "import { InputField, SelectField, DatePicker } from '../../../components/common/FormFields';",
+  "import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';",
+  "import { Search, Truck, Save, CheckCircle2 } from 'lucide-react';",
+  "import '../../dispatch/allocation/Allocation.css'; ",
+  "",
+  "export default function Template9Page() {",
+  "  const { t } = useTranslation();",
+  "  const { showAlert, showConfirm } = useModal();",
+  "  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());",
+  "  const [selectedVehicle, setSelectedVehicle] = useState('');",
+  "",
+  "  return (",
+  "    <div className=\"template-page fade-in p-6\">",
+  "      <PageHeader ",
+  "        title=\"Template 9: Dispatch Allocation (4-Col Grid)\" ",
+  "        description=\"배차 관리와 같은 4열 그리드 필터와 좌우 분할 액션 패널 구성입니다.\"",
+  "      />",
+  "      <div className=\"allocation-grid mt-6\">",
+  "        <div className=\"allocation-orders-section flex flex-col gap-24\">",
+  "          <Card title=\"Order Search\">",
+  "            <div className=\"filter-panel horizontal grid-4\">",
+  "              <InputField label=\"Order No\" />",
+  "              <InputField label=\"Customer\" />",
+  "              <DatePicker label=\"Delivery Date\" />",
+  "              <button className=\"btn btn-primary\"><Search size={18} /> 조회</button>",
+  "            </div>",
+  "          </Card>",
+  "          <Card title=\"Pending Orders\" noPadding><DataTable columns={columns} data={mockOrders} /></Card>",
+  "        </div>",
+  "        <div className=\"allocation-panel\">",
+  "          <Card title=\"Allocation Control\">",
+  "             <SelectField label=\"Select Vehicle\" options={...} />",
+  "             <button className=\"btn btn-primary w-full\" onClick={handleAllocate}><Save size={20} /> Confirm</button>",
+  "          </Card>",
+  "        </div>",
+  "      </div>",
+  "      <SourceCodeViewer code={sourceCode} />",
+  "    </div>",
+  "  );",
+  "}"
+].join('\n');

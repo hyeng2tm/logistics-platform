@@ -70,7 +70,16 @@
     "system_development": "시스템 개발",
     "frontend_guide": "Frontend App 개발 가이드",
     "manage_favorites": "나의 즐겨 찾기 관리",
-    "favorites_list": "즐겨찾기 목록"
+    "favorites_list": "즐겨찾기 목록",
+    "template_1": "표준 목록 (Template 1)",
+    "template_2": "상세 뷰 (Template 2)",
+    "template_3": "입력 폼 (Template 3)",
+    "template_4": "분할 뷰 (Template 4)",
+    "template_5": "탭 기반 뷰 (Template 5)",
+    "template_6": "마법사 폼 (Template 6)",
+    "template_7": "요약 목록 (Template 7)",
+    "template_8": "환경 설정 (Template 8)",
+    "template_9": "배차 패턴 (Template 9)"
   },
   "dashboard": {
     "welcome_title": "환영합니다! 관리자님",

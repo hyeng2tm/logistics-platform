@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import classNames from 'classnames';
@@ -18,7 +17,7 @@ export const InputField = React.forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, fullWidth = true, className, ...props }, ref) => {
     return (
       <div className={classNames('form-field-group', { 'full-width': fullWidth }, className)}>
-        <label className="form-label">{label}</label>
+        {label && <label className="form-label">{label}</label>}
         <input 
           ref={ref} 
           className={classNames('form-input', { 'has-error': error })} 
@@ -48,7 +47,7 @@ export const SelectField = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, options, error, fullWidth = true, className, ...props }, ref) => {
     return (
       <div className={classNames('form-field-group', { 'full-width': fullWidth }, className)}>
-        <label className="form-label">{label}</label>
+        {label && <label className="form-label">{label}</label>}
         <select 
           ref={ref} 
           className={classNames('form-select', { 'has-error': error })} 
@@ -151,27 +150,3 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   );
 };
 
-// Action Buttons Row (Save/Cancel)
-interface ActionButtonsProps {
-  onCancel?: () => void;
-  onSave?: () => void;
-  cancelText?: string;
-  saveText?: string;
-  align?: 'left' | 'center' | 'right';
-  className?: string;
-}
-
-export const ActionButtons: React.FC<ActionButtonsProps> = ({ 
-  onCancel, onSave, cancelText, saveText, align = 'right', className
-}) => {
-  const { t } = useTranslation();
-  const finalCancelText = cancelText || t('common.cancel') || 'Cancel';
-  const finalSaveText = saveText || t('common.save') || 'Save';
-
-  return (
-    <div className={classNames('form-action-buttons', `align-${align}`, className)}>
-      {onCancel && <button type="button" className="btn btn-outline" onClick={onCancel}>{finalCancelText}</button>}
-      {onSave && <button type="button" className="btn btn-primary" onClick={onSave}>{finalSaveText}</button>}
-    </div>
-  );
-};

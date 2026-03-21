@@ -4,15 +4,15 @@ import React from 'react';
 import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
 import { DataTable } from '../../../components/common/DataTable';
+import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';
 import { Package, Truck, AlertTriangle } from 'lucide-react';
+import './Template7_SummaryList.css';
 
 const mockList = [
   { id: '1', item: '엔진 오일 BOX', status: '출하 대기중' },
   { id: '2', item: '기어 파츠 B형', status: '상차 완료' },
   { id: '3', item: '브레이크 패드', status: '지연' },
 ];
-
-import './Template7_SummaryList.css';
 
 export default function Template7Page() {
   return (
@@ -31,7 +31,7 @@ export default function Template7Page() {
               <div className="summary-icon-box icon-box-blue">
                 <Package size={24} />
               </div>
-              <div>
+              <div className="text-secondary">
                 <span className="summary-label">총 출하 지시 건수</span>
                 <div className="summary-value">1,430건</div>
               </div>
@@ -43,7 +43,7 @@ export default function Template7Page() {
               <div className="summary-icon-box icon-box-green">
                 <Truck size={24} />
               </div>
-              <div>
+              <div className="text-secondary">
                 <span className="summary-label">상차/이동 완료</span>
                 <div className="summary-value">920건</div>
               </div>
@@ -55,7 +55,7 @@ export default function Template7Page() {
               <div className="summary-icon-box icon-box-red">
                 <AlertTriangle size={24} />
               </div>
-              <div>
+              <div className="text-secondary">
                 <span className="summary-label">출하 이상 발생 (지연/누락)</span>
                 <div className="summary-value">12건</div>
               </div>
@@ -74,7 +74,40 @@ export default function Template7Page() {
             data={mockList}
           />
         </Card>
+
+        <div className="mt-6">
+          <SourceCodeViewer code={sourceCode} />
+        </div>
       </div>
     </div>
   );
 }
+
+const sourceCode = [
+  "'use client';",
+  "",
+  "import React from 'react';",
+  "import { PageHeader } from '../../../components/common/PageHeader';",
+  "import { Card } from '../../../components/common/Card';",
+  "import { DataTable } from '../../../components/common/DataTable';",
+  "import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';",
+  "import { Package, Truck, AlertTriangle } from 'lucide-react';",
+  "import './Template7_SummaryList.css';",
+  "",
+  "export default function Template7Page() {",
+  "  return (",
+  "    <div className=\"template-page fade-in p-6\">",
+  "      <PageHeader title=\"출하 센터 모니터링\" breadcrumbs={['템플릿', '요약 포함 목록']} />",
+  "      <div className=\"summary-widgets-container\">",
+  "        <Card className=\"summary-widget\"><Package size={24} /> 1,430건</Card>",
+  "        <Card className=\"summary-widget\"><Truck size={24} /> 920건</Card>",
+  "        <Card className=\"summary-widget\"><AlertTriangle size={24} /> 12건</Card>",
+  "      </div>",
+  "      <Card title=\"상세 모니터링 목록\" noPadding>",
+  "        <DataTable columns={[...]} data={mockList} />",
+  "      </Card>",
+  "      <SourceCodeViewer code={sourceCode} />",
+  "    </div>",
+  "  );",
+  "}"
+].join('\n');

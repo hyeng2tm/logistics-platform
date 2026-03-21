@@ -97,22 +97,29 @@ export const MultiTabProvider: React.FC<{ children: ReactNode }> = ({ children }
     const isCloseable = tabConfig.isCloseable ?? true;
     const newTab = { ...tabConfig, isCloseable };
     
+    let tabExists = false;
+    let limitReached = false;
+
     setTabs(prev => {
-      if (prev.find(t => t.id === newTab.id)) return prev;
+      tabExists = prev.some(t => t.id === newTab.id);
+      if (tabExists) return prev;
       
-      if (prev.length >= MAX_TABS) {
-        showAlert({ 
-          title: 'common.warning', 
-          message: 'msg.max_tabs_reached' 
-        });
-        return prev;
-      }
+      limitReached = prev.length >= MAX_TABS;
+      if (limitReached) return prev;
       
       return [...prev, newTab];
     });
-    
-    // Using a microtask or similar to ensure navigation happens
+
+    // Handle warning and navigation in a deferred manner to avoid state update conflict
     setTimeout(() => {
+        if (!tabExists && limitReached) {
+            showAlert({ 
+                title: 'common.warning', 
+                message: 'common.max_tabs_reached' 
+            });
+            return;
+        }
+
         setActiveTabId(newTab.id);
         router.push(newTab.path);
     }, 0);

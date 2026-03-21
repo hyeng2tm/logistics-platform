@@ -5,6 +5,7 @@ import { useModal } from '../../../contexts/ModalContext';
 import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
 import { SelectField, InputField } from '../../../components/common/FormFields';
+import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';
 import { Check } from 'lucide-react';
 import './Template6_Wizard.css';
 
@@ -17,7 +18,7 @@ export default function Template6Page() {
     <div className="template-page fade-in p-6">
       <PageHeader 
         title="신규 거래처 등록 (Wizard)" 
-        description="복잡한 입력 절차를 여러 스텝으로 분할하여 사용자 실수를 줄입니다."
+        description="복잡한 입력 절차를 several 스텝으로 분할하여 사용자 실수를 줄입니다."
         breadcrumbs={['템플릿', '마법사(단계별 입력)']}
       />
 
@@ -47,20 +48,23 @@ export default function Template6Page() {
           {/* Form Content by Step */}
           <div className="step-content">
             {step === 1 && (
-              <div className="fade-in">
-                <h3 className="step-title">1. 거래처 기본 정보 입력</h3>
+              <div className="fade-in grid grid-cols-2 gap-24">
+                <h3 className="step-title grid-span-2 text-secondary font-bold">1. 거래처 기본 정보 입력</h3>
                 <InputField label="사업자 등록번호" placeholder="000-00-00000" />
                 <InputField label="상호명(법인명)" placeholder="주식회사 OOO" />
                 <InputField label="대표자명" placeholder="홍길동" />
+                <InputField label="업태/종목" placeholder="물류/운송" />
               </div>
             )}
             
             {step === 2 && (
-              <div className="fade-in">
-                <h3 className="step-title">2. 물류 계약 정보</h3>
+              <div className="fade-in grid grid-cols-2 gap-24">
+                <h3 className="step-title grid-span-2 text-secondary font-bold">2. 물류 계약 정보</h3>
                 <SelectField label="계약 유형" options={[{ value: 'standard', label: '표준 운송 계약' }, { value: 'premium', label: '프리미엄 3PL 계약' }]} />
                 <InputField label="담당 권역" placeholder="예: 수도권, 전국망 등" />
-                <InputField label="결제 은행 및 계좌번호" placeholder="은행 선택 및 계좌 입력" />
+                <InputField label="결제 은행 명" placeholder="은행 선택" />
+                <InputField label="계좌번호" placeholder="계좌번호 입력" />
+                <InputField label="정산 주기" placeholder="매월 말일 등" />
               </div>
             )}
 
@@ -69,8 +73,8 @@ export default function Template6Page() {
                 <div className="success-icon-wrapper">
                   <Check size={48} />
                 </div>
-                <h3 className="success-title">모든 정보가 준비되었습니다!</h3>
-                <p className="success-description">입력하신 정보를 다시 한번 확인하신 후 [최종 제출]을 클릭해 주세요.</p>
+                <h3 className="success-title text-secondary font-bold">모든 정보가 준비되었습니다!</h3>
+                <p className="success-description text-secondary">입력하신 정보를 다시 한번 확인하신 후 [최종 제출]을 클릭해 주세요.</p>
               </div>
             )}
           </div>
@@ -93,7 +97,47 @@ export default function Template6Page() {
             )}
           </div>
         </Card>
+
+        <div className="mt-6">
+          <SourceCodeViewer code={sourceCode} />
+        </div>
       </div>
     </div>
   );
 }
+
+const sourceCode = [
+  "'use client';",
+  "",
+  "import React, { useState } from 'react';",
+  "import { useModal } from '../../../contexts/ModalContext';",
+  "import { PageHeader } from '../../../components/common/PageHeader';",
+  "import { Card } from '../../../components/common/Card';",
+  "import { SelectField, InputField } from '../../../components/common/FormFields';",
+  "import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';",
+  "import { Check } from 'lucide-react';",
+  "import './Template6_Wizard.css';",
+  "",
+  "export default function Template6Page() {",
+  "  const { showInfo } = useModal();",
+  "  const [step, setStep] = useState(1);",
+  "",
+  "  return (",
+  "    <div className=\"template-page fade-in p-6\">",
+  "      <PageHeader title=\"신규 거래처 등록 (Wizard)\" breadcrumbs={['템플릿', '마법사']} />",
+  "      <Card>",
+  "        <div className=\"wizard-step-indicator\">{/* ... step visualization ... */}</div>",
+  "        <div className=\"step-content\">",
+  "          {step === 1 && <div className=\"grid grid-cols-2 gap-24\"><InputField label=\"사업자 등록번호\" /></div>}",
+  "          {/* ... other steps ... */}",
+  "        </div>",
+  "        <div className=\"wizard-footer\">",
+  "          <button disabled={step === 1} onClick={() => setStep(s => s - 1)}>이전</button>",
+  "          <button onClick={() => setStep(s => s + 1)}>다음</button>",
+  "        </div>",
+  "      </Card>",
+  "      <SourceCodeViewer code={sourceCode} />",
+  "    </div>",
+  "  );",
+  "}"
+].join('\n');

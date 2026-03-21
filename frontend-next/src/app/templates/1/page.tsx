@@ -7,6 +7,7 @@ import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { InputField, SelectField, DatePicker } from '../../../components/common/FormFields';
+import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';
 import { Search, Plus, Filter, Download, FileText, MoreHorizontal } from 'lucide-react';
 import './Template1_ListSearch.css';
 
@@ -88,7 +89,7 @@ export default function Template1Page() {
     <div className="template-page fade-in p-6">
       <PageHeader 
         title="Template 1: Standard List & Search" 
-        description="가장 일반적인 5열 그리드 검색 필터와 데이터 목록 템플릿입니다."
+        description="가장 일반적인 5열 그리드 검색 필터와 데이터 목록 템플릿입니다." 
         breadcrumbs={['Templates', 'Standard List']}
         actions={headerActions}
       />
@@ -143,7 +144,66 @@ export default function Template1Page() {
             }}
           />
         </Card>
+
+        <SourceCodeViewer code={sourceCode} />
       </div>
     </div>
   );
 }
+
+const sourceCode = [
+  "'use client';",
+  "",
+  "import React, { useState } from 'react';",
+  "import { useTranslation } from 'react-i18next';",
+  "import { useModal } from '../../../contexts/ModalContext';",
+  "import { PageHeader } from '../../../components/common/PageHeader';",
+  "import { Card } from '../../../components/common/Card';",
+  "import { DataTable, Column } from '../../../components/common/DataTable';",
+  "import { InputField, SelectField, DatePicker } from '../../../components/common/FormFields';",
+  "import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';",
+  "import { Search, Plus, Filter, Download, FileText, MoreHorizontal } from 'lucide-react';",
+  "import './Template1_ListSearch.css';",
+  "",
+  "export default function Template1Page() {",
+  "  const { t } = useTranslation();",
+  "  const { showInfo, showAlert } = useModal();",
+  "  const [currentPage, setCurrentPage] = useState(1);",
+  "  const [searchDate, setSearchDate] = useState<Date | null>(new Date());",
+  "",
+  "  const columns: Column<BusinessData>[] = [",
+  "    { header: t('common.code'), accessor: 'code', colWidth: '120px' },",
+  "    { header: t('common.name'), accessor: 'name' },",
+  "    // ... (rest of columns)",
+  "  ];",
+  "",
+  "  return (",
+  "    <div className=\"template-page fade-in p-6\">",
+  "      <PageHeader ",
+  "        title=\"Template 1: Standard List & Search\" ",
+  "        description=\"가장 일반적인 5열 그리드 검색 필터와 데이터 목록 템플릿입니다.\" ",
+  "        breadcrumbs={['Templates', 'Standard List']}",
+  "        actions={headerActions}",
+  "      />",
+  "",
+  "      <div className=\"template-container mt-6\">",
+  "        <Card title={t('common.search_filter')} collapsible>",
+  "          <div className=\"filter-panel horizontal grid-5\">",
+  "            <InputField label={t('common.code')} placeholder=\"BUS-...\" />",
+  "            <InputField label={t('common.name')} placeholder=\"Search name...\" />",
+  "            <SelectField label={t('common.category')} options={[...]} />",
+  "            <DatePicker label={t('common.target_date')} selected={searchDate} onChange={setSearchDate} />",
+  "            <div className=\"filter-actions\">",
+  "              <button className=\"btn btn-primary\"><Search size={18} /> {t('common.search')}</button>",
+  "            </div>",
+  "          </div>",
+  "        </Card>",
+  "",
+  "        <Card noPadding>",
+  "          <DataTable columns={columns} data={mockData} pagination={{...}} />",
+  "        </Card>",
+  "      </div>",
+  "    </div>",
+  "  );",
+  "}"
+].join('\n');

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
+import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';
 import { User, Bell, Shield, Smartphone } from 'lucide-react';
 
 import './Template8_Settings.css';
@@ -64,18 +65,18 @@ export default function Template8Page() {
                   </div>
                   <div>
                     <button className="btn btn-outline mb-8" title="Change Profile Picture">프로필 사진 변경</button>
-                    <p className="avatar-info-text">JPG, GIF, PNG 파일 허용 (최대 2MB)</p>
+                    <p className="avatar-info-text text-secondary">JPG, GIF, PNG 파일 허용 (최대 2MB)</p>
                   </div>
                 </div>
                 <hr className="settings-divider" />
-                <div className="profile-fields-grid">
+                <div className="profile-fields-grid text-secondary">
                   <div className="form-field-group">
                     <label className="form-label" htmlFor="name-input">이름</label>
-                    <input id="name-input" type="text" className="form-input p-2 border rounded-md" defaultValue="김물류" placeholder="Enter your name" title="Name" />
+                    <input id="name-input" type="text" className="form-input p-8 border rounded-md w-full bg-white text-secondary" defaultValue="김물류" placeholder="Enter your name" title="Name" />
                   </div>
                   <div className="form-field-group">
                     <label className="form-label" htmlFor="email-input">이메일</label>
-                    <input id="email-input" type="email" className="form-input p-2 border rounded-md" defaultValue="admin@logistics.com" placeholder="Enter your email" title="Email" />
+                    <input id="email-input" type="email" className="form-input p-8 border rounded-md w-full bg-white text-secondary" defaultValue="admin@logistics.com" placeholder="Enter your email" title="Email" />
                   </div>
                 </div>
                 <div className="text-right mt-16">
@@ -87,7 +88,7 @@ export default function Template8Page() {
 
           {activeMenu === 'notifications' && (
             <Card title="알림 설정 (Notifications)" className="fade-in">
-               <div className="flex flex-col gap-16">
+               <div className="flex flex-col gap-16 text-secondary">
                  <div className="notification-item">
                    <div>
                      <div className="notification-label">시스템 점검 알림</div>
@@ -120,16 +121,16 @@ export default function Template8Page() {
           )}
 
           {activeMenu === 'security' && (
-            <div className="fade-in">
+            <div className="fade-in text-secondary">
                <Card title="비밀번호 변경">
                  <div className="security-form">
                    <div className="form-field-group">
                      <label className="form-label" htmlFor="current-pw">현재 비밀번호</label>
-                     <input id="current-pw" type="password" className="form-input p-2 border rounded-md" placeholder="Current Password" title="Current Password" />
+                     <input id="current-pw" type="password" className="form-input p-8 border rounded-md w-full bg-white text-secondary" placeholder="Current Password" title="Current Password" />
                    </div>
                    <div className="form-field-group">
                      <label className="form-label" htmlFor="new-pw">새 비밀번호</label>
-                     <input id="new-pw" type="password" className="form-input p-2 border rounded-md" placeholder="New Password" title="New Password" />
+                     <input id="new-pw" type="password" className="form-input p-8 border rounded-md w-full bg-white text-secondary" placeholder="New Password" title="New Password" />
                    </div>
                    <button className="btn btn-primary self-start" title="Update Password">비밀번호 업데이트</button>
                  </div>
@@ -138,14 +139,52 @@ export default function Template8Page() {
           )}
 
           {activeMenu === 'devices' && (
-            <div className="fade-in">
+            <div className="fade-in text-secondary">
               <Card title="로그인된 기기 (Devices)">
-                 <p className="tab-content-desc">현재 로그인된 기기 목록이 여기에 표시됩니다.</p>
+                 <p className="tab-content-desc text-secondary">현재 로그인된 기기 목록이 여기에 표시됩니다.</p>
               </Card>
             </div>
           )}
         </div>
       </div>
+
+      <div className="mt-6">
+        <SourceCodeViewer code={sourceCode} />
+      </div>
     </div>
   );
 }
+
+const sourceCode = [
+  "'use client';",
+  "",
+  "import React, { useState } from 'react';",
+  "import { PageHeader } from '../../../components/common/PageHeader';",
+  "import { Card } from '../../../components/common/Card';",
+  "import { SourceCodeViewer } from '../../../components/common/SourceCodeViewer';",
+  "import { User, Bell, Shield, Smartphone } from 'lucide-react';",
+  "import './Template8_Settings.css';",
+  "",
+  "export default function Template8Page() {",
+  "  const [activeMenu, setActiveMenu] = useState('profile');",
+  "",
+  "  return (",
+  "    <div className=\"template-page fade-in p-6\">",
+  "      <PageHeader title=\"환경 설정\" breadcrumbs={['템플릿', '환경 설정']} />",
+  "      <div className=\"settings-container mt-6\">",
+  "        <div className=\"settings-nav\">",
+  "          <button className={activeMenu === 'profile' ? 'active' : ''} onClick={() => setActiveMenu('profile')}>",
+  "            <User size={18} /> 계정 정보",
+  "          </button>",
+  "          {/* ... other nav buttons ... */}",
+  "        </div>",
+  "        <div className=\"settings-content\">",
+  "          {activeMenu === 'profile' && <Card title=\"계정 정보\">{/* profile form */}</Card>}",
+  "          {/* ... other settings ... */}",
+  "        </div>",
+  "      </div>",
+  "      <SourceCodeViewer code={sourceCode} />",
+  "    </div>",
+  "  );",
+  "}"
+].join('\n');

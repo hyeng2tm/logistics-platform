@@ -1,67 +1,146 @@
 .template4-split-view-page {
-  height: calc(100vh - 120px);
+  height: calc(100vh - 20px); /* Fill more space */
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8fbff 0%, #f1f5f9 100%); /* Premium gradient background */
 }
 
 .split-view-container {
   display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 16px;
+  grid-template-columns: 460px 1fr; /* Slightly more compact left side */
+  gap: 24px;
   flex: 1;
   min-height: 0;
-  padding: 0 24px 24px;
+  margin-top: 12px;
+  padding: 0 40px 12px; /* Very small bottom gap for maximum height */
 }
 
-.filter-panel-2col {
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 8px !important;
+/* Ensure cards reach the bottom */
+.split-view-left, .split-view-right {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-.split-view-left {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.search-area-wrapper {
+  padding: 24px 64px !important;
 }
 
-.split-view-left-content {
-  flex: 1;
-  overflow-y: auto;
+.search-bar-container {
+  display: flex !important;
+  gap: 24px !important; /* Reverted to comfortable gap as requested */
+  align-items: center !important; 
+  width: 100% !important;
+  padding: 0 !important;
+  min-height: 48px !important; 
 }
 
-.split-view-right {
-  height: 100%;
-  overflow-y: auto;
+.search-button {
+  height: 48px !important;
+  width: 48px !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  background: var(--accent-blue) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(67, 24, 255, 0.2) !important;
+  /* transform removed to prevent clipping at top */
+}
+
+.search-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(67, 24, 255, 0.3) !important;
+  background: #3411cc !important;
+}
+
+/* Fix selector: classes are on the same element */
+.form-field-group.no-label {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.form-field-group.no-label .form-input {
+  margin: 0 !important;
+  height: 48px !important;
+  font-size: 0.95rem !important;
+  width: 100% !important;
+  display: block !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  padding-left: 20px !important;
+  transition: all 0.2s ease !important;
+}
+
+.no-label .form-input:focus {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.08) !important;
+  background: #ffffff !important;
+}
+
+.split-view-right, .split-view-left {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.split-view-right .common-card-collapse-wrapper,
+.split-view-left .common-card-collapse-wrapper {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.split-view-right .common-card-body,
+.split-view-left .split-view-left-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  padding-bottom: 24px !important;
+}
+
+.split-view-left, .split-view-right {
+  box-shadow: 0 20px 40px -15px rgba(0,0,0,0.06) !important; /* Deep soft shadow */
+  border: 1px solid rgba(255,255,255,1) !important;
+  border-radius: 20px !important; /* Extra rounding for premium feel */
 }
 
 .detail-view-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 32px;
+  padding: 12px;
 }
 
-.detail-row {
-  display: grid;
-  grid-template-columns: 120px 1fr;
+.detail-section-title {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 12px;
 }
 
-.detail-label {
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.detail-actions {
-  margin-top: auto;
-  padding-top: 24px;
-  text-align: right;
+.detail-section-title svg {
+  color: var(--accent-blue);
 }
 
 .empty-detail-view {
   display: flex;
+  flex-direction: column;
   height: 100%;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
+  opacity: 0.8;
 }

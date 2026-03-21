@@ -1,4 +1,4 @@
-.template5-tab-container {
+.system-monitoring-container {
   display: flex;
   flex-direction: column;
 }
@@ -74,4 +74,42 @@
   font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
+}
+
+/* Log viewer styles */
+.log-viewer {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 16px;
+  color: #d4d4d4;
+  font-family: monospace;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.log-entry {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 4px;
+}
+
+.log-timestamp {
+  color: #569cd6;
+  white-space: nowrap;
+}
+
+.log-level {
+  font-weight: bold;
+  width: 60px;
+}
+
+.log-level.INFO { color: #4ec9b0; }
+.log-level.WARN { color: #dcdcaa; }
+.log-level.ERROR { color: #f44747; }
+
+.log-message {
+  color: #ce9178;
+  flex: 1;
 }

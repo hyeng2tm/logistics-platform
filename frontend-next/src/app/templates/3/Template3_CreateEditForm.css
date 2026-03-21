@@ -1,19 +1,13 @@
-.form-container {
-  max-width: 800px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 16px;
-}
-
-.full-width {
-  grid-column: 1 / -1;
+.template3-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
 }
 
 .form-footer {
-  margin-top: 24px;
-  padding-top: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
   border-top: 1px solid rgba(0,0,0,0.05);
 }
+
