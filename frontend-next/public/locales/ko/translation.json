@@ -52,6 +52,12 @@
     }
   },
   "sidebar": {
+    "system_monitoring": "시스템 모니터링",
+    "menu": {
+       "sidebar": {
+         "system_monitoring": "시스템 모니터링"
+       }
+    },
     "sales_management": "영업 관리",
     "shipment_management": "배송 관리",
     "inventory_management": "재고 관리",

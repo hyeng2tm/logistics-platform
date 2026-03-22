@@ -10,8 +10,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 
 @Aspect
 @Component
@@ -19,9 +20,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MonitoringTraceAspect {
 
+    @Value("${spring.application.name:batch-service}")
+    private String appId;
+
     private final MonitoringLogRepository monitoringLogRepository;
 
-    @Pointcut("within(com.logistics.batch.service..*) || within(com.logistics.batch.job..*)")
+    @Pointcut("within(com.logistics.batch.job..*)")
     public void batchLayer() {}
 
     @Around("batchLayer()")
@@ -46,7 +50,8 @@ public class MonitoringTraceAspect {
             
             MonitoringLog logEntry = MonitoringLog.builder()
                 .id(UUID.randomUUID().toString())
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
+                .appId(appId)
                 .serviceName("Batch: " + serviceName)
                 .methodName(methodName)
                 .duration(duration)

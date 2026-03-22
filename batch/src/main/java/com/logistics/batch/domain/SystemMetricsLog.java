@@ -1,4 +1,4 @@
-package com.logistics.platform.domain.system;
+package com.logistics.batch.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
-import { CLIENT_ID, REDIRECT_URI, SCOPES } from './constants';
+import { CLIENT_ID, REDIRECT_URI, SCOPES, AUTH_SERVER } from './constants';
 import i18n from '../i18n';
 import { apiClient } from '../utils/apiClient';
 
@@ -114,7 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }): React.React
     }
 
     const searchParams = new URLSearchParams(params);
-    const url = `/oauth2/authorize?${searchParams}`;
+    // Use absolute URL to avoid internal service name redirection issues
+    const url = `${AUTH_SERVER}/oauth2/authorize?${searchParams}`;
     window.location.href = url;
   }, []);
 
@@ -124,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.React
     localStorage.removeItem('oauth_state');
     localStorage.removeItem('pkce_verifier');
     localStorage.setItem('force_login', 'true');
-    window.location.href = '/logout';
+    window.location.href = `${AUTH_SERVER}/logout`;
   }, []);
 
   const setTokens = useCallback((token: string, refreshToken?: string) => {

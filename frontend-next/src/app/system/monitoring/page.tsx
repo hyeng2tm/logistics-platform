@@ -51,6 +51,7 @@ interface SystemLog {
 interface ExecutionTrace {
   id: string;
   timestamp: string;
+  appId: string;
   serviceName: string;
   methodName: string;
   duration: number;
@@ -95,7 +96,7 @@ const ProgressFill = ({ progress }: { progress: number }) => {
 const generate24hSlots = (): ChartPoint[] => {
   const slots: ChartPoint[] = [];
   for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 5) {
+    for (let m = 0; m < 60; m += 1) {
       const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
       slots.push({
         time,
@@ -127,25 +128,24 @@ const generate24hSlots = (): ChartPoint[] => {
 export default function SystemMonitoringPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('summary');
-  const [selectedServer, setSelectedServer] = useState<'all' | 'backend' | 'auth' | 'batch' | 'db'>('all');
+  const [selectedServer, setSelectedServer] = useState<'all' | 'sys-backend' | 'batch-server' | 'auth-server' | 'database'>('all');
   
   const [summary, setSummary] = useState<SystemSummary | null>(null);
   const [history, setHistory] = useState<ChartPoint[]>(generate24hSlots());
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [executionLogs, setExecutionLogs] = useState<ExecutionTrace[]>([]);
   const [executionLogFilter, setExecutionLogFilter] = useState<string>('All');
-  const [traceHourFilter, setTraceHourFilter] = useState<string>('All');
+  const [traceHourFilter, setTraceHourFilter] = useState<string>(new Date().getHours().toString().padStart(2, '0'));
   const [tracePage, setTracePage] = useState<number>(1);
 
   const [loading, setLoading] = useState(true);
 
-  const uniqueServices = Array.from(new Set(executionLogs.map(log => log.serviceName)));
+  const uniqueApps = Array.from(new Set(executionLogs.map(log => log.appId))).filter(Boolean);
   const filteredExecutionLogs = executionLogFilter === 'All' 
     ? executionLogs 
-    : executionLogs.filter(log => log.serviceName === executionLogFilter);
+    : executionLogs.filter(log => log.appId === executionLogFilter);
 
   const traceTableData = filteredExecutionLogs.filter(log => {
-    if (traceHourFilter === 'All') return true;
     const h = new Date(log.timestamp).getHours();
     return h.toString().padStart(2, '0') === traceHourFilter;
   });
@@ -169,9 +169,9 @@ export default function SystemMonitoringPage() {
   for (let h = 0; h <= 24; h++) {
     const timeLabel = `${h.toString().padStart(2, '0')}:00`;
     const slot: Record<string, string | number> = { timeLabel };
-    uniqueServices.forEach(svc => {
-       slot[`${svc}_memory`] = 0;
-       slot[`${svc}_duration`] = 0;
+    uniqueApps.forEach(app => {
+       slot[`${app}_memory`] = 0;
+       slot[`${app}_duration`] = 0;
     });
     hourlyData.push(slot);
   }
@@ -180,23 +180,24 @@ export default function SystemMonitoringPage() {
     const logTime = new Date(log.timestamp).getTime();
     const h = Math.floor((logTime - startOfDayTime) / 3600000);
     if (h >= 0 && h <= 24) {
-      (hourlyData[h] as Record<string, number>)[`${log.serviceName}_memory`] += log.usedMemory;
-      (hourlyData[h] as Record<string, number>)[`${log.serviceName}_duration`] += log.duration;
+      (hourlyData[h] as Record<string, number>)[`${log.appId}_memory`] = ((hourlyData[h] as Record<string, number>)[`${log.appId}_memory`] || 0) + log.usedMemory;
+      (hourlyData[h] as Record<string, number>)[`${log.appId}_duration`] = ((hourlyData[h] as Record<string, number>)[`${log.appId}_duration`] || 0) + log.duration;
     }
   });
 
   const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-  const serviceAggregations = executionLogs.reduce((acc, log) => {
-    if (!acc[log.serviceName]) {
-      acc[log.serviceName] = { serviceName: log.serviceName, totalMemory: 0, totalDuration: 0, count: 0 };
+  const appAggregations = executionLogs.reduce((acc, log) => {
+    const key = log.appId || 'Unknown';
+    if (!acc[key]) {
+      acc[key] = { appId: key, totalMemory: 0, totalDuration: 0, count: 0 };
     }
-    acc[log.serviceName].totalMemory += log.usedMemory;
-    acc[log.serviceName].totalDuration += log.duration;
-    acc[log.serviceName].count += 1;
+    acc[key].totalMemory += log.usedMemory;
+    acc[key].totalDuration += log.duration;
+    acc[key].count += 1;
     return acc;
-  }, {} as Record<string, { serviceName: string, totalMemory: number, totalDuration: number, count: number }>);
-  const serviceAggList = Object.values(serviceAggregations);
+  }, {} as Record<string, { appId: string, totalMemory: number, totalDuration: number, count: number }>);
+  const appAggList = Object.values(appAggregations);
 
   useEffect(() => {
     setIsMounted(true);
@@ -209,7 +210,7 @@ export default function SystemMonitoringPage() {
       
       const now = new Date();
       const h = now.getHours();
-      const m = Math.floor(now.getMinutes() / 5) * 5;
+      const m = now.getMinutes();
       const timeLabel = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
       
       setHistory(prev => prev.map(slot => {
@@ -253,7 +254,7 @@ export default function SystemMonitoringPage() {
           data.forEach(snapshot => {
             const time = new Date(snapshot.timestamp);
             const h = time.getHours();
-            const m = Math.floor(time.getMinutes() / 5) * 5;
+            const m = time.getMinutes();
             const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
             const idx = newHistory.findIndex(s => s.time === label);
             if (idx !== -1) {
@@ -376,14 +377,14 @@ export default function SystemMonitoringPage() {
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={history}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-            <XAxis dataKey="time" fontSize={10} interval={35} />
+            <XAxis dataKey="time" fontSize={10} interval={120} />
             <YAxis fontSize={10} domain={max ? [0, max] : undefined} unit={unit} />
             <Tooltip contentStyle={{ fontSize: '10px' }} />
             <Legend wrapperStyle={{ fontSize: '10px' }} />
-            {(selectedServer === 'all' || selectedServer === 'backend') && <Line type="monotone" dataKey={keys[0]} name="Backend" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
-            {(selectedServer === 'all' || selectedServer === 'auth') && <Line type="monotone" dataKey={keys[1]} name="Auth" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
-            {(selectedServer === 'all' || selectedServer === 'batch') && <Line type="monotone" dataKey={keys[2]} name="Batch" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
-            {(selectedServer === 'all' || selectedServer === 'db') && <Line type="monotone" dataKey={keys[3]} name="Database" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'sys-backend') && <Line type="monotone" dataKey={keys[0]} name="Backend" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'auth-server') && <Line type="monotone" dataKey={keys[1]} name="Auth" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'batch-server') && <Line type="monotone" dataKey={keys[2]} name="Batch" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'database') && <Line type="monotone" dataKey={keys[3]} name="Database" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
           </LineChart>
         </ResponsiveContainer>
       )}
@@ -443,14 +444,14 @@ export default function SystemMonitoringPage() {
                       <div className="flex gap-4">
                         {[
                           { id: 'all', label: '전체' },
-                          { id: 'backend', label: 'Backend' },
-                          { id: 'auth', label: 'Auth' },
-                          { id: 'batch', label: 'Batch' },
-                          { id: 'db', label: 'Database' }
+                          { id: 'sys-backend', label: 'Backend' },
+                          { id: 'auth-server', label: 'Auth' },
+                          { id: 'batch-server', label: 'Batch' },
+                          { id: 'database', label: 'Database' }
                         ].map(srv => (
                           <button
                             key={srv.id}
-                            onClick={() => setSelectedServer(srv.id as 'all' | 'backend' | 'auth' | 'batch' | 'db')}
+                            onClick={() => setSelectedServer(srv.id as 'all' | 'sys-backend' | 'batch-server' | 'auth-server' | 'database')}
                             className={`filter-btn ${selectedServer === srv.id ? 'active' : ''}`}
                           >
                             {srv.label}
@@ -493,39 +494,64 @@ export default function SystemMonitoringPage() {
               <div className="filter-bar">
                 <div className="filter-group">
                   <div className="text-xs font-bold text-secondary flex items-center gap-4">
-                    <Filter size={14} /> 서비스 필터:
+                    <Filter size={14} /> App 필터:
                   </div>
                   <div className="flex gap-8">
-                    {['All', ...uniqueServices].map(svc => (
+                    {['All', ...uniqueApps].map(app => (
                       <button
-                        key={svc}
-                        onClick={() => setExecutionLogFilter(svc)}
-                        className={`filter-btn ${executionLogFilter === svc ? 'active' : ''}`}
+                        key={app}
+                        onClick={() => setExecutionLogFilter(app)}
+                        className={`filter-btn ${executionLogFilter === app ? 'active' : ''}`}
                       >
-                        {svc === 'All' ? '전체 서비스' : svc}
+                        {app === 'All' ? '전체 App' : app}
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <Card title="서비스별 누적 실행 지표">
+              <Card title="App별 누적 실행 지표">
                 <div className="service-summary-grid">
-                  {serviceAggList.map(agg => (
-                    <div key={agg.serviceName} className="stat-card">
-                      <div className="stat-label font-bold mb-8 text-secondary">{agg.serviceName}</div>
-                      <div className="flex justify-between items-center text-sm mb-4">
-                        <span className="text-tertiary">Total Memory:</span>
-                        <span className="font-semibold text-primary">{agg.totalMemory.toFixed(0)} MB</span>
+                  {appAggList.map(agg => {
+                    const isBackend = agg.appId === 'sys-backend';
+                    return (
+                      <div key={agg.appId} className={`stat-card ${isBackend ? 'primary' : ''}`}>
+                        <div className="card-header">
+                          <div className="icon-placeholder">
+                            {isBackend ? <Server size={20} /> : <Activity size={20} />}
+                          </div>
+                          <div className="card-title-text">{agg.appId}</div>
+                        </div>
+                        
+                        <div className="metric-row">
+                          <span className="metric-label">Total Memory</span>
+                          <div className="metric-value-container">
+                            <span className="metric-value">{agg.totalMemory.toFixed(0)}</span>
+                            <span className="metric-unit">MB</span>
+                          </div>
+                        </div>
+                        <div className="metric-row">
+                          <span className="metric-label">Total Duration</span>
+                          <div className="metric-value-container">
+                            <span className="metric-value accent">{agg.totalDuration}</span>
+                            <span className="metric-unit">ms</span>
+                          </div>
+                        </div>
+                        <div className="metric-row">
+                          <span className="metric-label">Trace Count</span>
+                          <div className="metric-value-container">
+                            <span className="metric-value accent">{agg.count}</span>
+                            <span className="metric-unit">traces</span>
+                          </div>
+                        </div>
+                        
+                        <div className="footer-info">
+                          Calculated from latest {agg.count} traces
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center text-sm mb-4">
-                        <span className="text-tertiary">Total Duration:</span>
-                        <span className="font-semibold text-accent-blue">{agg.totalDuration} ms</span>
-                      </div>
-                      <div className="text-xs text-tertiary mt-8 border-t border-gray-100 pt-8">최근 {agg.count}건 추산</div>
-                    </div>
-                  ))}
-                  {serviceAggList.length === 0 && (
+                    );
+                  })}
+                  {appAggList.length === 0 && (
                     <div className="col-span-full text-center text-tertiary p-16">데이터가 없습니다.</div>
                   )}
                 </div>
@@ -545,25 +571,25 @@ export default function SystemMonitoringPage() {
                       <YAxis yAxisId="right" orientation="right" fontSize={10} label={{ value: 'Total Duration (ms)', angle: 90, position: 'insideRight', fontSize: 10 }} />
                       <Tooltip labelFormatter={(label) => `${label} ~`} />
                       <Legend />
-                      {uniqueServices.map((svc, idx) => (
+                      {uniqueApps.map((app, idx) => (
                         <Bar 
-                          key={`bar-${svc}`} 
+                          key={`bar-${app}`} 
                           yAxisId="right" 
-                          dataKey={`${svc}_duration`} 
-                          name={`${svc} Duration`} 
+                          dataKey={`${app}_duration`} 
+                          name={`${app} Duration`} 
                           stackId="duration" 
                           fill={CHART_COLORS[idx % CHART_COLORS.length]} 
                           opacity={0.8} 
                           barSize={12} 
                         />
                       ))}
-                      {uniqueServices.map((svc, idx) => (
+                      {uniqueApps.map((app, idx) => (
                         <Line 
-                          key={`line-${svc}`} 
+                          key={`line-${app}`} 
                           yAxisId="left" 
                           type="monotone" 
-                          dataKey={`${svc}_memory`} 
-                          name={`${svc} Memory`} 
+                          dataKey={`${app}_memory`} 
+                          name={`${app} Memory`} 
                           stroke={CHART_COLORS[idx % CHART_COLORS.length]} 
                           strokeWidth={2} 
                           dot={{ r: 3 }} 
@@ -576,7 +602,7 @@ export default function SystemMonitoringPage() {
 
               <Card title={
                 <div className="flex justify-between items-center w-full">
-                  <span>서비스 실행 상세 트레이스 내역</span>
+                  <span>App 실행 상세 트레이스 내역</span>
                   <select 
                     className="form-select text-sm p-4 rounded-4 border-gray-200"
                     value={traceHourFilter}
@@ -584,7 +610,6 @@ export default function SystemMonitoringPage() {
                     title="Hour Filter"
                     aria-label="Filter by hour"
                   >
-                    <option value="All">시간대 전체</option>
                     {Array.from({ length: 24 }).map((_, i) => {
                       const hourStr = i.toString().padStart(2, '0');
                       return <option key={hourStr} value={hourStr}>{hourStr}시 ~ {(i+1).toString().padStart(2, '0')}시</option>;
@@ -597,7 +622,7 @@ export default function SystemMonitoringPage() {
                     <thead>
                       <tr>
                         <th>Timestamp</th>
-                        <th>Service/Method</th>
+                        <th>App / Method</th>
                         <th className="text-right">Duration</th>
                         <th className="text-right">Memory (Used/Total)</th>
                         <th>SQL Query / Note</th>
@@ -612,7 +637,7 @@ export default function SystemMonitoringPage() {
                           <tr key={log.id}>
                             <td className="text-xs text-tertiary">{timeStr}</td>
                           <td>
-                            <div className="font-semibold text-primary">{log.serviceName}</div>
+                            <div className="font-semibold text-primary">{log.appId || log.serviceName}</div>
                             <div className="text-xs text-tertiary">{log.methodName}</div>
                           </td>
                           <td className="text-right">

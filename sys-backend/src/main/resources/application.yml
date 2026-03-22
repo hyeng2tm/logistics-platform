@@ -3,13 +3,17 @@
 # ============================================================
 spring:
   application:
-    name: logistics-platform
+    name: sys-backend
   profiles:
     active: local # 기본 프로파일 (IDE/로컬 실행 시 적용)
   quartz:
     job-store-type: jdbc
     jdbc:
-      initialize-schema: never
+      initialize-schema: always
+    properties:
+      "[org.quartz.jobStore.isClustered]": true
+      "[org.quartz.jobStore.clusterCheckinInterval]": 20000
+      "[org.quartz.scheduler.instanceId]": AUTO
   jpa:
     hibernate:
       ddl-auto: update
@@ -120,7 +124,7 @@ spring:
       password: ${DB_PASSWORD:password}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: false
   security:
     oauth2:

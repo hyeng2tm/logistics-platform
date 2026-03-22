@@ -151,8 +151,142 @@
 /* Chart/Grid Styles */
 .system-monitoring-container .service-summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+.system-monitoring-container .service-summary-grid .stat-card {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  height: 100%;
+  padding: 16px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+  position: relative;
+  overflow: hidden;
+}
+
+.system-monitoring-container .service-summary-grid .stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  border-color: var(--accent-blue);
+}
+
+.system-monitoring-container .service-summary-grid .stat-card.primary {
+  border-left: 4px solid var(--accent-blue);
+  background: linear-gradient(to right, white, #f8faff);
+}
+
+.system-monitoring-container .service-summary-grid .stat-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.system-monitoring-container .service-summary-grid .stat-card .icon-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+.system-monitoring-container .service-summary-grid .metric-row {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 1.5rem !important;
+  padding: 4px 0 !important;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.05) !important;
+}
+
+.system-monitoring-container .service-summary-grid .metric-row:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.system-monitoring-container .service-summary-grid .metric-label {
+  font-family: var(--font-inter) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0 !important; /* Reduced from 0.5px */
+  width: 120px !important; /* Fixed width for vertical alignment */
+  flex-shrink: 0 !important;
+}
+
+.system-monitoring-container .service-summary-grid .metric-value-container {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 4px !important;
+  justify-content: flex-end !important;
+  flex-grow: 1 !important;
+  max-width: 120px !important; /* Limit horizontal expansion */
+}
+
+.system-monitoring-container .service-summary-grid .metric-value {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-outfit), sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: -0.2px !important;
+}
+
+.system-monitoring-container .service-summary-grid .metric-unit {
+  font-size: 12px !important;
+  color: var(--text-tertiary) !important;
+  font-weight: 600 !important;
+  width: 24px !important;
+  text-align: left !important;
+  font-family: var(--font-inter), sans-serif !important;
+}
+
+.system-monitoring-container .service-summary-grid .metric-value.accent {
+  color: var(--accent-blue);
+}
+
+.system-monitoring-container .service-summary-grid .footer-info {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+  padding-top: 6px;
+  font-style: normal;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.system-monitoring-container .service-summary-grid .footer-info::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #05CD99;
+  border-radius: 50%;
+}
+
+.system-monitoring-container .service-summary-grid .card-title-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .system-monitoring-container .trace-chart-container {

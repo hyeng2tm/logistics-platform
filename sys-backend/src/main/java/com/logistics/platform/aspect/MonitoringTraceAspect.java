@@ -10,14 +10,19 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
 
 @Aspect
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class MonitoringTraceAspect {
+
+    @Value("${spring.application.name:logistics-platform}")
+    private String appId;
 
     private final SystemMonitoringService systemMonitoringService;
 
@@ -50,7 +55,8 @@ public class MonitoringTraceAspect {
             
             ExecutionLog executionLog = ExecutionLog.builder()
                 .id(UUID.randomUUID().toString())
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
+                .appId(appId)
                 .serviceName(serviceName)
                 .methodName(methodName)
                 .duration(duration)

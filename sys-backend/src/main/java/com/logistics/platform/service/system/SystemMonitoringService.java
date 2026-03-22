@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.lang.management.ManagementFactory;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +27,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SystemMonitoringService {
+
+    @Value("${spring.application.name:logistics-platform}")
+    private String appId;
 
     private final Random random = new Random();
     private final MeterRegistry meterRegistry;
@@ -41,42 +46,17 @@ public class SystemMonitoringService {
     @PostConstruct
     public void init() {
         log.info("System monitoring service initialized. Loading history from DB...");
-        // Load last 288 snapshots from DB and populate history
-        List<SystemMetricsLog> savedLogs = systemMetricsLogRepository.findTop288ByOrderByTimestampDesc();
-        // reverse to have oldest first for history
+        
+        List<SystemMetricsLog> savedLogs = systemMetricsLogRepository.findTop1440ByOrderByTimestampDesc();
         for (int i = savedLogs.size() - 1; i >= 0; i--) {
             history.add(convertToSnapshotMap(savedLogs.get(i)));
         }
         log.info("Loaded {} monitoring snapshots from database.", history.size());
-        
-        // Seed execution logs if empty for better initial experience
-        if (monitoringLogRepository.count() == 0) {
-            log.info("Seeding initial execution logs for demonstration...");
-            seedExecutionLogs();
-        }
     }
 
-    private void seedExecutionLogs() {
-        String[] services = {"SystemAdminService", "BatchManagementService", "AuthService", "OrderService", "DeliveryService"};
-        String[] methods = {"findAll", "findById", "save", "updateStatus", "processQueue"};
-        
-        for (int i = 0; i < 20; i++) {
-            LocalDateTime ts = LocalDateTime.now().minusMinutes(i * 15L);
-            addExecutionLog(ExecutionLog.builder()
-                .id(UUID.randomUUID().toString())
-                .timestamp(ts)
-                .serviceName(services[random.nextInt(services.length)])
-                .methodName(methods[random.nextInt(methods.length)])
-                .duration(50 + random.nextInt(500))
-                .usedMemory(100 + random.nextInt(200))
-                .totalMemory(1024)
-                .query("SELECT * FROM sample_table WHERE id = ?")
-                .status(random.nextDouble() > 0.1 ? "Success" : "Error: Connection Timeout")
-                .build());
-        }
-    }
 
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
+
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     public void captureSnapshot() {
         log.debug("Capturing system monitoring snapshot");
         Map<String, Object> summary = getSystemSummary();
@@ -87,7 +67,9 @@ public class SystemMonitoringService {
             @SuppressWarnings("unchecked")
             Map<String, Object> backend = (Map<String, Object>) backendObj;
             SystemMetricsLog logEntity = SystemMetricsLog.builder()
-                .timestamp(LocalDateTime.parse((String) summary.get("timestamp"), DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                .id(UUID.randomUUID().toString())
+                .timestamp(Instant.parse((String) summary.get("timestamp")))
+                .appId(appId)
                 .cpuUsage((Double) backend.get("cpu"))
                 .memoryUsage(((Integer) backend.get("memory")).doubleValue())
                 .latency((Double) backend.get("latency"))
@@ -100,18 +82,27 @@ public class SystemMonitoringService {
         }
 
         history.add(summary);
-        if (history.size() > 288) {
+        if (history.size() > 1440) {
             history.remove(0);
         }
     }
 
     private Map<String, Object> convertToSnapshotMap(SystemMetricsLog log) {
-        String ts = log.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        // We reconstruct the full summary mask using the backend metrics from DB and defaults for others
+        String ts = log.getTimestamp().toString();
+        
+        // Try to find matching batch log around the same time
+        var batchLogs = systemMetricsLogRepository.findTop10ByAppIdOrderByTimestampDesc("batch-server");
+        double batchCpu = 15.0;
+        int batchMem = 45;
+        if (!batchLogs.isEmpty()) {
+            batchCpu = batchLogs.get(0).getCpuUsage();
+            batchMem = batchLogs.get(0).getMemoryUsage().intValue();
+        }
+
         return Map.of(
             "sysBackend", createServiceStats("System Backend", log.getCpuUsage(), log.getMemoryUsage().intValue(), "Healthy", log.getLatency(), log.getTps(), log.getErrorRate(), 3),
             "authServer", createServiceStats("Auth Server", 30.0, 60, "Healthy", 50.0, 120.0, 0.02, 2),
-            "batchServer", createServiceStats("Batch Server", 15.0, 45, "Healthy", 1000.0, 5.0, 0.0, 1),
+            "batchServer", createServiceStats("Batch Server", batchCpu, batchMem, "Healthy", 0.0, 0.0, 0.0, 1),
             "dbServer", createServiceStats("Database Server", 10.0, 35, "Healthy", 15.0, 400.0, 0.0, 2),
             "timestamp", ts
         );
@@ -122,7 +113,7 @@ public class SystemMonitoringService {
     }
 
     public List<ExecutionLog> getExecutionLogs() {
-        return monitoringLogRepository.findTop500ByOrderByTimestampDesc().stream()
+        return monitoringLogRepository.findTop1440ByOrderByTimestampDesc().stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
@@ -130,7 +121,8 @@ public class SystemMonitoringService {
     public void addExecutionLog(ExecutionLog dto) {
         MonitoringLog entity = MonitoringLog.builder()
             .id(dto.getId() != null ? dto.getId() : UUID.randomUUID().toString())
-            .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now())
+            .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : Instant.now())
+            .appId(appId)
             .serviceName(dto.getServiceName())
             .methodName(dto.getMethodName())
             .duration(dto.getDuration())
@@ -149,6 +141,7 @@ public class SystemMonitoringService {
         return ExecutionLog.builder()
             .id(entity.getId())
             .timestamp(entity.getTimestamp())
+            .appId(entity.getAppId())
             .serviceName(entity.getServiceName())
             .methodName(entity.getMethodName())
             .duration(entity.getDuration())
@@ -177,9 +170,18 @@ public class SystemMonitoringService {
         double sysTps = getTps();
         double sysErrorRate = getErrorRate();
 
+        // Fetch actual batch metrics from its log table
+        var batchLogs = systemMetricsLogRepository.findTop10ByAppIdOrderByTimestampDesc("batch-server");
+        double batchCpu = 15.0;
+        int batchMem = 40;
+        if (!batchLogs.isEmpty()) {
+            batchCpu = batchLogs.get(0).getCpuUsage();
+            batchMem = batchLogs.get(0).getMemoryUsage().intValue();
+        }
+
         // Aggregate last 5 minutes of traces from DB
-        LocalDateTime fiveMinAgo = LocalDateTime.now().minusMinutes(5);
-        List<ExecutionLog> recentTraces = monitoringLogRepository.findTop500ByOrderByTimestampDesc().stream()
+        Instant fiveMinAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
+        List<ExecutionLog> recentTraces = monitoringLogRepository.findTop1440ByOrderByTimestampDesc().stream()
             .filter(log -> log.getTimestamp().isAfter(fiveMinAgo))
             .map(this::convertToDto)
             .toList();
@@ -190,12 +192,12 @@ public class SystemMonitoringService {
         return Map.of(
             "sysBackend", createServiceStats("System Backend", cpuLoad, (int)systemMemoryUsage, "Healthy", sysLatency, sysTps, sysErrorRate, 3),
             "authServer", createServiceStats("Auth Server", 30 + random.nextInt(10), 55 + random.nextInt(5), "Healthy", 45.0 + random.nextInt(10), 120.0 + random.nextFloat() * 10, 0.01, 2),
-            "batchServer", createServiceStats("Batch Server", 15 + random.nextInt(5), 40 + random.nextInt(10), "Healthy", 1200.0 + random.nextInt(200), 5.0 + random.nextFloat() * 2, 0.0, 1),
+            "batchServer", createServiceStats("Batch Server", batchCpu, batchMem, "Healthy", 0.0, 0.0, 0.0, 1),
             "dbServer", createServiceStats("Database Server", 8 + random.nextInt(5), 30 + random.nextInt(5), "Healthy", 12.0 + random.nextFloat() * 5, 450.0 + random.nextFloat() * 50, 0.0, 2),
             "traceCount", recentTraces.size(),
             "traceAvgDuration", avgDuration,
             "traceMaxMemory", maxMem,
-            "timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            "timestamp", Instant.now().toString()
         );
     }
 
@@ -252,32 +254,8 @@ public class SystemMonitoringService {
     }
 
     public List<Map<String, Object>> getSystemLogs() {
-        List<Map<String, Object>> logs = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        
-        String[] levels = {"INFO", "WARN", "ERROR", "DEBUG"};
-        String[] messages = {
-            "User 'admin' logged in successfully from 192.168.1.10",
-            "Batch job 'DailyReportJob' started",
-            "Database connection pool size increased to 20",
-            "Slow query detected: SELECT * FROM large_table...",
-            "Failed to send email notification to user@example.com",
-            "Configuration updated: spring.datasource.hikari.maximum-pool-size=20",
-            "System healthy: All services are responding",
-            "Cache eviction triggered for 'menu_cache'",
-            "External API 'LogisticsProvider' responded with 200 OK",
-            "Resource threshold reached: CPU > 80% on Instance 2"
-        };
-
-        for (int i = 0; i < 15; i++) {
-            logs.add(Map.of(
-                "id", i + 1,
-                "timestamp", now.minusSeconds(i * 120L).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                "level", levels[random.nextInt(levels.length)],
-                "message", messages[random.nextInt(messages.length)]
-            ));
-        }
-        return logs;
+        // Return empty list as mock data generation is removed
+        return new ArrayList<>();
     }
 
     // Mock snapshot generator removed.

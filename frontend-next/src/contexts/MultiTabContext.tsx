@@ -77,12 +77,41 @@ export const MultiTabProvider: React.FC<{ children: ReactNode }> = ({ children }
     fetchMenusAndFavorites();
   }, [isAuthenticated]);
 
+  const lastProcessedPath = React.useRef<string | null>(null);
+
   useEffect(() => {
+    // Skip always allowed paths
+    if (ALWAYS_ALLOWED_PATHS.includes(pathname)) {
+      lastProcessedPath.current = pathname;
+      return;
+    }
+
     const existingTab = tabs.find(t => t.path === pathname);
     if (existingTab) {
-      setActiveTabId(existingTab.id);
+      if (activeTabId !== existingTab.id) {
+        setActiveTabId(existingTab.id);
+      }
+      lastProcessedPath.current = pathname;
+    } else if (apiMenus.length > 0 && pathname !== lastProcessedPath.current) {
+      // Auto-open tab ONLY if we haven't processed this path yet (i.e., fresh navigation)
+      const matchingMenu = apiMenus.find(m => m.path === pathname);
+      if (matchingMenu) {
+        lastProcessedPath.current = pathname;
+        
+        // Use matching key from translation.json if we know it (fallback to menuKey)
+        const titleKey = matchingMenu.menuKey.includes('monitoring') ? 'sidebar.system_monitoring' : matchingMenu.menuKey;
+        
+        openTab({
+          id: String(matchingMenu.id),
+          path: matchingMenu.path!,
+          title: (matchingMenu.translations && matchingMenu.translations['ko']) || matchingMenu.menuKey,
+          titleKey: titleKey,
+          translations: matchingMenu.translations,
+          isCloseable: true
+        });
+      }
     }
-  }, [pathname, tabs]);
+  }, [pathname, tabs, apiMenus, activeTabId]);
 
   const MAX_TABS = 8;
 

@@ -1,7 +1,7 @@
 package com.logistics.platform.service.system;
 
-import com.logistics.platform.repository.system.MonitoringLogRepository;
 import com.logistics.platform.repository.system.SystemMetricsLogRepository;
+import com.logistics.platform.repository.system.MonitoringLogRepository;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

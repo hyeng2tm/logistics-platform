@@ -2,10 +2,12 @@ package com.logistics.batch.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
-@Table(name = "t_sys_monitoring_logs")
+@Table(name = "t_sys_monitoring_logs", indexes = {
+    @Index(name = "idx_monitor_app_time", columnList = "app_id, timestamp")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,7 +19,10 @@ public class MonitoringLog {
     private String id;
 
     @Column(name = "timestamp")
-    private LocalDateTime timestamp;
+    private Instant timestamp;
+
+    @Column(name = "app_id", length = 50)
+    private String appId;
 
     @Column(name = "service_name", length = 100)
     private String serviceName;

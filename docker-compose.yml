@@ -51,10 +51,8 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: dev
       JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
-      # dev 프로파일 기본값 오버라이드 (필요 시)
-      # DB_USERNAME: user
-      # DB_PASSWORD: password
-      # KEYSTORE_PASSWORD: changeit
+      FRONTEND_URL: http://localhost:3000
+      AUTH_SERVER_URL: http://localhost:9000
     volumes:
       - auth_keys:/app/keys
     depends_on:
@@ -73,9 +71,8 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: dev
       JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
-      # dev 프로파일 기본값 오버라이드 (필요 시)
-      # DB_USERNAME: user
-      # DB_PASSWORD: password
+      FRONTEND_URL: http://localhost:3000
+      AUTH_SERVER_URL: http://localhost:9000
     depends_on:
       mysql:
         condition: service_healthy
@@ -98,16 +95,6 @@ services:
       mysql-replica:
         condition: service_healthy
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: logistics-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - sys-backend
-      - auth-server
 
   frontend-next:
     build:
@@ -115,7 +102,7 @@ services:
       dockerfile: Dockerfile
     container_name: logistics-frontend-next
     ports:
-      - "3001:3000"
+      - "3000:3000"
     depends_on:
       - sys-backend
       - auth-server

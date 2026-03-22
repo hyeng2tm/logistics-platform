@@ -123,6 +123,8 @@ spring:
       username: ${DB_USERNAME:user}
       password: ${DB_PASSWORD:password}
   jpa:
+    hibernate:
+      ddl-auto: create
     show-sql: false
 
 app:

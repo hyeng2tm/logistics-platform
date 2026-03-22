@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MonitoringLogRepository extends JpaRepository<MonitoringLog, String> {
-    List<MonitoringLog> findTop500ByOrderByTimestampDesc();
+    List<MonitoringLog> findTop1440ByOrderByTimestampDesc();
 }
