@@ -63,6 +63,7 @@ interface ExecutionTrace {
 
 interface ChartPoint {
   time: string;
+  timestamp: number;
   sysLatency: number | undefined;
   authLatency: number | undefined;
   batchLatency: number | undefined;
@@ -93,36 +94,32 @@ const ProgressFill = ({ progress }: { progress: number }) => {
   return <div ref={ref} className="progress-fill" />;
 };
 
-const generate24hSlots = (): ChartPoint[] => {
-  const slots: ChartPoint[] = [];
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 1) {
-      const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      slots.push({
-        time,
-        sysLatency: undefined,
-        authLatency: undefined,
-        batchLatency: undefined,
-        dbLatency: undefined,
-        sysTps: undefined,
-        authTps: undefined,
-        batchTps: undefined,
-        dbTps: undefined,
-        sysCpu: undefined,
-        authCpu: undefined,
-        batchCpu: undefined,
-        dbCpu: undefined,
-        sysMem: undefined,
-        authMem: undefined,
-        batchMem: undefined,
-        dbMem: undefined,
-        traceCount: undefined,
-        traceAvgDuration: undefined,
-        traceMaxMemory: undefined,
-      });
-    }
-  }
-  return slots;
+const transformSnapshotToChartPoint = (snapshot: SystemSummary): ChartPoint => {
+  const date = new Date(snapshot.timestamp);
+  const label = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  return {
+    time: label,
+    timestamp: date.getTime(),
+    sysLatency: snapshot.sysBackend.latency,
+    authLatency: snapshot.authServer.latency,
+    batchLatency: snapshot.batchServer.latency,
+    dbLatency: snapshot.dbServer.latency,
+    sysTps: snapshot.sysBackend.tps,
+    authTps: snapshot.authServer.tps,
+    batchTps: snapshot.batchServer.tps,
+    dbTps: snapshot.dbServer.tps,
+    sysCpu: snapshot.sysBackend.cpu,
+    authCpu: snapshot.authServer.cpu,
+    batchCpu: snapshot.batchServer.cpu,
+    dbCpu: snapshot.dbServer.cpu,
+    sysMem: snapshot.sysBackend.memory,
+    authMem: snapshot.authServer.memory,
+    batchMem: snapshot.batchServer.memory,
+    dbMem: snapshot.dbServer.memory,
+    traceCount: snapshot.traceCount,
+    traceAvgDuration: snapshot.traceAvgDuration,
+    traceMaxMemory: snapshot.traceMaxMemory,
+  };
 };
 
 export default function SystemMonitoringPage() {
@@ -131,10 +128,11 @@ export default function SystemMonitoringPage() {
   const [selectedServer, setSelectedServer] = useState<'all' | 'sys-backend' | 'batch-server' | 'auth-server' | 'database'>('all');
   
   const [summary, setSummary] = useState<SystemSummary | null>(null);
-  const [history, setHistory] = useState<ChartPoint[]>(generate24hSlots());
+  const [history, setHistory] = useState<ChartPoint[]>([]);
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [executionLogs, setExecutionLogs] = useState<ExecutionTrace[]>([]);
   const [executionLogFilter, setExecutionLogFilter] = useState<string>('All');
+  const [traceAppFilter, setTraceAppFilter] = useState<string>('sys-backend');
   const [traceHourFilter, setTraceHourFilter] = useState<string>(new Date().getHours().toString().padStart(2, '0'));
   const [tracePage, setTracePage] = useState<number>(1);
 
@@ -145,7 +143,10 @@ export default function SystemMonitoringPage() {
     ? executionLogs 
     : executionLogs.filter(log => log.appId === executionLogFilter);
 
-  const traceTableData = filteredExecutionLogs.filter(log => {
+  const traceTableData = executionLogs.filter(log => {
+    // App Filter
+    if (traceAppFilter !== 'All' && log.appId !== traceAppFilter) return false;
+    // Hour Filter
     const h = new Date(log.timestamp).getHours();
     return h.toString().padStart(2, '0') === traceHourFilter;
   });
@@ -158,11 +159,17 @@ export default function SystemMonitoringPage() {
 
   useEffect(() => {
     setTracePage(1);
-  }, [executionLogFilter, traceHourFilter, executionLogs]);
+  }, [traceAppFilter, traceHourFilter, executionLogs]);
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
   const startOfDayTime = startOfDay.getTime();
+  
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+  const endOfDayTime = endOfDay.getTime();
+
+  const todayHistory = history.filter(h => h.timestamp >= startOfDayTime);
 
   // Aggregate by hour for the chart
   const hourlyData: Record<string, string | number>[] = [];
@@ -208,38 +215,45 @@ export default function SystemMonitoringPage() {
       const data = await apiClient.get<SystemSummary>('/api/v1/system/monitoring/summary');
       setSummary(data);
       
-      const now = new Date();
-      const h = now.getHours();
-      const m = now.getMinutes();
-      const timeLabel = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      
-      setHistory(prev => prev.map(slot => {
-        if (slot.time === timeLabel) {
-          return {
-            ...slot,
-            sysLatency: data.sysBackend.latency,
-            authLatency: data.authServer.latency,
-            batchLatency: data.batchServer.latency,
-            dbLatency: data.dbServer.latency,
-            sysTps: data.sysBackend.tps,
-            authTps: data.authServer.tps,
-            batchTps: data.batchServer.tps,
-            dbTps: data.dbServer.tps,
-            sysCpu: data.sysBackend.cpu,
-            authCpu: data.authServer.cpu,
-            batchCpu: data.batchServer.cpu,
-            dbCpu: data.dbServer.cpu,
-            sysMem: data.sysBackend.memory,
-            authMem: data.authServer.memory,
-            batchMem: data.batchServer.memory,
-            dbMem: data.dbServer.memory,
-            traceCount: data.traceCount,
-            traceAvgDuration: data.traceAvgDuration,
-            traceMaxMemory: data.traceMaxMemory,
-          };
+      setHistory(prev => {
+        const newPoint = transformSnapshotToChartPoint(data);
+        let updated = [...prev];
+        
+        // Handle gap between last point and new point
+        if (updated.length > 0) {
+          const lastPoint = updated[updated.length - 1];
+          if (newPoint.timestamp - lastPoint.timestamp > 5 * 60 * 1000) {
+            updated.push({
+              ...newPoint,
+              time: '',
+              timestamp: lastPoint.timestamp + 60000,
+              sysLatency: undefined,
+              authLatency: undefined,
+              batchLatency: undefined,
+              dbLatency: undefined,
+              sysTps: undefined,
+              authTps: undefined,
+              batchTps: undefined,
+              dbTps: undefined,
+              sysCpu: undefined,
+              authCpu: undefined,
+              batchCpu: undefined,
+              dbCpu: undefined,
+              sysMem: undefined,
+              authMem: undefined,
+              batchMem: undefined,
+              dbMem: undefined,
+            });
+          }
         }
-        return slot;
-      }));
+        
+        updated.push(newPoint);
+        // Keep only last 1440 minutes (24h) - roughly, including possible null points
+        if (updated.length > 2000) { 
+          updated = updated.slice(updated.length - 2000);
+        }
+        return updated;
+      });
     } catch (e) {
       console.error('Failed to fetch monitoring summary', e);
     }
@@ -249,38 +263,39 @@ export default function SystemMonitoringPage() {
     try {
       const data = await apiClient.get<SystemSummary[]>('/api/v1/system/monitoring/history');
       if (data && data.length > 0) {
-        setHistory(prev => {
-          const newHistory = [...prev];
-          data.forEach(snapshot => {
-            const time = new Date(snapshot.timestamp);
-            const h = time.getHours();
-            const m = time.getMinutes();
-            const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-            const idx = newHistory.findIndex(s => s.time === label);
-            if (idx !== -1) {
-              newHistory[idx] = {
-                time: label,
-                sysLatency: snapshot.sysBackend.latency,
-                authLatency: snapshot.authServer.latency,
-                batchLatency: snapshot.batchServer.latency,
-                dbLatency: snapshot.dbServer.latency,
-                sysTps: snapshot.sysBackend.tps,
-                authTps: snapshot.authServer.tps,
-                batchTps: snapshot.batchServer.tps,
-                dbTps: snapshot.dbServer.tps,
-                sysCpu: snapshot.sysBackend.cpu,
-                authCpu: snapshot.authServer.cpu,
-                batchCpu: snapshot.batchServer.cpu,
-                dbCpu: snapshot.dbServer.cpu,
-                sysMem: snapshot.sysBackend.memory,
-                authMem: snapshot.authServer.memory,
-                batchMem: snapshot.batchServer.memory,
-                dbMem: snapshot.dbServer.memory,
-              };
+        const transformed = data.map(transformSnapshotToChartPoint);
+        
+        // Handle gaps (if gap > 5 minutes, insert a null point to break the line)
+        const withGaps: ChartPoint[] = [];
+        for (let i = 0; i < transformed.length; i++) {
+          if (i > 0) {
+            const gap = transformed[i].timestamp - transformed[i-1].timestamp;
+            if (gap > 5 * 60 * 1000) { // 5 minutes
+              withGaps.push({
+                time: '',
+                timestamp: transformed[i-1].timestamp + 60000,
+                sysLatency: undefined,
+                authLatency: undefined,
+                batchLatency: undefined,
+                dbLatency: undefined,
+                sysTps: undefined,
+                authTps: undefined,
+                batchTps: undefined,
+                dbTps: undefined,
+                sysCpu: undefined,
+                authCpu: undefined,
+                batchCpu: undefined,
+                dbCpu: undefined,
+                sysMem: undefined,
+                authMem: undefined,
+                batchMem: undefined,
+                dbMem: undefined,
+              });
             }
-          });
-          return newHistory;
-        });
+          }
+          withGaps.push(transformed[i]);
+        }
+        setHistory(withGaps);
       }
     } catch (e) {
       console.error('Failed to fetch monitoring history', e);
@@ -375,16 +390,42 @@ export default function SystemMonitoringPage() {
       <h4 className="text-center text-sm mb-8">{subtitle}</h4>
       {isMounted && (
         <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={history}>
+          <LineChart data={todayHistory}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-            <XAxis dataKey="time" fontSize={10} interval={120} />
+            <XAxis 
+              dataKey="timestamp" 
+              fontSize={10} 
+              type="number" 
+              domain={[startOfDayTime, endOfDayTime]} 
+              ticks={[
+                startOfDayTime,
+                startOfDayTime + 3 * 3600000,
+                startOfDayTime + 6 * 3600000,
+                startOfDayTime + 9 * 3600000,
+                startOfDayTime + 12 * 3600000,
+                startOfDayTime + 15 * 3600000,
+                startOfDayTime + 18 * 3600000,
+                startOfDayTime + 21 * 3600000,
+                endOfDayTime
+              ]}
+              tickFormatter={(v) => {
+                const date = new Date(v);
+                return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+              }}
+            />
             <YAxis fontSize={10} domain={max ? [0, max] : undefined} unit={unit} />
-            <Tooltip contentStyle={{ fontSize: '10px' }} />
+            <Tooltip 
+              contentStyle={{ fontSize: '10px' }} 
+              labelFormatter={(v) => {
+                const date = new Date(v);
+                return `${date.toLocaleDateString()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+              }}
+            />
             <Legend wrapperStyle={{ fontSize: '10px' }} />
-            {(selectedServer === 'all' || selectedServer === 'sys-backend') && <Line type="monotone" dataKey={keys[0]} name="Backend" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
-            {(selectedServer === 'all' || selectedServer === 'auth-server') && <Line type="monotone" dataKey={keys[1]} name="Auth" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
-            {(selectedServer === 'all' || selectedServer === 'batch-server') && <Line type="monotone" dataKey={keys[2]} name="Batch" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
-            {(selectedServer === 'all' || selectedServer === 'database') && <Line type="monotone" dataKey={keys[3]} name="Database" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={true} />}
+            {(selectedServer === 'all' || selectedServer === 'sys-backend') && <Line type="monotone" dataKey={keys[0]} name="Backend" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
+            {(selectedServer === 'all' || selectedServer === 'auth-server') && <Line type="monotone" dataKey={keys[1]} name="Auth" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
+            {(selectedServer === 'all' || selectedServer === 'batch-server') && <Line type="monotone" dataKey={keys[2]} name="Batch" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
+            {(selectedServer === 'all' || selectedServer === 'database') && <Line type="monotone" dataKey={keys[3]} name="Database" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
           </LineChart>
         </ResponsiveContainer>
       )}
@@ -491,24 +532,6 @@ export default function SystemMonitoringPage() {
 
           {activeTab === 'execution' && (
             <div className="fade-in text-secondary flex flex-col gap-24">
-              <div className="filter-bar">
-                <div className="filter-group">
-                  <div className="text-xs font-bold text-secondary flex items-center gap-4">
-                    <Filter size={14} /> App 필터:
-                  </div>
-                  <div className="flex gap-8">
-                    {['All', ...uniqueApps].map(app => (
-                      <button
-                        key={app}
-                        onClick={() => setExecutionLogFilter(app)}
-                        className={`filter-btn ${executionLogFilter === app ? 'active' : ''}`}
-                      >
-                        {app === 'All' ? '전체 App' : app}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
 
               <Card title="App별 누적 실행 지표">
                 <div className="service-summary-grid">
@@ -557,6 +580,25 @@ export default function SystemMonitoringPage() {
                 </div>
               </Card>
 
+               <div className="filter-bar">
+                <div className="filter-group">
+                  <div className="text-xs font-bold text-secondary flex items-center gap-4">
+                    <Filter size={14} /> App 필터:
+                  </div>
+                  <div className="flex gap-8">
+                    {['All', ...uniqueApps].map(app => (
+                      <button
+                        key={app}
+                        onClick={() => setExecutionLogFilter(app)}
+                        className={`filter-btn ${executionLogFilter === app ? 'active' : ''}`}
+                      >
+                        {app === 'All' ? '전체 App' : app}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <Card title="서비스 실행 성능 트렌드 (금일 00시 ~ 24시, 시간당 누계)">
                 <div className="trace-chart-container">
                   <ResponsiveContainer width="100%" height="100%">
@@ -603,18 +645,31 @@ export default function SystemMonitoringPage() {
               <Card title={
                 <div className="flex justify-between items-center w-full">
                   <span>App 실행 상세 트레이스 내역</span>
-                  <select 
-                    className="form-select text-sm p-4 rounded-4 border-gray-200"
-                    value={traceHourFilter}
-                    onChange={(e) => setTraceHourFilter(e.target.value)}
-                    title="Hour Filter"
-                    aria-label="Filter by hour"
-                  >
-                    {Array.from({ length: 24 }).map((_, i) => {
-                      const hourStr = i.toString().padStart(2, '0');
-                      return <option key={hourStr} value={hourStr}>{hourStr}시 ~ {(i+1).toString().padStart(2, '0')}시</option>;
-                    })}
-                  </select>
+                  <div className="flex gap-8">
+                    <select 
+                      className="form-select text-sm p-4 rounded-4 border-gray-200"
+                      value={traceAppFilter}
+                      onChange={(e) => setTraceAppFilter(e.target.value)}
+                      title="App Filter"
+                      aria-label="Filter by app"
+                    >
+                      {uniqueApps.map(app => (
+                        <option key={app} value={app}>{app}</option>
+                      ))}
+                    </select>
+                    <select 
+                      className="form-select text-sm p-4 rounded-4 border-gray-200"
+                      value={traceHourFilter}
+                      onChange={(e) => setTraceHourFilter(e.target.value)}
+                      title="Hour Filter"
+                      aria-label="Filter by hour"
+                    >
+                      {Array.from({ length: 24 }).map((_, i) => {
+                        const hourStr = i.toString().padStart(2, '0');
+                        return <option key={hourStr} value={hourStr}>{hourStr}시 ~ {(i+1).toString().padStart(2, '0')}시</option>;
+                      })}
+                    </select>
+                  </div>
                 </div>
               }>
                 <div className="overflow-x-auto">
