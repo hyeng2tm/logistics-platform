@@ -1,50 +1,108 @@
 {
   "groups": [
     {
-      "name": "spring.datasource.master",
-      "type": "com.zaxxer.hikari.HikariConfig",
-      "description": "Master database configuration",
-      "sourceType": "com.logistics.platform.config.database.DataSourceConfig"
+      "name": "app",
+      "type": "com.logistics.platform.config.AppProperties",
+      "sourceType": "com.logistics.platform.config.AppProperties"
     },
     {
-      "name": "spring.datasource.slave",
-      "type": "com.zaxxer.hikari.HikariConfig",
-      "description": "Slave database configuration",
-      "sourceType": "com.logistics.platform.config.database.DataSourceConfig"
+      "name": "app.cors",
+      "type": "com.logistics.platform.config.CorsProperties",
+      "sourceType": "com.logistics.platform.config.AppProperties",
+      "sourceMethod": "getCors()"
+    },
+    {
+      "name": "app.health-service",
+      "type": "com.logistics.platform.config.HealthServiceProperties",
+      "sourceType": "com.logistics.platform.config.AppProperties",
+      "sourceMethod": "getHealthService()"
+    },
+    {
+      "name": "app.crossing",
+      "type": "com.logistics.platform.config.CrossingProperties",
+      "sourceType": "com.logistics.platform.config.AppProperties",
+      "sourceMethod": "getCrossing()"
+    },
+    {
+      "name": "app.datasource",
+      "type": "com.logistics.platform.config.DataSourceConfigProperties",
+      "sourceType": "com.logistics.platform.config.AppProperties",
+      "sourceMethod": "getDatasource()"
+    },
+    {
+      "name": "app.datasource.master",
+      "type": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties",
+      "sourceType": "com.logistics.platform.config.DataSourceConfigProperties",
+      "sourceMethod": "getMaster()"
+    },
+    {
+      "name": "app.datasource.slave",
+      "type": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties",
+      "sourceType": "com.logistics.platform.config.DataSourceConfigProperties",
+      "sourceMethod": "getSlave()"
     }
   ],
   "properties": [
     {
-      "name": "spring.datasource.master.driver-class-name",
-      "type": "java.lang.String"
+      "name": "app.version",
+      "type": "java.lang.String",
+      "sourceType": "com.logistics.platform.config.AppProperties"
     },
     {
-      "name": "spring.datasource.master.jdbc-url",
-      "type": "java.lang.String"
+      "name": "app.cors.allowed-origins",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "com.logistics.platform.config.CorsProperties"
     },
     {
-      "name": "spring.datasource.master.username",
-      "type": "java.lang.String"
+      "name": "app.health-service.url",
+      "type": "java.lang.String",
+      "sourceType": "com.logistics.platform.config.HealthServiceProperties"
     },
     {
-      "name": "spring.datasource.master.password",
-      "type": "java.lang.String"
+      "name": "app.crossing.url",
+      "type": "java.lang.String",
+      "sourceType": "com.logistics.platform.config.CrossingProperties"
     },
     {
-      "name": "spring.datasource.slave.driver-class-name",
-      "type": "java.lang.String"
+      "name": "app.datasource.master.url",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
     },
     {
-      "name": "spring.datasource.slave.jdbc-url",
-      "type": "java.lang.String"
+      "name": "app.datasource.master.username",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
     },
     {
-      "name": "spring.datasource.slave.username",
-      "type": "java.lang.String"
+      "name": "app.datasource.master.password",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
     },
     {
-      "name": "spring.datasource.slave.password",
-      "type": "java.lang.String"
+      "name": "app.datasource.master.driver-class-name",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
+    },
+    {
+      "name": "app.datasource.slave.url",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
+    },
+    {
+      "name": "app.datasource.slave.username",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
+    },
+    {
+      "name": "app.datasource.slave.password",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
+    },
+    {
+      "name": "app.datasource.slave.driver-class-name",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"
     }
-  ]
+  ],
+  "hints": []
 }

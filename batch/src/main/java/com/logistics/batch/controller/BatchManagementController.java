@@ -1,13 +1,12 @@
-package com.logistics.platform.controller.system;
+package com.logistics.batch.controller;
 
-import com.logistics.platform.dto.system.BatchJobDto;
-import com.logistics.platform.service.system.BatchManagementService;
+import com.logistics.batch.dto.BatchJobDto;
+import com.logistics.batch.service.BatchManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/system/batch/jobs")
@@ -33,10 +32,13 @@ public class BatchManagementController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{jobGroup}/{jobName}/cron")
-    public ResponseEntity<Void> updateCron(@PathVariable String jobGroup, @PathVariable String jobName, @RequestBody Map<String, String> payload) {
-        String cron = payload.get("cronExpression");
-        batchManagementService.updateCronExpression(jobGroup, jobName, cron);
+    @PostMapping("/{jobGroup}/{jobName}/run")
+    public ResponseEntity<Void> runJob(
+            @PathVariable String jobGroup, 
+            @PathVariable String jobName,
+            @RequestParam(value = "startTime", required = false) String startTime,
+            @RequestParam(value = "endTime", required = false) String endTime) {
+        batchManagementService.runJob(jobGroup, jobName, startTime, endTime);
         return ResponseEntity.ok().build();
     }
 }

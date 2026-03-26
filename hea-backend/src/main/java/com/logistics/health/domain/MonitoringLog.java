@@ -1,13 +1,11 @@
-package com.logistics.batch.domain;
+package com.logistics.health.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "t_sys_monitoring_logs", indexes = {
-    @Index(name = "idx_monitor_app_time", columnList = "app_id, timestamp")
-})
+@Table(name = "t_monitoring_logs")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,17 +29,17 @@ public class MonitoringLog {
     private String methodName;
 
     @Column(name = "duration")
-    private long duration;
+    private Long duration;
 
     @Column(name = "used_memory")
-    private double usedMemory;
+    private Double usedMemory;
 
     @Column(name = "total_memory")
-    private double totalMemory;
+    private Double totalMemory;
 
-    @Column(name = "query", columnDefinition = "TEXT")
+    @Column(name = "query", length = 500)
     private String query;
 
-    @Column(name = "status", length = 50)
+    @Column(name = "status", length = 20)
     private String status;
 }

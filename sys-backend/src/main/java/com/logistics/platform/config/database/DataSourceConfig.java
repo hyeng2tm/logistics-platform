@@ -1,8 +1,8 @@
 package com.logistics.platform.config.database;
 
+import com.logistics.platform.config.AppProperties;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -19,21 +19,25 @@ public class DataSourceConfig {
     private static final String SLAVE = "slave";
 
     /**
-     * Creates the Master DataSource bean reading properties from spring.datasource.master.*
+     * Creates the Master DataSource bean using properties from AppProperties.
      */
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.master")
-    public DataSource masterDataSource() {
-        return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
+    public DataSource masterDataSource(AppProperties appProperties) {
+        return appProperties.getDatasource().getMaster()
+                .initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     /**
-     * Creates the Slave DataSource bean reading properties from spring.datasource.slave.*
+     * Creates the Slave DataSource bean using properties from AppProperties.
      */
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.slave")
-    public DataSource slaveDataSource() {
-        return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
+    public DataSource slaveDataSource(AppProperties appProperties) {
+        return appProperties.getDatasource().getSlave()
+                .initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     /**

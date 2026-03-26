@@ -6,14 +6,6 @@ spring:
     name: sys-backend
   profiles:
     active: local # 기본 프로파일 (IDE/로컬 실행 시 적용)
-  quartz:
-    job-store-type: jdbc
-    jdbc:
-      initialize-schema: always
-    properties:
-      "[org.quartz.jobStore.isClustered]": true
-      "[org.quartz.jobStore.clusterCheckinInterval]": 20000
-      "[org.quartz.scheduler.instanceId]": AUTO
   jpa:
     hibernate:
       ddl-auto: update
@@ -69,17 +61,6 @@ spring:
   config:
     activate:
       on-profile: local
-  datasource:
-    master:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
-      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
-    slave:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
-      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
   jpa:
     show-sql: false
   security:
@@ -90,6 +71,19 @@ spring:
           issuer-uri: ${AUTH_SERVER_URL:http://localhost:9000}
 
 app:
+  datasource:
+    master:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
+      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
+    slave:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
+      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
+  health-service:
+    url: http://localhost:8081
   cors:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:3000}
@@ -111,17 +105,6 @@ spring:
   config:
     activate:
       on-profile: dev
-  datasource:
-    master:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: "jdbc:mysql://mysql:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ${DB_USERNAME:user}
-      password: ${DB_PASSWORD:password}
-    slave:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: "jdbc:mysql://mysql-replica:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ${DB_USERNAME:user}
-      password: ${DB_PASSWORD:password}
   jpa:
     hibernate:
       ddl-auto: update
@@ -134,6 +117,19 @@ spring:
           issuer-uri: ${AUTH_SERVER_URL:http://localhost:9000}
 
 app:
+  datasource:
+    master:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: "jdbc:mysql://mysql:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ${DB_USERNAME:user}
+      password: ${DB_PASSWORD:password}
+    slave:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: "jdbc:mysql://mysql-replica:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      username: ${DB_USERNAME:user}
+      password: ${DB_PASSWORD:password}
+  health-service:
+    url: http://hea-backend:8081
   cors:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:3000}
@@ -155,17 +151,6 @@ spring:
   config:
     activate:
       on-profile: prod
-  datasource:
-    master:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: ${DB_URL_MASTER}
-      username: ${DB_USERNAME}
-      password: ${DB_PASSWORD}
-    slave:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: ${DB_URL_SLAVE}
-      username: ${DB_USERNAME_SLAVE:${DB_USERNAME}}
-      password: ${DB_PASSWORD_SLAVE:${DB_PASSWORD}}
   jpa:
     hibernate:
       ddl-auto: validate # 운영에서는 스키마 자동 변경 금지
@@ -178,6 +163,19 @@ spring:
           issuer-uri: ${AUTH_SERVER_ISSUER_URI}
 
 app:
+  datasource:
+    master:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: ${DB_URL_MASTER}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+    slave:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: ${DB_URL_SLAVE}
+      username: ${DB_USERNAME_SLAVE:${DB_USERNAME}}
+      password: ${DB_PASSWORD_SLAVE:${DB_PASSWORD}}
+  health-service:
+    url: ${HEALTH_SERVICE_URL:http://hea-backend:8081}
   cors:
     allowed-origins:
       - ${CORS_ALLOWED_ORIGINS}

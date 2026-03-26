@@ -1,6 +1,6 @@
-package com.logistics.platform.service.system;
+package com.logistics.batch.service;
 
-import com.logistics.platform.dto.system.BatchJobDto;
+import com.logistics.batch.dto.BatchJobDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -113,5 +113,18 @@ public class BatchManagementService {
     private String formatDate(Date date) {
         if (date == null) return null;
         return date.toInstant().atZone(ZoneId.systemDefault()).format(formatter);
+    }
+
+    public void runJob(String jobGroup, String jobName, String startTime, String endTime) {
+        try {
+            JobDataMap jobDataMap = new JobDataMap();
+            if (startTime != null) jobDataMap.put("startTime", startTime);
+            if (endTime != null) jobDataMap.put("endTime", endTime);
+            
+            scheduler.triggerJob(new JobKey(jobName, jobGroup), jobDataMap);
+            log.info("Triggered job immediately: {}.{} with params: {} to {}", jobGroup, jobName, startTime, endTime);
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Failed to trigger job", e);
+        }
     }
 }

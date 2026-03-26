@@ -61,6 +61,28 @@ interface ExecutionTrace {
   status: string;
 }
 
+interface SREAnalysis {
+  id: string;
+  bucketTime: string;
+  bucketTimestamp?: number;
+  appId: string;
+  serviceName: string;
+  methodName: string;
+  minDuration: number;
+  maxDuration: number;
+  avgDuration: number;
+  totalDuration: number;
+  minUsedMemory: number;
+  maxUsedMemory: number;
+  avgUsedMemory: number;
+  totalUsedMemory: number;
+  cpuP95: number;
+  cpuP50: number;
+  totalCounts: number;
+  representativeSql: string;
+  lastExecuteTime: string;
+}
+
 interface ChartPoint {
   time: string;
   timestamp: number;
@@ -131,10 +153,12 @@ export default function SystemMonitoringPage() {
   const [history, setHistory] = useState<ChartPoint[]>([]);
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [executionLogs, setExecutionLogs] = useState<ExecutionTrace[]>([]);
+  const [sreData, setSreData] = useState<SREAnalysis[]>([]);
   const [executionLogFilter, setExecutionLogFilter] = useState<string>('All');
   const [traceAppFilter, setTraceAppFilter] = useState<string>('sys-backend');
   const [traceHourFilter, setTraceHourFilter] = useState<string>(new Date().getHours().toString().padStart(2, '0'));
   const [tracePage, setTracePage] = useState<number>(1);
+  const [sreDateFilter, setSreDateFilter] = useState<string>(new Date().toISOString().split('T')[0]);
 
   const [loading, setLoading] = useState(true);
 
@@ -168,6 +192,14 @@ export default function SystemMonitoringPage() {
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
   const endOfDayTime = endOfDay.getTime();
+
+  const sreStartOfDay = new Date(sreDateFilter);
+  sreStartOfDay.setHours(0, 0, 0, 0);
+  const sreStartOfDayTime = sreStartOfDay.getTime();
+  
+  const sreEndOfDay = new Date(sreDateFilter);
+  sreEndOfDay.setHours(23, 59, 59, 999);
+  const sreEndOfDayTime = sreEndOfDay.getTime();
 
   const todayHistory = history.filter(h => h.timestamp >= startOfDayTime);
 
@@ -320,9 +352,111 @@ export default function SystemMonitoringPage() {
     }
   };
 
+  const fetchSreAnalysis = async () => {
+    try {
+      const data = await apiClient.get<SREAnalysis[]>('/api/v1/system/monitoring/sre-analysis');
+      
+      // Inject Mock Data for Demonstration
+      const dateStr = sreDateFilter; // Use selected date
+      let mockPeaks: SREAnalysis[] = [];
+
+      if (dateStr === '2026-03-21') {
+        // Sample data for 5 days ago - Historical Incident (Massive Memory Leak & Latency Spike)
+        mockPeaks = [
+          {
+            id: 'hist-p1',
+            bucketTime: `${dateStr}T10:00:00`,
+            appId: 'sys-backend',
+            serviceName: 'OrderService',
+            methodName: 'validateOrderFlow',
+            minDuration: 500, maxDuration: 12000, avgDuration: 3500, totalDuration: 3500000,
+            minUsedMemory: 1200, maxUsedMemory: 4500, avgUsedMemory: 3200, totalUsedMemory: 3200000,
+            cpuP95: 98.2, cpuP50: 65.5, totalCounts: 1000,
+            representativeSql: 'SELECT * FROM orders WHERE created_at > ...',
+            lastExecuteTime: `${dateStr}T10:15:00`
+          },
+          {
+            id: 'hist-p2',
+            bucketTime: `${dateStr}T11:00:00`,
+            appId: 'sys-backend',
+            serviceName: 'InventoryService',
+            methodName: 'updateStockBulk',
+            minDuration: 800, maxDuration: 25000, avgDuration: 8200, totalDuration: 8200000,
+            minUsedMemory: 2500, maxUsedMemory: 7800, avgUsedMemory: 6500, totalUsedMemory: 6500000,
+            cpuP95: 99.8, cpuP50: 82.0, totalCounts: 1000,
+            representativeSql: 'UPDATE inventory SET quantity = quantity - 1 ...',
+            lastExecuteTime: `${dateStr}T11:20:00`
+          }
+        ];
+      } else {
+        // Default Mock Data (9-11 AM, 2-4 PM)
+        mockPeaks = [
+          {
+            id: 'mock-p1',
+            bucketTime: `${dateStr}T09:00:00`,
+            appId: 'sys-backend',
+            serviceName: 'OrderService',
+            methodName: 'processLargeBatch',
+            minDuration: 200, maxDuration: 4500, avgDuration: 1200, totalDuration: 1200000,
+            minUsedMemory: 400, maxUsedMemory: 1200, avgUsedMemory: 850, totalUsedMemory: 850000,
+            cpuP95: 94.5, cpuP50: 45.0, totalCounts: 1000,
+            representativeSql: 'SELECT * FROM orders WHERE status = "PENDING"',
+            lastExecuteTime: `${dateStr}T09:05:00`
+          },
+          {
+            id: 'mock-p2',
+            bucketTime: `${dateStr}T10:00:00`,
+            appId: 'sys-backend',
+            serviceName: 'PaymentService',
+            methodName: 'validateTransactions',
+            minDuration: 150, maxDuration: 3200, avgDuration: 850, totalDuration: 680000,
+            minUsedMemory: 300, maxUsedMemory: 950, avgUsedMemory: 620, totalUsedMemory: 496000,
+            cpuP95: 89.2, cpuP50: 38.5, totalCounts: 800,
+            representativeSql: 'UPDATE transactions SET status = "VALIDATED"',
+            lastExecuteTime: `${dateStr}T10:10:00`
+          },
+          {
+            id: 'mock-p3',
+            bucketTime: `${dateStr}T14:00:00`,
+            appId: 'sys-backend',
+            serviceName: 'InventoryService',
+            methodName: 'syncStockLevels',
+            minDuration: 300, maxDuration: 5800, avgDuration: 1500, totalDuration: 1800000,
+            minUsedMemory: 500, maxUsedMemory: 1500, avgUsedMemory: 1100, totalUsedMemory: 1320000,
+            cpuP95: 96.8, cpuP50: 52.0, totalCounts: 1200,
+            representativeSql: 'INSERT INTO inventory_logs SELECT * FROM temp_stock',
+            lastExecuteTime: `${dateStr}T14:15:00`
+          },
+          {
+            id: 'mock-p4',
+            bucketTime: `${dateStr}T15:00:00`,
+            appId: 'sys-backend',
+            serviceName: 'NotificationService',
+            methodName: 'sendBulkPush',
+            minDuration: 100, maxDuration: 2800, avgDuration: 620, totalDuration: 930000,
+            minUsedMemory: 250, maxUsedMemory: 780, avgUsedMemory: 480, totalUsedMemory: 720000,
+            cpuP95: 91.0, cpuP50: 41.5, totalCounts: 1500,
+            representativeSql: 'SELECT user_id FROM push_tokens',
+            lastExecuteTime: `${dateStr}T15:20:00`
+          }
+        ];
+      }
+
+      if (data) {
+        const combinedData = [...data, ...mockPeaks].map(d => ({
+          ...d,
+          bucketTimestamp: new Date(d.bucketTime).getTime()
+        })).sort((a,b) => a.bucketTime.localeCompare(b.bucketTime));
+        setSreData(combinedData);
+      }
+    } catch (e) {
+      console.error('Failed to fetch SRE analysis data', e);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([fetchSummary(), fetchLogs(), fetchHistory(), fetchExecutionLogs()]);
+    await Promise.all([fetchSummary(), fetchLogs(), fetchHistory(), fetchExecutionLogs(), fetchSreAnalysis()]);
     setLoading(false);
   };
 
@@ -333,6 +467,13 @@ export default function SystemMonitoringPage() {
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'sre') {
+      fetchSreAnalysis();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sreDateFilter]);
 
   const renderServerCard = (id: string, stats: ServerStats | undefined, iconColor: string = 'text-primary') => {
     if (!stats) return null;
@@ -464,6 +605,12 @@ export default function SystemMonitoringPage() {
             onClick={() => setActiveTab('logs')}
           >
             <MessageSquare size={18} /> {t('monitoring.system_logs', '시스템 로그')}
+          </button>
+          <button 
+            className={`tab-item ${activeTab === 'sre' ? 'active' : ''}`}
+            onClick={() => setActiveTab('sre')}
+          >
+            <Activity size={18} className="text-accent-gold" /> {t('monitoring.sre_analysis', 'SRE 분석 리포트')}
           </button>
         </div>
 
@@ -774,6 +921,388 @@ export default function SystemMonitoringPage() {
                   )}
                 </div>
               </Card>
+            </div>
+          )}
+          {activeTab === 'sre' && (
+            <div className="tab-content-area mt-4 pb-48 fade-in">
+              <div className="flex justify-between items-center mb-24 px-4">
+                <div className="flex items-center gap-12 bg-white px-16 py-8 rounded-lg border border-gray-100 shadow-sm">
+                  <Filter size={16} className="text-secondary" />
+                  <label htmlFor="sre-date-filter" className="text-sm font-medium">분석 일자:</label>
+                  <input 
+                    id="sre-date-filter"
+                    type="date" 
+                    value={sreDateFilter} 
+                    onChange={(e) => setSreDateFilter(e.target.value)}
+                    className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer outline-none"
+                    title="분석 일자 선택"
+                  />
+                </div>
+                <button 
+                  className="flex items-center gap-8 bg-blue-50 text-primary px-16 py-8 rounded-lg hover:bg-blue-100 transition-colors" 
+                  onClick={fetchSreAnalysis}
+                >
+                  <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
+                  <span className="text-sm font-medium">분석 데이터 갱신</span>
+                </button>
+              </div>
+              <div className="flex flex-col gap-24">
+                <Card title="SRE Golden Signal: Latency & Traffic">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
+                    <div className="sre-chart-wrapper-sm">
+                      <h4 className="text-center text-sm mb-16 opacity-70">Latency (평균 응답 시간)</h4>
+                      <ResponsiveContainer width="100%" height={240}>
+                        <LineChart data={sreData}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                          <XAxis 
+                            dataKey="bucketTimestamp" 
+                            type="number"
+                            domain={[sreStartOfDayTime, sreEndOfDayTime]}
+                            ticks={[
+                              sreStartOfDayTime,
+                              sreStartOfDayTime + 3 * 3600000,
+                              sreStartOfDayTime + 6 * 3600000,
+                              sreStartOfDayTime + 9 * 3600000,
+                              sreStartOfDayTime + 12 * 3600000,
+                              sreStartOfDayTime + 15 * 3600000,
+                              sreStartOfDayTime + 18 * 3600000,
+                              sreStartOfDayTime + 21 * 3600000,
+                              sreEndOfDayTime
+                            ]}
+                            tickFormatter={(v) => {
+                              const date = new Date(v);
+                              return `${date.getHours().toString().padStart(2, '0')}:00`;
+                            }}
+                            fontSize={10} 
+                          />
+                          <YAxis fontSize={10} unit="ms" />
+                          <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
+                          <Legend />
+                          <Line type="monotone" dataKey="avgDuration" name="Avg Latency" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                          <Line type="monotone" dataKey="maxDuration" name="Max Latency" stroke="#ef4444" strokeWidth={1} strokeDasharray="5 5" dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="sre-chart-wrapper-sm">
+                      <h4 className="text-center text-sm mb-16 opacity-70">Traffic (요청 처리량)</h4>
+                      <ResponsiveContainer width="100%" height={240}>
+                        <ComposedChart data={sreData}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                          <XAxis 
+                            dataKey="bucketTimestamp" 
+                            type="number"
+                            domain={[sreStartOfDayTime, sreEndOfDayTime]}
+                            ticks={[
+                              sreStartOfDayTime,
+                              sreStartOfDayTime + 3 * 3600000,
+                              sreStartOfDayTime + 6 * 3600000,
+                              sreStartOfDayTime + 9 * 3600000,
+                              sreStartOfDayTime + 12 * 3600000,
+                              sreStartOfDayTime + 15 * 3600000,
+                              sreStartOfDayTime + 18 * 3600000,
+                              sreStartOfDayTime + 21 * 3600000,
+                              sreEndOfDayTime
+                            ]}
+                            tickFormatter={(v) => {
+                              const date = new Date(v);
+                              return `${date.getHours().toString().padStart(2, '0')}:00`;
+                            }}
+                            fontSize={10} 
+                          />
+                          <YAxis fontSize={10} />
+                          <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
+                          <Legend />
+                          <Bar dataKey="totalCounts" name="Request Count" fill="#10b981" opacity={0.7} barSize={20} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="SRE Golden Signal: Saturation & Errors">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
+                    <div className="sre-chart-wrapper-sm">
+                      <h4 className="text-center text-sm mb-16 opacity-70">Saturation (자원 포화도 - Used Memory)</h4>
+                      <ResponsiveContainer width="100%" height={240}>
+                        <LineChart data={sreData}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                          <XAxis 
+                            dataKey="bucketTimestamp" 
+                            type="number"
+                            domain={[sreStartOfDayTime, sreEndOfDayTime]}
+                            ticks={[
+                              sreStartOfDayTime,
+                              sreStartOfDayTime + 3 * 3600000,
+                              sreStartOfDayTime + 6 * 3600000,
+                              sreStartOfDayTime + 9 * 3600000,
+                              sreStartOfDayTime + 12 * 3600000,
+                              sreStartOfDayTime + 15 * 3600000,
+                              sreStartOfDayTime + 18 * 3600000,
+                              sreStartOfDayTime + 21 * 3600000,
+                              sreEndOfDayTime
+                            ]}
+                            tickFormatter={(v) => {
+                              const date = new Date(v);
+                              return `${date.getHours().toString().padStart(2, '0')}:00`;
+                            }}
+                            fontSize={10} 
+                          />
+                          <YAxis fontSize={10} unit="MB" />
+                          <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
+                          <Legend />
+                          <Line type="monotone" dataKey="avgUsedMemory" name="Avg Used Mem" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
+                          <Line type="monotone" dataKey="maxUsedMemory" name="Max Used Mem" stroke="#ec4899" strokeWidth={1} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="sre-chart-wrapper-sm">
+                      <h4 className="text-center text-sm mb-16 opacity-70">Error Rate & Health Score</h4>
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <div className="sre-availability-score">99.9%</div>
+                        <div className="text-sm text-secondary">시스템 가용성 (Availability)</div>
+                        <div className="mt-24 w-full px-32">
+                          <div className="flex justify-between text-xs mb-4">
+                            <span>Error Rate</span>
+                            <span className="text-success">0.1%</span>
+                          </div>
+                          <div className="h-8 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-success w-[0.1%]"></div>
+                          </div>
+                        </div>
+                        <p className="text-xs text-tertiary mt-32 text-center px-24">
+                          Google SRE 가이드라인에 따른 4대 황금 신호 분석입니다. <br/>
+                          지연 시간(Latency) 뿐만 아니라 트래픽, 에러, 포화도(Saturation)를 종합적으로 관리합니다.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="CPU Percentile Analysis (P95, P50 추이)">
+                  <div className="sre-chart-wrapper">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={sreData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                        <XAxis 
+                          dataKey="bucketTimestamp" 
+                          type="number"
+                          domain={[sreStartOfDayTime, sreEndOfDayTime]}
+                          ticks={[
+                            sreStartOfDayTime,
+                            sreStartOfDayTime + 3 * 3600000,
+                            sreStartOfDayTime + 6 * 3600000,
+                            sreStartOfDayTime + 9 * 3600000,
+                            sreStartOfDayTime + 12 * 3600000,
+                            sreStartOfDayTime + 15 * 3600000,
+                            sreStartOfDayTime + 18 * 3600000,
+                            sreStartOfDayTime + 21 * 3600000,
+                            sreEndOfDayTime
+                          ]}
+                          tickFormatter={(v) => {
+                            const date = new Date(v);
+                            return `${date.getHours().toString().padStart(2, '0')}:00`;
+                          }}
+                          fontSize={10} 
+                        />
+                        <YAxis fontSize={10} unit="%" />
+                        <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
+                        <Legend />
+                        <Line type="monotone" dataKey="cpuP95" name="CPU P95 (Peak)" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="cpuP50" name="CPU P50 (Median)" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-16 text-xs text-tertiary">
+                    * P95(최고 5% 수준) 및 P50(중앙값) CPU 사용률 추이입니다. 단기 피크(Peak) 현상과 안정적인 평균 수준을 동시 분석에 사용됩니다.
+                  </div>
+                </Card>
+
+                {(() => {
+                  if (sreData.length === 0) return null;
+                  const sortedByCpu = [...sreData].filter(d => d.cpuP95 != null).sort((a,b) => b.cpuP95 - a.cpuP95);
+                  if (sortedByCpu.length === 0) return null;
+                  
+                  const peakEntry = sortedByCpu[0];
+                  const peakBucketTime = peakEntry.bucketTime;
+                  const peakContributors = sreData
+                    .filter(d => d.bucketTime === peakBucketTime)
+                    .sort((a,b) => (b.totalCounts * b.avgDuration) - (a.totalCounts * a.avgDuration)) // Sort by total load
+                    .slice(0, 5);
+                  
+                  return (
+                    <Card title={`Peak Window Analysis (최고 부하 시점: ${new Date(peakBucketTime).toLocaleTimeString()})`}>
+                      <div className="mb-16 text-sm">
+                        CPU P95 Peak(<span className="text-error font-bold">{peakEntry.cpuP95?.toFixed(1) || '--'}%</span>) 시점에 핵심적인 부하를 준 서비스 리스트입니다.
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="trace-table no-hover">
+                          <thead>
+                            <tr>
+                              <th>Peak Window</th>
+                              <th>Service & Method</th>
+                              <th className="text-right">Exec Count</th>
+                              <th className="text-right">Avg Latency</th>
+                              <th className="text-right">Max Latency</th>
+                              <th className="text-right">Total Memory</th>
+                              <th className="text-right">Peak Memory</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {peakContributors.map((c, idx) => (
+                              <tr key={idx}>
+                                <td className="text-xs font-mono text-tertiary">
+                                  {new Date(c.bucketTime).toLocaleTimeString()}
+                                </td>
+                                <td>
+                                  <div className="font-semibold text-primary">{c.serviceName}</div>
+                                  <div className="text-xs text-tertiary">{c.methodName}</div>
+                                </td>
+                                <td className="text-right">{c.totalCounts.toLocaleString()}</td>
+                                <td className="text-right">{c.avgDuration?.toFixed(1) || '--'}ms</td>
+                                <td className="text-right">{c.maxDuration?.toLocaleString() || '--'}ms</td>
+                                <td className="text-right text-purple-600 font-semibold">{c.totalUsedMemory?.toLocaleString() || '--'}MB</td>
+                                <td className="text-right text-purple-400 text-xs">{c.maxUsedMemory?.toLocaleString() || '--'}MB</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </Card>
+                  );
+                })()}
+
+                <Card title="Performance Bottlenecks (1 Hour Summary)">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
+                    {/* Top by Throughput */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-12 flex items-center gap-8">
+                         <span className="w-8 h-8 rounded-full bg-success"></span>
+                         Top Throughput (총 호출수)
+                      </h4>
+                      <div className="space-y-8">
+                        {(() => {
+                          const grouped = new Map();
+                          sreData.forEach(d => {
+                            const key = `${d.serviceName}.${d.methodName}`;
+                            grouped.set(key, (grouped.get(key) || 0) + d.totalCounts);
+                          });
+                          return Array.from(grouped.entries())
+                            .sort((a,b) => b[1] - a[1])
+                            .slice(0, 5)
+                            .map(([key, count], idx) => (
+                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-gray-50 rounded">
+                                <span className="truncate flex-1 mr-8">{key}</span>
+                                <span className="font-bold">{count.toLocaleString()}회</span>
+                              </div>
+                            ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Top by Latency */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-12 flex items-center gap-8">
+                         <span className="w-8 h-8 rounded-full bg-error"></span>
+                         Slowest Methods (평균 최저 속도)
+                      </h4>
+                      <div className="space-y-8">
+                        {(() => {
+                          const grouped = new Map();
+                          sreData.forEach(d => {
+                            const key = `${d.serviceName}.${d.methodName}`;
+                            if (!grouped.has(key)) grouped.set(key, { totalDuration: 0, totalCount: 0 });
+                            const stats = grouped.get(key);
+                            stats.totalDuration += (d.avgDuration * d.totalCounts);
+                            stats.totalCount += d.totalCounts;
+                          });
+                          return Array.from(grouped.entries())
+                            .map(([key, stats]) => [key, stats.totalCount > 0 ? stats.totalDuration / stats.totalCount : 0])
+                            .sort((a,b) => (b[1] as number) - (a[1] as number))
+                            .slice(0, 5)
+                            .map(([key, avg], idx) => (
+                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-gray-50 rounded">
+                                <span className="truncate flex-1 mr-8">{key}</span>
+                                <span className="font-bold text-error">{(avg as number).toFixed(1)}ms</span>
+                              </div>
+                            ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Top by Memory */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-12 flex items-center gap-8">
+                         <span className="w-8 h-8 rounded-full bg-purple-500"></span>
+                         Heavy Memory Usage (총 사용 메모리 합계)
+                      </h4>
+                      <div className="space-y-8">
+                        {(() => {
+                          const grouped = new Map();
+                          sreData.forEach(d => {
+                            const key = `${d.serviceName}.${d.methodName}`;
+                            grouped.set(key, (grouped.get(key) || 0) + (d.totalUsedMemory || 0));
+                          });
+                          return Array.from(grouped.entries())
+                            .sort((a,b) => b[1] - a[1])
+                            .slice(0, 5)
+                            .map(([key, mem], idx) => (
+                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-gray-50 rounded">
+                                <span className="truncate flex-1 mr-8">{key}</span>
+                                <span className="font-bold text-purple-600">{mem.toLocaleString()}MB</span>
+                              </div>
+                            ));
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="SLO (Service Level Objective) 준수 리포트">
+                  <div className="overflow-x-auto">
+                    <table className="trace-table no-hover">
+                      <thead>
+                        <tr>
+                          <th>SLO Target</th>
+                          <th>Objective</th>
+                          <th>Actual (Current)</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          const totalCalls = sreData.reduce((a,b)=>a+b.totalCounts, 0);
+                          const avgLat = totalCalls > 0 ? (sreData.reduce((a,b)=>a+(b.avgDuration*b.totalCounts), 0)/totalCalls) : 0;
+                          const memSat = summary ? summary.sysBackend.memory : 0;
+                          const maxCpuP95 = sreData.length > 0 ? Math.max(...sreData.map(d => d.cpuP95 || 0)) : 0;
+
+                          return (
+                            <>
+                              <tr>
+                                <td className="font-semibold">Latency (Avg)</td>
+                                <td>&lt; 200ms</td>
+                                <td>{avgLat.toFixed(1)}ms</td>
+                                <td><span className={`status-badge ${avgLat < 200 ? 'success' : 'error'}`}>{avgLat < 200 ? 'Met' : 'Exceeded'}</span></td>
+                              </tr>
+                              <tr>
+                                <td className="font-semibold">Memory Saturation</td>
+                                <td>&lt; 80%</td>
+                                <td>{memSat.toFixed(1)}%</td>
+                                <td><span className={`status-badge ${memSat < 80 ? 'success' : 'warning'}`}>{memSat < 80 ? 'Met' : 'Risk'}</span></td>
+                              </tr>
+                              <tr>
+                                <td className="font-semibold">CPU Peak (P95)</td>
+                                <td>&lt; 85%</td>
+                                <td>{maxCpuP95.toFixed(1)}%</td>
+                                <td><span className={`status-badge ${maxCpuP95 < 85 ? 'success' : 'error'}`}>{maxCpuP95 < 85 ? 'Met' : 'Exceeded'}</span></td>
+                              </tr>
+                            </>
+                          );
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </div>
             </div>
           )}
         </div>

@@ -1,25 +1,18 @@
 package com.logistics.platform.service.system;
 
-import com.logistics.platform.repository.system.SystemMetricsLogRepository;
-import com.logistics.platform.repository.system.MonitoringLogRepository;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SystemMonitoringServiceTest {
 
-    private MonitoringLogRepository monitoringLogRepository;
-    private SystemMetricsLogRepository systemMetricsLogRepository;
     private SystemMonitoringService service;
 
     @BeforeEach
     void setUp() {
-        monitoringLogRepository = Mockito.mock(MonitoringLogRepository.class);
-        systemMetricsLogRepository = Mockito.mock(SystemMetricsLogRepository.class);
-        service = new SystemMonitoringService(new SimpleMeterRegistry(), monitoringLogRepository, systemMetricsLogRepository);
+        service = new SystemMonitoringService(new SimpleMeterRegistry());
     }
 
     @Test

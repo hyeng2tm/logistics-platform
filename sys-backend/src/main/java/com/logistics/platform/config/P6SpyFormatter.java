@@ -17,6 +17,12 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
             return null;
         }
         String finalSql = (sql != null && !sql.trim().isEmpty()) ? sql : prepared;
+
+        // Quartz 내부 쿼리(QRTZ_ 관련)는 로그에서 제외
+        if (finalSql != null && finalSql.toUpperCase().contains("QRTZ_")) {
+            return null;
+        }
+
         finalSql = formatSql(category, finalSql);
 
         if (finalSql == null || finalSql.trim().isEmpty()) {

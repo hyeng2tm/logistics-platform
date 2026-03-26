@@ -427,3 +427,24 @@
 .empty-state p {
   margin-top: 16px;
 }
+
+.text-accent-gold {
+  color: #f59e0b;
+}
+
+.trace-table.no-hover tr:hover {
+  background-color: transparent !important;
+}
+
+.trace-table.no-hover td {
+  padding: 16px;
+}
+
+.sre-availability-score {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #05CD99 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}

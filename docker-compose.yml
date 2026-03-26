@@ -41,6 +41,24 @@ services:
       timeout: 5s
       retries: 5
 
+  mysql-health:
+    image: bitnamilegacy/mysql:8.0
+    container_name: logistics-mysql-health
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=health_db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    ports:
+      - "3310:3306"
+    volumes:
+      - mysql_health_data:/bitnami/mysql/data
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   auth-server:
     build:
       context: ./auth-server
@@ -59,6 +77,22 @@ services:
       mysql:
         condition: service_healthy
       mysql-replica:
+        condition: service_healthy
+
+  hea-backend:
+    build:
+      context: ./hea-backend
+      dockerfile: Dockerfile
+    container_name: logistics-hea-backend
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
+      DB_USERNAME: user
+      DB_PASSWORD: password
+    depends_on:
+      mysql-health:
         condition: service_healthy
 
   sys-backend:
@@ -80,6 +114,8 @@ services:
         condition: service_healthy
       auth-server:
         condition: service_started
+      hea-backend:
+        condition: service_started
 
   batch:
     build:
@@ -94,6 +130,8 @@ services:
         condition: service_healthy
       mysql-replica:
         condition: service_healthy
+      hea-backend:
+        condition: service_started
 
 
   frontend-next:
@@ -106,7 +144,9 @@ services:
     depends_on:
       - sys-backend
       - auth-server
+      - hea-backend
 
 volumes:
   mysql_data:
+  mysql_health_data:
   auth_keys:

@@ -1,12 +1,11 @@
-package com.logistics.platform.repository.system;
+package com.logistics.health.repository;
 
-import com.logistics.platform.domain.system.MonitoringLog;
+import com.logistics.health.domain.MonitoringLog;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import java.time.Instant;
 import java.util.List;
 
-@Repository
 public interface MonitoringLogRepository extends JpaRepository<MonitoringLog, String> {
     List<MonitoringLog> findTop1440ByOrderByTimestampDesc();
+    List<MonitoringLog> findByTimestampBetween(Instant start, Instant end);
 }

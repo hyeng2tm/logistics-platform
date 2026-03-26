@@ -1,0 +1,8 @@
+package com.logistics.platform.config;
+
+import lombok.Data;
+
+@Data
+public class CrossingProperties {
+    private String url;
+}

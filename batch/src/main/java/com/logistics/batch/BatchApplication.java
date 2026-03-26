@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @org.springframework.context.annotation.EnableAspectJAutoProxy
+@org.springframework.boot.context.properties.ConfigurationPropertiesScan
 public class BatchApplication {
     public static void main(String[] args) {
         SpringApplication.run(BatchApplication.class, args);

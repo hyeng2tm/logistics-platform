@@ -1,10 +1,14 @@
-package com.logistics.platform.dto.system;
+package com.logistics.batch.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BatchJobDto {
     private String jobName;
     private String jobGroup;

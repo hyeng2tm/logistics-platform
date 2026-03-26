@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "name": "app",
+      "type": "com.logistics.batch.config.AppProperties",
+      "sourceType": "com.logistics.batch.config.AppProperties",
+      "description": "Application specific configuration properties."
+    },
+    {
+      "name": "app.health-service",
+      "type": "com.logistics.batch.config.HealthServiceProperties",
+      "sourceType": "com.logistics.batch.config.AppProperties",
+      "sourceMethod": "getHealthService()",
+      "description": "Configuration for the health monitoring service."
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.health-service.url",
+      "type": "java.lang.String",
+      "sourceType": "com.logistics.batch.config.HealthServiceProperties",
+      "description": "The base URL of the health service.",
+      "defaultValue": "http://localhost:8081"
+    }
+  ],
+  "hints": []
+}

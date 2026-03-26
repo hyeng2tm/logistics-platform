@@ -37,4 +37,9 @@ public class SystemMonitoringController {
     public ResponseEntity<List<ExecutionLog>> getExecutionLogs() {
         return ResponseEntity.ok(monitoringService.getExecutionLogs());
     }
+
+    @GetMapping("/sre-analysis")
+    public ResponseEntity<List<Map<String, Object>>> getSreAnalysis() {
+        return ResponseEntity.ok(monitoringService.getSreAnalysis());
+    }
 }
