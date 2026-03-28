@@ -517,5 +517,43 @@
         "structure": "Auth-Server Source Structure",
         "config": "Configuration Details"
       }
+    },
+    "monitoring": {
+      "dashboard_summary": "Dashboard Summary",
+      "execution_trace": "Execution Trace",
+      "system_logs": "System Logs",
+      "sre_analysis": "SRE Analysis Report",
+      "active_instances": "Active Instances",
+      "auto_refresh": "Auto Refresh",
+      "refresh_paused": "Refresh Paused",
+      "refresh_interval_60s": "Refreshes every 60 seconds.",
+      "metrics": {
+        "latency": {
+          "label": "Latency",
+          "desc": "The time it takes to service a request."
+        },
+        "traffic": {
+          "label": "Traffic (TPS)",
+          "desc": "A measure of how much demand is being placed on the system (Transactions Per Second)."
+        },
+        "errors": {
+          "label": "Errors",
+          "desc": "The rate of requests that fail."
+        },
+        "saturation": {
+          "label": "Saturation",
+          "desc": "How 'full' your service is (e.g., CPU, Memory usage)."
+        },
+        "p95": {
+          "label": "P95 Percentile",
+          "desc": "The latency experienced by the 95th percentile of requests. Useful for identifying performance tails."
+        },
+        "p50": {
+          "label": "P50 (Median)",
+          "desc": "The median latency. Half of the requests are faster than this value."
+        }
+      },
+      "glossary_title": "Guide: SRE 4 Golden Signals",
+      "glossary_desc": "The four essential dimensions of system monitoring as defined in the Google SRE handbook. These help identify bottlenecks and early signs of failure."
     }
 }

@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
-import { Layout, MessageSquare, RefreshCcw, Server, Activity, Filter, AlertCircle } from 'lucide-react';
+import { Layout, MessageSquare, RefreshCcw, Server, Activity, Filter, AlertCircle, Play, Pause } from 'lucide-react';
 import { apiClient } from '../../../utils/apiClient';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ComposedChart, Bar
+  ComposedChart, Bar, AreaChart, Area, PieChart, Pie, Cell, BarChart
 } from 'recharts';
 import './SystemMonitoring.css';
 
@@ -106,15 +106,6 @@ interface ChartPoint {
   traceAvgDuration?: number;
   traceMaxMemory?: number;
 }
-const ProgressFill = ({ progress }: { progress: number }) => {
-  const ref = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    if (ref.current) {
-      ref.current.style.width = `${Math.min(100, progress)}%`;
-    }
-  }, [progress]);
-  return <div ref={ref} className="progress-fill" />;
-};
 
 const transformSnapshotToChartPoint = (snapshot: SystemSummary): ChartPoint => {
   const date = new Date(snapshot.timestamp);
@@ -144,10 +135,11 @@ const transformSnapshotToChartPoint = (snapshot: SystemSummary): ChartPoint => {
   };
 };
 
+// MetricGlossary moved inside SystemMonitoringPage
 export default function SystemMonitoringPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('summary');
-  const [selectedServer, setSelectedServer] = useState<'all' | 'sys-backend' | 'batch-server' | 'auth-server' | 'database'>('all');
+
   
   const [summary, setSummary] = useState<SystemSummary | null>(null);
   const [history, setHistory] = useState<ChartPoint[]>([]);
@@ -158,9 +150,10 @@ export default function SystemMonitoringPage() {
   const [traceAppFilter, setTraceAppFilter] = useState<string>('sys-backend');
   const [traceHourFilter, setTraceHourFilter] = useState<string>(new Date().getHours().toString().padStart(2, '0'));
   const [tracePage, setTracePage] = useState<number>(1);
-  const [sreDateFilter, setSreDateFilter] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [sreDateFilter, setSreDateFilter] = useState('2026-03-25');
 
   const [loading, setLoading] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   const uniqueApps = Array.from(new Set(executionLogs.map(log => log.appId))).filter(Boolean);
   const filteredExecutionLogs = executionLogFilter === 'All' 
@@ -179,7 +172,22 @@ export default function SystemMonitoringPage() {
   const totalPages = Math.ceil(traceTableData.length / ITEMS_PER_PAGE);
   const currentTableData = traceTableData.slice((tracePage - 1) * ITEMS_PER_PAGE, tracePage * ITEMS_PER_PAGE);
 
-  const [isMounted, setIsMounted] = useState(false);
+  // Helper component to avoid inline styles for dynamic widths (resolves lints)
+  const ProgressBar = ({ progress, secondary }: { progress: number, secondary?: boolean }) => {
+    const barRef = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+      if (barRef.current) {
+        barRef.current.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+      }
+    }, [progress]);
+
+    return (
+      <div 
+        ref={barRef}
+        className={`progress-bar-fill ${secondary ? 'progress-bar-fill-secondary' : ''}`} 
+      />
+    );
+  };
 
   useEffect(() => {
     setTracePage(1);
@@ -189,23 +197,41 @@ export default function SystemMonitoringPage() {
   startOfDay.setHours(0, 0, 0, 0);
   const startOfDayTime = startOfDay.getTime();
   
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
-  const endOfDayTime = endOfDay.getTime();
-
   const sreStartOfDay = new Date(sreDateFilter);
   sreStartOfDay.setHours(0, 0, 0, 0);
   const sreStartOfDayTime = sreStartOfDay.getTime();
   
-  const sreEndOfDay = new Date(sreDateFilter);
-  sreEndOfDay.setHours(23, 59, 59, 999);
-  const sreEndOfDayTime = sreEndOfDay.getTime();
-
-  const todayHistory = history.filter(h => h.timestamp >= startOfDayTime);
-
-  // Aggregate by hour for the chart
-  const hourlyData: Record<string, string | number>[] = [];
+  const sreEndOfDayTime = sreStartOfDayTime + 24 * 3600000;
+  
+  // Create a strictly rigid 24-hour padded array to ensure Recharts draws perfectly equidistant dots 
+  // every hour, completely removing the optical illusion caused by sparse (missing) early morning data.
+  const displaySreData = [];
   for (let h = 0; h <= 24; h++) {
+    const bucketTs = sreStartOfDayTime + h * 3600000;
+    const timeLabel = h === 24 ? "24:00" : `${h.toString().padStart(2, '0')}:00`;
+    const existing = (sreData || []).find((d: Record<string, any>) => Math.abs(d.bucketTimestamp - bucketTs) < 300000);
+    if (existing) {
+      displaySreData.push({ ...existing, bucketTimestamp: bucketTs, timeLabel, hourIndex: h });
+    } else {
+      displaySreData.push({
+        bucketTimestamp: bucketTs,
+        timeLabel,
+        hourIndex: h,
+        avgDuration: 0,
+        maxDuration: 0,
+        totalCounts: 0,
+        avgUsedMemory: 0,
+        maxUsedMemory: 0,
+        cpuP95: 0,
+        cpuP50: 0
+      });
+    }
+  }
+
+
+  // Aggregate by hour for the chart (00 to 23 = 24 segments)
+  const hourlyData: Record<string, string | number>[] = [];
+  for (let h = 0; h < 24; h++) {
     const timeLabel = `${h.toString().padStart(2, '0')}:00`;
     const slot: Record<string, string | number> = { timeLabel };
     uniqueApps.forEach(app => {
@@ -218,7 +244,7 @@ export default function SystemMonitoringPage() {
   filteredExecutionLogs.forEach(log => {
     const logTime = new Date(log.timestamp).getTime();
     const h = Math.floor((logTime - startOfDayTime) / 3600000);
-    if (h >= 0 && h <= 24) {
+    if (h >= 0 && h < 24) {
       (hourlyData[h] as Record<string, number>)[`${log.appId}_memory`] = ((hourlyData[h] as Record<string, number>)[`${log.appId}_memory`] || 0) + log.usedMemory;
       (hourlyData[h] as Record<string, number>)[`${log.appId}_duration`] = ((hourlyData[h] as Record<string, number>)[`${log.appId}_duration`] || 0) + log.duration;
     }
@@ -237,10 +263,6 @@ export default function SystemMonitoringPage() {
     return acc;
   }, {} as Record<string, { appId: string, totalMemory: number, totalDuration: number, count: number }>);
   const appAggList = Object.values(appAggregations);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const fetchSummary = async () => {
     try {
@@ -356,94 +378,8 @@ export default function SystemMonitoringPage() {
     try {
       const data = await apiClient.get<SREAnalysis[]>('/api/v1/system/monitoring/sre-analysis');
       
-      // Inject Mock Data for Demonstration
-      const dateStr = sreDateFilter; // Use selected date
-      let mockPeaks: SREAnalysis[] = [];
-
-      if (dateStr === '2026-03-21') {
-        // Sample data for 5 days ago - Historical Incident (Massive Memory Leak & Latency Spike)
-        mockPeaks = [
-          {
-            id: 'hist-p1',
-            bucketTime: `${dateStr}T10:00:00`,
-            appId: 'sys-backend',
-            serviceName: 'OrderService',
-            methodName: 'validateOrderFlow',
-            minDuration: 500, maxDuration: 12000, avgDuration: 3500, totalDuration: 3500000,
-            minUsedMemory: 1200, maxUsedMemory: 4500, avgUsedMemory: 3200, totalUsedMemory: 3200000,
-            cpuP95: 98.2, cpuP50: 65.5, totalCounts: 1000,
-            representativeSql: 'SELECT * FROM orders WHERE created_at > ...',
-            lastExecuteTime: `${dateStr}T10:15:00`
-          },
-          {
-            id: 'hist-p2',
-            bucketTime: `${dateStr}T11:00:00`,
-            appId: 'sys-backend',
-            serviceName: 'InventoryService',
-            methodName: 'updateStockBulk',
-            minDuration: 800, maxDuration: 25000, avgDuration: 8200, totalDuration: 8200000,
-            minUsedMemory: 2500, maxUsedMemory: 7800, avgUsedMemory: 6500, totalUsedMemory: 6500000,
-            cpuP95: 99.8, cpuP50: 82.0, totalCounts: 1000,
-            representativeSql: 'UPDATE inventory SET quantity = quantity - 1 ...',
-            lastExecuteTime: `${dateStr}T11:20:00`
-          }
-        ];
-      } else {
-        // Default Mock Data (9-11 AM, 2-4 PM)
-        mockPeaks = [
-          {
-            id: 'mock-p1',
-            bucketTime: `${dateStr}T09:00:00`,
-            appId: 'sys-backend',
-            serviceName: 'OrderService',
-            methodName: 'processLargeBatch',
-            minDuration: 200, maxDuration: 4500, avgDuration: 1200, totalDuration: 1200000,
-            minUsedMemory: 400, maxUsedMemory: 1200, avgUsedMemory: 850, totalUsedMemory: 850000,
-            cpuP95: 94.5, cpuP50: 45.0, totalCounts: 1000,
-            representativeSql: 'SELECT * FROM orders WHERE status = "PENDING"',
-            lastExecuteTime: `${dateStr}T09:05:00`
-          },
-          {
-            id: 'mock-p2',
-            bucketTime: `${dateStr}T10:00:00`,
-            appId: 'sys-backend',
-            serviceName: 'PaymentService',
-            methodName: 'validateTransactions',
-            minDuration: 150, maxDuration: 3200, avgDuration: 850, totalDuration: 680000,
-            minUsedMemory: 300, maxUsedMemory: 950, avgUsedMemory: 620, totalUsedMemory: 496000,
-            cpuP95: 89.2, cpuP50: 38.5, totalCounts: 800,
-            representativeSql: 'UPDATE transactions SET status = "VALIDATED"',
-            lastExecuteTime: `${dateStr}T10:10:00`
-          },
-          {
-            id: 'mock-p3',
-            bucketTime: `${dateStr}T14:00:00`,
-            appId: 'sys-backend',
-            serviceName: 'InventoryService',
-            methodName: 'syncStockLevels',
-            minDuration: 300, maxDuration: 5800, avgDuration: 1500, totalDuration: 1800000,
-            minUsedMemory: 500, maxUsedMemory: 1500, avgUsedMemory: 1100, totalUsedMemory: 1320000,
-            cpuP95: 96.8, cpuP50: 52.0, totalCounts: 1200,
-            representativeSql: 'INSERT INTO inventory_logs SELECT * FROM temp_stock',
-            lastExecuteTime: `${dateStr}T14:15:00`
-          },
-          {
-            id: 'mock-p4',
-            bucketTime: `${dateStr}T15:00:00`,
-            appId: 'sys-backend',
-            serviceName: 'NotificationService',
-            methodName: 'sendBulkPush',
-            minDuration: 100, maxDuration: 2800, avgDuration: 620, totalDuration: 930000,
-            minUsedMemory: 250, maxUsedMemory: 780, avgUsedMemory: 480, totalUsedMemory: 720000,
-            cpuP95: 91.0, cpuP50: 41.5, totalCounts: 1500,
-            representativeSql: 'SELECT user_id FROM push_tokens',
-            lastExecuteTime: `${dateStr}T15:20:00`
-          }
-        ];
-      }
-
       if (data) {
-        const combinedData = [...data, ...mockPeaks].map(d => ({
+        const combinedData = data.map(d => ({
           ...d,
           bucketTimestamp: new Date(d.bucketTime).getTime()
         })).sort((a,b) => a.bucketTime.localeCompare(b.bucketTime));
@@ -454,19 +390,27 @@ export default function SystemMonitoringPage() {
     }
   };
 
-  const loadData = async () => {
+  const loadData = async (force: boolean = false) => {
+    if (!autoRefresh && !force) return;
     setLoading(true);
-    await Promise.all([fetchSummary(), fetchLogs(), fetchHistory(), fetchExecutionLogs(), fetchSreAnalysis()]);
+    
+    const tasks = [];
+    if (activeTab === 'summary' || force) tasks.push(fetchSummary(), fetchHistory());
+    if (activeTab === 'execution' || force) tasks.push(fetchExecutionLogs());
+    if (activeTab === 'logs' || force) tasks.push(fetchLogs());
+    if (activeTab === 'sre' || force) tasks.push(fetchSreAnalysis());
+    
+    await Promise.all(tasks);
     setLoading(false);
   };
 
   useEffect(() => {
-    loadData();
-    // Refresh every 30 seconds
-    const interval = setInterval(loadData, 30000);
+    loadData(true);
+    // Refresh every 60 seconds (optimized from 30s)
+    const interval = setInterval(() => loadData(), 60000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [activeTab, autoRefresh]);
 
   useEffect(() => {
     if (activeTab === 'sre') {
@@ -478,11 +422,16 @@ export default function SystemMonitoringPage() {
   const renderServerCard = (id: string, stats: ServerStats | undefined, iconColor: string = 'text-primary') => {
     if (!stats) return null;
     
+    // Determine glow class based on server type
+    const glowClass = id.includes('backend') ? 'neon-glow-indigo' : 
+                      id.includes('db') ? 'neon-glow-cyan' : 
+                      id.includes('auth') ? 'neon-glow-magenta' : 'neon-glow-indigo';
+
     return (
       <Card key={id} title={
-        <div className="flex items-center gap-8">
-          <Server size={18} className={iconColor} />
-          <span>{stats.name || id.toUpperCase()}</span>
+        <div className="flex items-center gap-12">
+          <Server size={20} className={iconColor + " " + glowClass} />
+          <span className="font-bold tracking-tight">{stats.name || id.toUpperCase()}</span>
           <span className={`status-badge ${stats.status === 'Healthy' ? 'success' : 'danger'}`}>
             {stats.status}
           </span>
@@ -490,20 +439,20 @@ export default function SystemMonitoringPage() {
       }>
         <div className="card-stat-grid">
           <div className="stat-card large">
-            <div className="stat-label">Latency (ms)</div>
-            <div className="stat-value text-accent-blue">{stats.latency?.toFixed(0) ?? '--'}</div>
+            <div className="stat-label">Latency</div>
+            <div className={`stat-value ${glowClass}`}>{stats.latency?.toFixed(0) ?? '--'}<span className="text-[14px] ml-2 opacity-50 font-normal">ms</span></div>
           </div>
           <div className="stat-card large">
             <div className="stat-label">TPS</div>
-            <div className="stat-value text-accent-blue">{stats.tps?.toFixed(1) ?? '--'}</div>
+            <div className={`stat-value ${glowClass}`}>{stats.tps?.toFixed(1) ?? '--'}</div>
           </div>
           <div className="stat-card large">
-            <div className="stat-label">CPU (%)</div>
-            <div className="stat-value text-accent-blue">{stats.cpu.toFixed(1)}%</div>
+            <div className="stat-label">CPU</div>
+            <div className={`stat-value ${glowClass}`}>{stats.cpu.toFixed(1)}<span className="text-[14px] ml-2 opacity-50 font-normal">%</span></div>
           </div>
           <div className="stat-card large">
-            <div className="stat-label">Memory (%)</div>
-            <div className="stat-value text-accent-blue">{stats.memory}%</div>
+            <div className="stat-label">Memory</div>
+            <div className={`stat-value ${glowClass}`}>{stats.memory}<span className="text-[14px] ml-2 opacity-50 font-normal">%</span></div>
           </div>
         </div>
 
@@ -512,11 +461,11 @@ export default function SystemMonitoringPage() {
             <div className="stat-label mb-2 flex items-center gap-4">
               <Activity size={14} className="text-tertiary" /> {t('monitoring.active_instances', '가동 인스턴스')} ({stats.instances.length})
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-6">
               {stats.instances.map(inst => (
                 <div key={inst.id} className="instance-chip" title={`CPU: ${inst.cpu.toFixed(1)}%, Mem: ${inst.memory}%`}>
-                  <div className={`status-dot ${inst.status === 'Healthy' ? 'bg-success' : 'bg-danger'}`}></div>
-                  <span className="instance-id">{inst.id.split('-').pop()}</span>
+                  <div className={`status-dot ${inst.status === 'Healthy' ? 'bg-success status-dot-active' : 'bg-danger status-dot-error'}`}></div>
+                  <span className="instance-id font-mono text-[10px]">{inst.id.split('-').pop()}</span>
                 </div>
               ))}
             </div>
@@ -526,53 +475,6 @@ export default function SystemMonitoringPage() {
     );
   };
 
-  const renderChart = (title: string, subtitle: string, keys: (keyof ChartPoint)[], unit: string = '', max?: number) => (
-    <div>
-      <h4 className="text-center text-sm mb-8">{subtitle}</h4>
-      {isMounted && (
-        <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={todayHistory}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-            <XAxis 
-              dataKey="timestamp" 
-              fontSize={10} 
-              type="number" 
-              domain={[startOfDayTime, endOfDayTime]} 
-              ticks={[
-                startOfDayTime,
-                startOfDayTime + 3 * 3600000,
-                startOfDayTime + 6 * 3600000,
-                startOfDayTime + 9 * 3600000,
-                startOfDayTime + 12 * 3600000,
-                startOfDayTime + 15 * 3600000,
-                startOfDayTime + 18 * 3600000,
-                startOfDayTime + 21 * 3600000,
-                endOfDayTime
-              ]}
-              tickFormatter={(v) => {
-                const date = new Date(v);
-                return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-              }}
-            />
-            <YAxis fontSize={10} domain={max ? [0, max] : undefined} unit={unit} />
-            <Tooltip 
-              contentStyle={{ fontSize: '10px' }} 
-              labelFormatter={(v) => {
-                const date = new Date(v);
-                return `${date.toLocaleDateString()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-              }}
-            />
-            <Legend wrapperStyle={{ fontSize: '10px' }} />
-            {(selectedServer === 'all' || selectedServer === 'sys-backend') && <Line type="monotone" dataKey={keys[0]} name="Backend" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
-            {(selectedServer === 'all' || selectedServer === 'auth-server') && <Line type="monotone" dataKey={keys[1]} name="Auth" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
-            {(selectedServer === 'all' || selectedServer === 'batch-server') && <Line type="monotone" dataKey={keys[2]} name="Batch" stroke="#f59e0b" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
-            {(selectedServer === 'all' || selectedServer === 'database') && <Line type="monotone" dataKey={keys[3]} name="Database" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />}
-          </LineChart>
-        </ResponsiveContainer>
-      )}
-    </div>
-  );
-
   return (
     <div className="template-page fade-in p-6">
       <div className="flex justify-between items-center mb-6">
@@ -581,10 +483,23 @@ export default function SystemMonitoringPage() {
           description="주요 서버별 실시간 성능 추이 및 4대 황금 신호(Golden Signals)를 분석합니다."
           breadcrumbs={[t('sidebar.system_management', '시스템 관리'), t('sidebar.system_monitoring', '시스템 모니터링')]}
         />
-        <button className="btn btn-outline flex items-center gap-8" onClick={loadData} disabled={loading}>
-          <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} /> {t('common.refresh', '새로고침')}
-        </button>
+        <div className="flex items-center gap-12">
+          <div className="flex items-center gap-8 px-12 py-6 bg-gray-50 rounded-lg border border-gray-100">
+            <span className="text-xs font-medium text-gray-600">{t('monitoring.auto_refresh', '자동 갱신')}</span>
+            <button 
+              className={`refresh-toggle ${autoRefresh ? 'active' : ''}`}
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              title={autoRefresh ? t('monitoring.refresh_interval_60s') : t('monitoring.refresh_paused')}
+            >
+              {autoRefresh ? <Pause size={14} /> : <Play size={14} />}
+            </button>
+          </div>
+          <button className="btn btn-outline flex items-center gap-8" onClick={() => loadData(true)} disabled={loading}>
+            <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} /> {t('common.refresh', '새로고침')}
+          </button>
+        </div>
       </div>
+
 
       <div className="system-monitoring-container mt-6">
         <div className="tab-menu-bar">
@@ -610,136 +525,255 @@ export default function SystemMonitoringPage() {
             className={`tab-item ${activeTab === 'sre' ? 'active' : ''}`}
             onClick={() => setActiveTab('sre')}
           >
-            <Activity size={18} className="text-accent-gold" /> {t('monitoring.sre_analysis', 'SRE 분석 리포트')}
+            <Activity size={18} className="text-accent-primary" /> {t('monitoring.sre_golden_signals', 'SRE 골든 시그널')}
+          </button>
+          <button 
+            className={`tab-item ${activeTab === 'sre_performance' ? 'active' : ''}`}
+            onClick={() => setActiveTab('sre_performance')}
+          >
+            <Activity size={18} className="text-accent-gold" /> {t('monitoring.sre_performance', 'SRE 성능 분석')}
           </button>
         </div>
 
         {activeTab === 'summary' && (
-            <div className="tab-content-area mt-4 pb-48">
-              {loading && !summary ? (
-                <div className="empty-state">
-                  <RefreshCcw size={48} className="animate-spin mb-16 opacity-20" />
-                  <p>데이터를 불러오는 중입니다...</p>
-                </div>
-              ) : summary ? (
-                <div className="fade-in">
-                  <Card title={
-                    <div className="flex justify-between items-center w-full">
-                      <div className="flex items-center gap-8">
-                        <Activity size={18} className="text-primary" />
-                        <span>주요 성능 지표 트렌드 (Golden Signals)</span>
-                      </div>
-                      <div className="flex gap-4">
-                        {[
-                          { id: 'all', label: '전체' },
-                          { id: 'sys-backend', label: 'Backend' },
-                          { id: 'auth-server', label: 'Auth' },
-                          { id: 'batch-server', label: 'Batch' },
-                          { id: 'database', label: 'Database' }
-                        ].map(srv => (
-                          <button
-                            key={srv.id}
-                            onClick={() => setSelectedServer(srv.id as 'all' | 'sys-backend' | 'batch-server' | 'auth-server' | 'database')}
-                            className={`filter-btn ${selectedServer === srv.id ? 'active' : ''}`}
-                          >
-                            {srv.label}
-                          </button>
-                        ))}
+          <div className="tab-content-area mt-4 pb-48 fade-in">
+            {loading && !summary ? (
+              <div className="empty-state">
+                <RefreshCcw size={48} className="animate-spin mb-16 opacity-20" />
+                <p>데이터를 불러오는 중입니다...</p>
+              </div>
+            ) : summary ? (
+              <div className="fade-in">
+                {/* Row 1: Top Metrics */}
+                <div className="dashboard-grid-top">
+                  {/* CPU LOAD Card */}
+                  <div className="card premium-metric-card">
+                    <div>
+                      <div className="card-label">CPU LOAD</div>
+                      <div className="card-value neon-glow-cyan">{summary.sysBackend.cpu.toFixed(0)}%</div>
+                    </div>
+                    <div className="mini-chart-container">
+                      <ResponsiveContainer width="100%" height={80}>
+                        <AreaChart data={history.slice(-20)}>
+                          <defs>
+                            <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="var(--neon-cyan)" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="var(--neon-cyan)" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <Area type="monotone" dataKey="sysCpu" stroke="var(--neon-cyan)" fillOpacity={1} fill="url(#colorCpu)" strokeWidth={3} isAnimationActive={false} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                      <div className="text-[10px] text-white/30 mt-4 flex justify-between">
+                        <span>Dynamic Wave Chart</span>
+                        <span>Avg: 41%</span>
                       </div>
                     </div>
-                  }>
-                    <div className="trend-charts-container">
-                      {renderChart('CPU Usage (%)', 'CPU 사용률 추이', ['sysCpu', 'authCpu', 'batchCpu', 'dbCpu'], '%', 100)}
-                      {renderChart('Memory Usage (%)', '메모리 점유율 추이', ['sysMem', 'authMem', 'batchMem', 'dbMem'], '%', 100)}
-                      {renderChart('Response Time (ms)', '응답 시간(Latency) 추이', ['sysLatency', 'authLatency', 'batchLatency', 'dbLatency'], 'ms')}
-                      {renderChart('Request Rate (TPS)', '트래픽(TPS) 추이', ['sysTps', 'authTps', 'batchTps', 'dbTps'], 'tps')}
+                  </div>
+
+                  {/* MEMORY Card */}
+                  <div className="card premium-metric-card">
+                    <div>
+                      <div className="card-label">MEMORY</div>
+                      <div className="circular-gauge-wrapper">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: 'Used', value: summary.sysBackend.memory },
+                                { name: 'Free', value: 100 - summary.sysBackend.memory }
+                              ]}
+                              innerRadius={45}
+                              outerRadius={55}
+                              startAngle={180}
+                              endAngle={-180}
+                              paddingAngle={0}
+                              dataKey="value"
+                              isAnimationActive={false}
+                            >
+                              <Cell fill="var(--accent-success)" stroke="none" />
+                              <Cell fill="rgba(255,255,255,0.05)" stroke="none" />
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="circular-gauge-info">
+                          <div className="text-xl font-bold">{summary.sysBackend.memory}%</div>
+                          <div className="text-[8px] opacity-40">/ 128GB</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-white/30 mt-8 flex justify-between">
+                      <span>Circular Gauge</span>
+                      <span>Cached: 45GB</span>
+                    </div>
+                  </div>
+
+                  {/* NETWORK Card */}
+                  <div className="card premium-metric-card">
+                    <div>
+                      <div className="card-label">NETWORK</div>
+                      <div className="flex gap-16 items-baseline">
+                        <div className="text-2xl font-bold neon-glow-magenta"><span className="text-[10px] opacity-40 mr-4">IN:</span>1.2 <span className="text-[10px] font-normal">GB/s</span></div>
+                        <div className="text-2xl font-bold neon-glow-indigo"><span className="text-[10px] opacity-40 mr-4">OUT:</span>940 <span className="text-[10px] font-normal">MB/s</span></div>
+                      </div>
+                    </div>
+                    <div className="mini-chart-container">
+                      <ResponsiveContainer width="100%" height={60}>
+                        <AreaChart data={history.slice(-20)}>
+                          <Area type="monotone" dataKey="sysTps" stroke="var(--neon-magenta)" fill="var(--neon-magenta)" fillOpacity={0.1} strokeWidth={2} isAnimationActive={false} />
+                          <Area type="monotone" dataKey="authTps" stroke="var(--accent-primary)" fill="var(--accent-primary)" fillOpacity={0.1} strokeWidth={2} isAnimationActive={false} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                      <div className="text-[10px] text-white/30 mt-4 flex justify-between">
+                        <span>Gradient Area Charts</span>
+                        <span>Latency: {summary.sysBackend.latency}ms</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 2: Mid Content */}
+                <div className="dashboard-grid-mid">
+                  <div className="dashboard-grid-mid-cols">
+                    <Card title="INFRASTRUCTURE HEALTH">
+                      <div className="mini-chart-container chart-h-240">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={history}>
+                            <defs>
+                              <linearGradient id="colorHealth" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                            <XAxis 
+                              dataKey="timestamp" 
+                              type="number"
+                              domain={[startOfDayTime, startOfDayTime + 24 * 3600000]}
+                              ticks={[
+                                startOfDayTime,
+                                startOfDayTime + 6 * 3600000,
+                                startOfDayTime + 12 * 3600000,
+                                startOfDayTime + 18 * 3600000,
+                                startOfDayTime + 24 * 3600000
+                              ]}
+                              tickFormatter={(v) => {
+                                const date = new Date(v);
+                                if (v === startOfDayTime + 24 * 3600000) return "24:00";
+                                if (v === sreEndOfDayTime) return "24:00";
+                               return `${date.getHours().toString().padStart(2, "0")}:00`;
+                              }}
+                              fontSize={10}
+                            />
+                            <YAxis domain={[0, 100]} fontSize={10} />
+                            <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} contentStyle={{background: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px', fontSize: '10px'}} />
+                            <Area type="monotone" dataKey="sysCpu" stroke="var(--accent-primary)" fill="url(#colorHealth)" strokeWidth={3} dot={false} activeDot={{r: 4}} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </Card>
+
+                    <Card title="SERVER PERFORMANCE">
+                      <div className="mini-chart-container chart-h-240">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={[
+                            {id: 1, val: 40}, {id: 2, val: 65}, {id: 3, val: 45}, {id: 4, val: 80},
+                            {id: 5, val: 55}, {id: 6, val: 70}, {id: 7, val: 90}, {id: 8, val: 60}
+                          ]}>
+                            <Bar dataKey="val" radius={[4, 4, 0, 0]}>
+                              { [40, 65, 45, 80, 55, 70, 90, 60].map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={index % 2 === 0 ? 'var(--accent-success)' : 'var(--neon-cyan)'} fillOpacity={0.8} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </Card>
+                  </div>
+
+                  <Card title="ACTIVE ALERTS">
+                    <div className="alert-panel">
+                      <div className="alert-item critical">
+                        <div className="alert-tag text-accent-danger">Critical</div>
+                        <div className="text-xs font-bold text-white/90">Disk Space Low - Server-A11</div>
+                      </div>
+                      <div className="alert-item warning">
+                        <div className="alert-tag text-accent-warning">Warning</div>
+                        <div className="text-xs font-bold text-white/90">Latent spikes detected in Auth</div>
+                      </div>
+                      <div className="alert-item ok">
+                        <div className="alert-tag text-accent-success">OK</div>
+                        <div className="text-xs font-bold text-white/90">Database replication stable</div>
+                      </div>
+                      <div className="alert-item ok">
+                        <div className="alert-tag text-accent-success">OK</div>
+                        <div className="text-xs font-bold text-white/90">Batch job #122 finished</div>
+                      </div>
                     </div>
                   </Card>
+                </div>
 
-                  <div className="flex justify-between items-center mt-24 mb-16">
-                    <h3 className="tab-content-title">시스템 리소스 정보 (실시간)</h3>
-                    <span className="text-xs text-tertiary">수집 시각: {new Date(summary.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="summary-grid">
-                    {renderServerCard('sysBackend', summary.sysBackend, 'chart-text-backend')}
-                    {renderServerCard('authServer', summary.authServer, 'chart-text-auth')}
-                    {renderServerCard('batchServer', summary.batchServer, 'chart-text-batch')}
-                    {renderServerCard('dbServer', summary.dbServer, 'chart-text-db')}
-                  </div>
+                {/* Legacy Resource Grid (Keep for Real-time info but style it secondary) */}
+                <div className="flex justify-between items-center mt-32 mb-16 px-8">
+                  <h3 className="text-sm font-bold opacity-40 uppercase tracking-widest">Live Node Status</h3>
+                  <span className="text-[10px] text-tertiary">수집 시각: {new Date(summary.timestamp).toLocaleTimeString()}</span>
                 </div>
-              ) : (
-                <div className="empty-state">
-                  <AlertCircle size={48} className="mb-16 opacity-20" />
-                  <p>데이터를 불러오지 못했습니다. 서버 상태나 로그인 세션을 확인해주세요.</p>
-                  <button className="btn btn-primary mt-16" onClick={loadData}>새로고침 시도</button>
+                <div className="dashboard-grid-top opacity-80">
+                  {renderServerCard('sysBackend', summary.sysBackend, 'chart-text-backend')}
+                  {renderServerCard('authServer', summary.authServer, 'chart-text-auth')}
+                  {renderServerCard('batchServer', summary.batchServer, 'chart-text-batch')}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="empty-state">
+                <AlertCircle size={48} className="mb-16 opacity-20" />
+                <p>데이터를 불러오지 못했습니다. 서버 상태나 로그인 세션을 확인해주세요.</p>
+                <button className="btn btn-primary mt-16" onClick={() => loadData(true)}>새로고침 시도</button>
+              </div>
+            )}
+          </div>
+        )}
 
           {activeTab === 'execution' && (
-            <div className="fade-in text-secondary flex flex-col gap-24">
-
-              <Card title="App별 누적 실행 지표">
-                <div className="service-summary-grid">
-                  {appAggList.map(agg => {
-                    const isBackend = agg.appId === 'sys-backend';
-                    return (
-                      <div key={agg.appId} className={`stat-card ${isBackend ? 'primary' : ''}`}>
-                        <div className="card-header">
-                          <div className="icon-placeholder">
-                            {isBackend ? <Server size={20} /> : <Activity size={20} />}
-                          </div>
-                          <div className="card-title-text">{agg.appId}</div>
-                        </div>
-                        
-                        <div className="metric-row">
-                          <span className="metric-label">Total Memory</span>
-                          <div className="metric-value-container">
-                            <span className="metric-value">{agg.totalMemory.toFixed(0)}</span>
-                            <span className="metric-unit">MB</span>
-                          </div>
-                        </div>
-                        <div className="metric-row">
-                          <span className="metric-label">Total Duration</span>
-                          <div className="metric-value-container">
-                            <span className="metric-value accent">{agg.totalDuration}</span>
-                            <span className="metric-unit">ms</span>
-                          </div>
-                        </div>
-                        <div className="metric-row">
-                          <span className="metric-label">Trace Count</span>
-                          <div className="metric-value-container">
-                            <span className="metric-value accent">{agg.count}</span>
-                            <span className="metric-unit">traces</span>
-                          </div>
-                        </div>
-                        
-                        <div className="footer-info">
-                          Calculated from latest {agg.count} traces
-                        </div>
+            <div className="tab-content-area mt-4 pb-48 fade-in flex flex-col gap-32">
+              {/* Execution Summary Cards */}
+              <div className="dashboard-grid-top">
+                {appAggList.map(agg => (
+                  <div key={agg.appId} className="card premium-metric-card">
+                    <div>
+                      <div className="card-label">{agg.appId} TRACES</div>
+                      <div className="card-value neon-glow-indigo">{agg.count.toLocaleString()}</div>
+                    </div>
+                    <div className="flex flex-col gap-4 mt-8">
+                      <div className="flex justify-between text-[11px] opacity-40 uppercase font-bold">
+                        <span>Total Duration</span>
+                        <span>{agg.totalDuration.toLocaleString()} ms</span>
                       </div>
-                    );
-                  })}
-                  {appAggList.length === 0 && (
-                    <div className="col-span-full text-center text-tertiary p-16">데이터가 없습니다.</div>
-                  )}
-                </div>
-              </Card>
-
-               <div className="filter-bar">
-                <div className="filter-group">
-                  <div className="text-xs font-bold text-secondary flex items-center gap-4">
-                    <Filter size={14} /> App 필터:
+                      <div className="flex justify-between text-[11px] opacity-40 uppercase font-bold">
+                        <span>Memory Load</span>
+                        <span>{agg.totalMemory.toFixed(0)} MB</span>
+                      </div>
+                    </div>
+                    <div className="mini-chart-container mt-12">
+                      <div className="h-4 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                        <ProgressBar progress={(agg.count / 1000) * 100} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-8">
+                ))}
+              </div>
+
+              <div className="filter-section">
+                <div className="premium-filter-bar">
+                  <Filter size={16} className="text-accent-primary" />
+                  <div className="flex gap-12">
                     {['All', ...uniqueApps].map(app => (
                       <button
                         key={app}
                         onClick={() => setExecutionLogFilter(app)}
-                        className={`filter-btn ${executionLogFilter === app ? 'active' : ''}`}
+                        className={`text-xs font-bold transition-all ${executionLogFilter === app ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
                       >
-                        {app === 'All' ? '전체 App' : app}
+                        {app === 'All' ? 'ALL APPS' : app.toUpperCase()}
                       </button>
                     ))}
                   </div>
@@ -754,7 +788,8 @@ export default function SystemMonitoringPage() {
                       <XAxis 
                         dataKey="timeLabel" 
                         interval={3}
-                        fontSize={10} 
+                        fontSize={10}
+                        padding={{ left: 10, right: 10 }}
                       />
                       <YAxis yAxisId="left" fontSize={10} label={{ value: 'Total Mem (MB)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
                       <YAxis yAxisId="right" orientation="right" fontSize={10} label={{ value: 'Total Duration (ms)', angle: 90, position: 'insideRight', fontSize: 10 }} />
@@ -791,21 +826,21 @@ export default function SystemMonitoringPage() {
 
               <Card title={
                 <div className="flex justify-between items-center w-full">
-                  <span>App 실행 상세 트레이스 내역</span>
-                  <div className="flex gap-8">
+                  <span className="tracking-tight">실시간 상세 트레이스 타임라인</span>
+                  <div className="flex gap-12">
                     <select 
-                      className="form-select text-sm p-4 rounded-4 border-gray-200"
+                      className="premium-select"
                       value={traceAppFilter}
                       onChange={(e) => setTraceAppFilter(e.target.value)}
                       title="App Filter"
                       aria-label="Filter by app"
                     >
                       {uniqueApps.map(app => (
-                        <option key={app} value={app}>{app}</option>
+                        <option key={app} value={app} className="bg-slate-900">{app}</option>
                       ))}
                     </select>
                     <select 
-                      className="form-select text-sm p-4 rounded-4 border-gray-200"
+                      className="premium-select"
                       value={traceHourFilter}
                       onChange={(e) => setTraceHourFilter(e.target.value)}
                       title="Hour Filter"
@@ -813,51 +848,51 @@ export default function SystemMonitoringPage() {
                     >
                       {Array.from({ length: 24 }).map((_, i) => {
                         const hourStr = i.toString().padStart(2, '0');
-                        return <option key={hourStr} value={hourStr}>{hourStr}시 ~ {(i+1).toString().padStart(2, '0')}시</option>;
+                        return <option key={hourStr} value={hourStr} className="bg-slate-900">{hourStr}시 ~ {(i+1).toString().padStart(2, '0')}시</option>;
                       })}
                     </select>
                   </div>
                 </div>
               }>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto px-4">
                   <table className="trace-table">
                     <thead>
                       <tr>
-                        <th>Timestamp</th>
-                        <th>App / Method</th>
+                        <th>Time</th>
+                        <th>Endpoint / Method</th>
                         <th className="text-right">Duration</th>
-                        <th className="text-right">Memory (Used/Total)</th>
-                        <th>SQL Query / Note</th>
+                        <th className="text-right">Resource Load</th>
+                        <th>Activity Summary</th>
                         <th className="text-center">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {currentTableData.map(log => {
                         const logDate = new Date(log.timestamp);
-                        const timeStr = isNaN(logDate.getTime()) ? 'Invalid' : logDate.toLocaleTimeString();
+                        const timeStr = isNaN(logDate.getTime()) ? '--:--:--' : logDate.toLocaleTimeString();
                         return (
                           <tr key={log.id}>
-                            <td className="text-xs text-tertiary">{timeStr}</td>
+                            <td className="text-xs text-white/40 font-mono">{timeStr}</td>
                           <td>
-                            <div className="font-semibold text-primary">{log.appId || log.serviceName}</div>
-                            <div className="text-xs text-tertiary">{log.methodName}</div>
+                            <div className="font-bold text-white/90">{log.appId || log.serviceName}</div>
+                            <div className="text-[10px] text-accent-primary font-mono opacity-80">{log.methodName}</div>
                           </td>
                           <td className="text-right">
-                            <span className={`status-badge ${log.duration > 300 ? 'danger' : 'success'}`}>
+                            <span className={`status-badge ${log.duration > 300 ? 'danger' : 'success'} shadow-sm`}>
                               {log.duration}ms
                             </span>
                           </td>
-                          <td className="text-right">
-                            <div className="font-mono text-xs">
-                              <span className="text-primary">{log.usedMemory.toFixed(0)}MB</span> / <span className="text-tertiary">{log.totalMemory.toFixed(0)}MB</span>
+                          <td className="text-right pr-24">
+                            <div className="font-mono text-[10px] mb-4">
+                              <span className="text-white/80">{log.usedMemory.toFixed(0)}</span> <span className="text-white/30">/ {log.totalMemory.toFixed(0)}MB</span>
                             </div>
-                            <div className="progress-container">
-                              <ProgressFill progress={(log.usedMemory / log.totalMemory) * 100} />
+                            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                              <ProgressBar progress={(log.usedMemory / log.totalMemory) * 100} secondary />
                             </div>
                           </td>
                           <td>
-                            <div className="query-cell" title={log.query}>
-                              {log.query}
+                            <div className="query-cell text-white/50 text-[11px]" title={log.query}>
+                              {log.query || '(No direct query logs)'}
                             </div>
                           </td>
                           <td className="text-center">
@@ -870,7 +905,7 @@ export default function SystemMonitoringPage() {
                     })}
                       {currentTableData.length === 0 && (
                         <tr>
-                          <td colSpan={6} className="text-center text-tertiary py-32">조건에 맞는 수집된 실행 로그가 없습니다.</td>
+                          <td colSpan={6} className="text-center text-white/20 py-64">검색 조건에 맞는 트레이스 내역이 존재하지 않습니다.</td>
                         </tr>
                       )}
                     </tbody>
@@ -925,25 +960,25 @@ export default function SystemMonitoringPage() {
           )}
           {activeTab === 'sre' && (
             <div className="tab-content-area mt-4 pb-48 fade-in">
-              <div className="flex justify-between items-center mb-24 px-4">
-                <div className="flex items-center gap-12 bg-white px-16 py-8 rounded-lg border border-gray-100 shadow-sm">
-                  <Filter size={16} className="text-secondary" />
-                  <label htmlFor="sre-date-filter" className="text-sm font-medium">분석 일자:</label>
+              <div className="filter-section">
+                <div className="premium-filter-bar shadow-lg">
+                  <Filter size={16} className="text-accent-primary" />
+                  <label htmlFor="sre-date-filter" className="text-sm font-medium text-white/70">분석 일자:</label>
                   <input 
                     id="sre-date-filter"
                     type="date" 
                     value={sreDateFilter} 
                     onChange={(e) => setSreDateFilter(e.target.value)}
-                    className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer outline-none"
+                    className="premium-date-input border-none"
                     title="분석 일자 선택"
                   />
                 </div>
                 <button 
-                  className="flex items-center gap-8 bg-blue-50 text-primary px-16 py-8 rounded-lg hover:bg-blue-100 transition-colors" 
-                  onClick={fetchSreAnalysis}
+                  className="flex items-center gap-8 bg-accent-primary/20 text-white px-20 py-10 rounded-full border border-accent-primary/30 hover:bg-accent-primary/30 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)] ml-auto" 
+                  onClick={() => fetchSreAnalysis()}
                 >
                   <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
-                  <span className="text-sm font-medium">분석 데이터 갱신</span>
+                  <span className="text-sm font-bold">분석 데이터 갱신</span>
                 </button>
               </div>
               <div className="flex flex-col gap-24">
@@ -952,62 +987,38 @@ export default function SystemMonitoringPage() {
                     <div className="sre-chart-wrapper-sm">
                       <h4 className="text-center text-sm mb-16 opacity-70">Latency (평균 응답 시간)</h4>
                       <ResponsiveContainer width="100%" height={240}>
-                        <LineChart data={sreData}>
+                        <LineChart data={displaySreData}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                           <XAxis 
-                            dataKey="bucketTimestamp" 
+                            dataKey="hourIndex" 
                             type="number"
-                            domain={[sreStartOfDayTime, sreEndOfDayTime]}
-                            ticks={[
-                              sreStartOfDayTime,
-                              sreStartOfDayTime + 3 * 3600000,
-                              sreStartOfDayTime + 6 * 3600000,
-                              sreStartOfDayTime + 9 * 3600000,
-                              sreStartOfDayTime + 12 * 3600000,
-                              sreStartOfDayTime + 15 * 3600000,
-                              sreStartOfDayTime + 18 * 3600000,
-                              sreStartOfDayTime + 21 * 3600000,
-                              sreEndOfDayTime
-                            ]}
-                            tickFormatter={(v) => {
-                              const date = new Date(v);
-                              return `${date.getHours().toString().padStart(2, '0')}:00`;
-                            }}
+                            domain={[0, 24]}
+                            ticks={[0, 3, 6, 9, 12, 15, 18, 21, 24]}
+                            tickFormatter={(v) => v === 24 ? "24:00" : `${v.toString().padStart(2, '0')}:00`}
                             fontSize={10} 
+                            tickMargin={8}
                           />
                           <YAxis fontSize={10} unit="ms" />
                           <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
                           <Legend />
-                          <Line type="monotone" dataKey="avgDuration" name="Avg Latency" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                          <Line type="monotone" dataKey="maxDuration" name="Max Latency" stroke="#ef4444" strokeWidth={1} strokeDasharray="5 5" dot={false} />
+                          <Line type="monotone" dataKey="avgDuration" name="Avg Latency" stroke="var(--accent-primary)" strokeWidth={3} dot={{ r: 4, fill: 'var(--accent-primary)', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                          <Line type="monotone" dataKey="maxDuration" name="Max Latency" stroke="var(--accent-danger)" strokeWidth={1} strokeDasharray="5 5" dot={false} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
                     <div className="sre-chart-wrapper-sm">
                       <h4 className="text-center text-sm mb-16 opacity-70">Traffic (요청 처리량)</h4>
                       <ResponsiveContainer width="100%" height={240}>
-                        <ComposedChart data={sreData}>
+                        <ComposedChart data={displaySreData}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                           <XAxis 
-                            dataKey="bucketTimestamp" 
+                            dataKey="hourIndex" 
                             type="number"
-                            domain={[sreStartOfDayTime, sreEndOfDayTime]}
-                            ticks={[
-                              sreStartOfDayTime,
-                              sreStartOfDayTime + 3 * 3600000,
-                              sreStartOfDayTime + 6 * 3600000,
-                              sreStartOfDayTime + 9 * 3600000,
-                              sreStartOfDayTime + 12 * 3600000,
-                              sreStartOfDayTime + 15 * 3600000,
-                              sreStartOfDayTime + 18 * 3600000,
-                              sreStartOfDayTime + 21 * 3600000,
-                              sreEndOfDayTime
-                            ]}
-                            tickFormatter={(v) => {
-                              const date = new Date(v);
-                              return `${date.getHours().toString().padStart(2, '0')}:00`;
-                            }}
+                            domain={[0, 24]}
+                            ticks={[0, 3, 6, 9, 12, 15, 18, 21, 24]}
+                            tickFormatter={(v) => v === 24 ? "24:00" : `${v.toString().padStart(2, '0')}:00`}
                             fontSize={10} 
+                            tickMargin={8}
                           />
                           <YAxis fontSize={10} />
                           <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
@@ -1024,34 +1035,22 @@ export default function SystemMonitoringPage() {
                     <div className="sre-chart-wrapper-sm">
                       <h4 className="text-center text-sm mb-16 opacity-70">Saturation (자원 포화도 - Used Memory)</h4>
                       <ResponsiveContainer width="100%" height={240}>
-                        <LineChart data={sreData}>
+                        <LineChart data={displaySreData}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                           <XAxis 
-                            dataKey="bucketTimestamp" 
+                            dataKey="hourIndex" 
                             type="number"
-                            domain={[sreStartOfDayTime, sreEndOfDayTime]}
-                            ticks={[
-                              sreStartOfDayTime,
-                              sreStartOfDayTime + 3 * 3600000,
-                              sreStartOfDayTime + 6 * 3600000,
-                              sreStartOfDayTime + 9 * 3600000,
-                              sreStartOfDayTime + 12 * 3600000,
-                              sreStartOfDayTime + 15 * 3600000,
-                              sreStartOfDayTime + 18 * 3600000,
-                              sreStartOfDayTime + 21 * 3600000,
-                              sreEndOfDayTime
-                            ]}
-                            tickFormatter={(v) => {
-                              const date = new Date(v);
-                              return `${date.getHours().toString().padStart(2, '0')}:00`;
-                            }}
+                            domain={[0, 24]}
+                            ticks={[0, 3, 6, 9, 12, 15, 18, 21, 24]}
+                            tickFormatter={(v) => v === 24 ? "24:00" : `${v.toString().padStart(2, '0')}:00`}
                             fontSize={10} 
+                            tickMargin={8}
                           />
                           <YAxis fontSize={10} unit="MB" />
                           <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
                           <Legend />
-                          <Line type="monotone" dataKey="avgUsedMemory" name="Avg Used Mem" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
-                          <Line type="monotone" dataKey="maxUsedMemory" name="Max Used Mem" stroke="#ec4899" strokeWidth={1} dot={false} />
+                            <Line type="monotone" dataKey="avgUsedMemory" name="Avg Used Mem" stroke="var(--accent-secondary)" strokeWidth={3} dot={{ r: 4, fill: 'var(--accent-secondary)', strokeWidth: 0 }} />
+                            <Line type="monotone" dataKey="maxUsedMemory" name="Max Used Mem" stroke="var(--neon-magenta)" strokeWidth={1} dot={false} strokeDasharray="3 3" />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -1065,46 +1064,63 @@ export default function SystemMonitoringPage() {
                             <span>Error Rate</span>
                             <span className="text-success">0.1%</span>
                           </div>
-                          <div className="h-8 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-success w-[0.1%]"></div>
+                          <div className="h-8 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                            <div className="h-full bg-accent-danger shadow-[0_0_10px_var(--accent-danger)] w-[0.1%]"></div>
                           </div>
                         </div>
-                        <p className="text-xs text-tertiary mt-32 text-center px-24">
+                        <p className="text-xs text-white/40 mt-32 text-center px-24 font-light">
                           Google SRE 가이드라인에 따른 4대 황금 신호 분석입니다. <br/>
-                          지연 시간(Latency) 뿐만 아니라 트래픽, 에러, 포화도(Saturation)를 종합적으로 관리합니다.
+                          지연 시간(Latency), 트래픽, 에러, 포화도(Saturation)를 종합 관리합니다.
                         </p>
                       </div>
                     </div>
                   </div>
                 </Card>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'sre_performance' && (
+            <div className="tab-content-area mt-4 pb-48 fade-in flex flex-col gap-24">
+              <div className="filter-section">
+                <div className="premium-filter-bar">
+                  <Filter size={16} className="text-accent-primary" />
+                  <label htmlFor="sre-perf-date-filter" className="text-sm font-medium text-white/70">분석 일자:</label>
+                  <input 
+                    id="sre-perf-date-filter"
+                    type="date" 
+                    value={sreDateFilter} 
+                    onChange={(e) => setSreDateFilter(e.target.value)}
+                    className="premium-date-input border-none"
+                    title="분석 일자 선택"
+                  />
+                </div>
+                <button 
+                  className="flex items-center gap-8 bg-accent-primary/20 text-white px-20 py-10 rounded-full border border-accent-primary/30 hover:bg-accent-primary/30 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)] ml-auto" 
+                  onClick={() => fetchSreAnalysis()}
+                >
+                  <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
+                  <span className="text-sm font-bold">분석 데이터 갱신</span>
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-24">
 
                 <Card title="CPU Percentile Analysis (P95, P50 추이)">
                   <div className="sre-chart-wrapper">
                     <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={sreData}>
+                      <LineChart data={displaySreData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                         <XAxis 
-                          dataKey="bucketTimestamp" 
+                          dataKey="hourIndex" 
                           type="number"
-                          domain={[sreStartOfDayTime, sreEndOfDayTime]}
-                          ticks={[
-                            sreStartOfDayTime,
-                            sreStartOfDayTime + 3 * 3600000,
-                            sreStartOfDayTime + 6 * 3600000,
-                            sreStartOfDayTime + 9 * 3600000,
-                            sreStartOfDayTime + 12 * 3600000,
-                            sreStartOfDayTime + 15 * 3600000,
-                            sreStartOfDayTime + 18 * 3600000,
-                            sreStartOfDayTime + 21 * 3600000,
-                            sreEndOfDayTime
-                          ]}
-                          tickFormatter={(v) => {
-                            const date = new Date(v);
-                            return `${date.getHours().toString().padStart(2, '0')}:00`;
-                          }}
+                          domain={[0, 24]}
+                          ticks={[0, 3, 6, 9, 12, 15, 18, 21, 24]}
+                          tickFormatter={(v) => v === 24 ? "24:00" : `${v.toString().padStart(2, '0')}:00`}
                           fontSize={10} 
+                          tickMargin={8}
                         />
-                        <YAxis fontSize={10} unit="%" />
+                        <YAxis fontSize={10} unit="%" domain={[0, 100]} />
                         <Tooltip labelFormatter={(v) => new Date(v).toLocaleString()} />
                         <Legend />
                         <Line type="monotone" dataKey="cpuP95" name="CPU P95 (Peak)" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
@@ -1190,7 +1206,7 @@ export default function SystemMonitoringPage() {
                             .sort((a,b) => b[1] - a[1])
                             .slice(0, 5)
                             .map(([key, count], idx) => (
-                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-gray-50 rounded">
+                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-black/20 rounded">
                                 <span className="truncate flex-1 mr-8">{key}</span>
                                 <span className="font-bold">{count.toLocaleString()}회</span>
                               </div>
@@ -1202,7 +1218,7 @@ export default function SystemMonitoringPage() {
                     {/* Top by Latency */}
                     <div>
                       <h4 className="text-sm font-semibold mb-12 flex items-center gap-8">
-                         <span className="w-8 h-8 rounded-full bg-error"></span>
+                         <span className="w-8 h-8 rounded-full bg-accent-danger"></span>
                          Slowest Methods (평균 최저 속도)
                       </h4>
                       <div className="space-y-8">
@@ -1220,9 +1236,9 @@ export default function SystemMonitoringPage() {
                             .sort((a,b) => (b[1] as number) - (a[1] as number))
                             .slice(0, 5)
                             .map(([key, avg], idx) => (
-                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-gray-50 rounded">
+                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-black/20 rounded">
                                 <span className="truncate flex-1 mr-8">{key}</span>
-                                <span className="font-bold text-error">{(avg as number).toFixed(1)}ms</span>
+                                <span className="font-bold text-accent-danger">{(avg as number).toFixed(1)}ms</span>
                               </div>
                             ));
                         })()}
@@ -1232,7 +1248,7 @@ export default function SystemMonitoringPage() {
                     {/* Top by Memory */}
                     <div>
                       <h4 className="text-sm font-semibold mb-12 flex items-center gap-8">
-                         <span className="w-8 h-8 rounded-full bg-purple-500"></span>
+                         <span className="w-8 h-8 rounded-full bg-accent-secondary"></span>
                          Heavy Memory Usage (총 사용 메모리 합계)
                       </h4>
                       <div className="space-y-8">
@@ -1246,9 +1262,9 @@ export default function SystemMonitoringPage() {
                             .sort((a,b) => b[1] - a[1])
                             .slice(0, 5)
                             .map(([key, mem], idx) => (
-                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-gray-50 rounded">
+                              <div key={idx} className="flex justify-between items-center text-xs p-8 bg-black/20 rounded">
                                 <span className="truncate flex-1 mr-8">{key}</span>
-                                <span className="font-bold text-purple-600">{mem.toLocaleString()}MB</span>
+                                <span className="font-bold text-accent-secondary">{mem.toLocaleString()}MB</span>
                               </div>
                             ));
                         })()}
@@ -1303,6 +1319,28 @@ export default function SystemMonitoringPage() {
                   </div>
                 </Card>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'logs' && (
+            <div className="tab-content-area mt-4">
+              <Card title="시스템 에러 로그 및 이벤트">
+                <div className="log-viewer bg-white/5 backdrop-blur-md rounded-xl border border-white/10 p-16">
+                  {loading && logs.length === 0 ? (
+                    <div className="empty-state text-white/20">로그를 불러오는 중...</div>
+                  ) : logs.length > 0 ? (
+                    logs.map(log => (
+                      <div key={log.id} className="log-entry border-b border-white/5 py-8 last:border-0 hover:bg-white/5 transition-colors px-8 rounded-lg">
+                        <span className="log-timestamp text-white/30 font-mono text-[11px] mr-12">[{new Date(log.timestamp).toLocaleString()}]</span>
+                        <span className={`log-level ${log.level} px-8 py-2 rounded text-[10px] uppercase font-bold mr-12 shadow-sm`}>{log.level}</span>
+                        <span className="log-message text-white/80 text-sm">{log.message}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="empty-state text-white/20">조회된 로그가 없습니다.</div>
+                  )}
+                </div>
+              </Card>
             </div>
           )}
         </div>
