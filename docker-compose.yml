@@ -70,7 +70,7 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
       FRONTEND_URL: http://localhost:3000
-      AUTH_SERVER_URL: http://localhost:9000
+      AUTH_SERVER_URL: http://auth-server:9000
     volumes:
       - auth_keys:/app/keys
     depends_on:
@@ -106,7 +106,7 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
       FRONTEND_URL: http://localhost:3000
-      AUTH_SERVER_URL: http://localhost:9000
+      AUTH_SERVER_URL: http://auth-server:9000
     depends_on:
       mysql:
         condition: service_healthy
@@ -141,6 +141,9 @@ services:
     container_name: logistics-frontend-next
     ports:
       - "3000:3000"
+    environment:
+      - BACKEND_URL=http://sys-backend:8080
+      - AUTH_SERVER_URL=http://auth-server:9000
     depends_on:
       - sys-backend
       - auth-server

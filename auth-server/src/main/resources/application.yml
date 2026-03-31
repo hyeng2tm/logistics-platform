@@ -56,8 +56,8 @@ app:
 jasypt:
   encryptor:
     password: ${JASYPT_ENCRYPTOR_PASSWORD:logistics-master-secret-key}
-    algorithm: PBEWithMD5AndDES
-    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
 
 ---
 # ============================================================
@@ -71,13 +71,13 @@ spring:
     master:
       driver-class-name: com.mysql.cj.jdbc.Driver
       jdbc-url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
-      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
+      username: ENC(mxw0D2i3raf4c9MlhY39M1fDErmNNthO0TBYyKls1CPe4EOr8hIabtZ/9nmVVxFc)
+      password: ENC(Z5t8mLe+jOeRMgWmyiIf0DfYNSVPFG1yn93xKgRYo7Aqb3xhJPl19w4VGMM5BwVs)
     slave:
       driver-class-name: com.mysql.cj.jdbc.Driver
       jdbc-url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ENC(HToHXFcSRhGi7geBlfHXcg==)
-      password: ENC(HbNqI2+UilXKYeT6IuL0jKOaLKPMd+pK)
+      username: ENC(mxw0D2i3raf4c9MlhY39M1fDErmNNthO0TBYyKls1CPe4EOr8hIabtZ/9nmVVxFc)
+      password: ENC(Z5t8mLe+jOeRMgWmyiIf0DfYNSVPFG1yn93xKgRYo7Aqb3xhJPl19w4VGMM5BwVs)
   jpa:
     show-sql: false
 

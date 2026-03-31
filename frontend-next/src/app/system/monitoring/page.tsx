@@ -209,7 +209,7 @@ export default function SystemMonitoringPage() {
   for (let h = 0; h <= 24; h++) {
     const bucketTs = sreStartOfDayTime + h * 3600000;
     const timeLabel = h === 24 ? "24:00" : `${h.toString().padStart(2, '0')}:00`;
-    const existing = (sreData || []).find((d: Record<string, any>) => Math.abs(d.bucketTimestamp - bucketTs) < 300000);
+    const existing = (sreData || []).find((d: SREAnalysis) => d.bucketTimestamp !== undefined && Math.abs(d.bucketTimestamp - bucketTs) < 300000);
     if (existing) {
       displaySreData.push({ ...existing, bucketTimestamp: bucketTs, timeLabel, hourIndex: h });
     } else {
@@ -438,34 +438,34 @@ export default function SystemMonitoringPage() {
         </div>
       }>
         <div className="card-stat-grid">
-          <div className="stat-card large">
+          <div className="stat-card">
             <div className="stat-label">Latency</div>
-            <div className={`stat-value ${glowClass}`}>{stats.latency?.toFixed(0) ?? '--'}<span className="text-[14px] ml-2 opacity-50 font-normal">ms</span></div>
+            <div className={`stat-value ${glowClass}`}>{stats.latency?.toFixed(0) ?? '--'}<span>ms</span></div>
           </div>
-          <div className="stat-card large">
+          <div className="stat-card">
             <div className="stat-label">TPS</div>
             <div className={`stat-value ${glowClass}`}>{stats.tps?.toFixed(1) ?? '--'}</div>
           </div>
-          <div className="stat-card large">
+          <div className="stat-card">
             <div className="stat-label">CPU</div>
-            <div className={`stat-value ${glowClass}`}>{stats.cpu.toFixed(1)}<span className="text-[14px] ml-2 opacity-50 font-normal">%</span></div>
+            <div className={`stat-value ${glowClass}`}>{stats.cpu.toFixed(1)}<span>%</span></div>
           </div>
-          <div className="stat-card large">
+          <div className="stat-card">
             <div className="stat-label">Memory</div>
-            <div className={`stat-value ${glowClass}`}>{stats.memory}<span className="text-[14px] ml-2 opacity-50 font-normal">%</span></div>
+            <div className={`stat-value ${glowClass}`}>{stats.memory}<span>%</span></div>
           </div>
         </div>
 
         {stats.instances && stats.instances.length > 0 && (
-          <div className="instance-list-area mt-4">
-            <div className="stat-label mb-2 flex items-center gap-4">
-              <Activity size={14} className="text-tertiary" /> {t('monitoring.active_instances', '가동 인스턴스')} ({stats.instances.length})
+          <div className="instance-list-area mt-8">
+            <div className="stat-label mb-2 flex items-center gap-4 text-[10px]">
+              <Activity size={10} className="text-tertiary" /> {t('monitoring.active_instances', '인스턴스')} ({stats.instances.length})
             </div>
-            <div className="flex flex-wrap gap-6">
+            <div className="flex flex-wrap gap-4">
               {stats.instances.map(inst => (
                 <div key={inst.id} className="instance-chip" title={`CPU: ${inst.cpu.toFixed(1)}%, Mem: ${inst.memory}%`}>
                   <div className={`status-dot ${inst.status === 'Healthy' ? 'bg-success status-dot-active' : 'bg-danger status-dot-error'}`}></div>
-                  <span className="instance-id font-mono text-[10px]">{inst.id.split('-').pop()}</span>
+                  <span className="instance-id font-mono text-[9px] opacity-70">{inst.id.split('-').pop()}</span>
                 </div>
               ))}
             </div>

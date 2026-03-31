@@ -39,8 +39,8 @@ app:
 jasypt:
   encryptor:
     password: ${JASYPT_ENCRYPTOR_PASSWORD:logistics-master-secret-key}
-    algorithm: PBEWithMD5AndDES
-    iv-generator-classname: org.jasypt.iv.NoIvGenerator
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
 
 ---
 # local 프로파일 - 로컬 개발 환경 (IDE, gradlew bootRun)
