@@ -6,13 +6,17 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.springframework.context.ApplicationContext;
+import static org.mockito.Mockito.*;
+
 class SystemMonitoringServiceTest {
 
     private SystemMonitoringService service;
 
     @BeforeEach
     void setUp() {
-        service = new SystemMonitoringService(new SimpleMeterRegistry());
+        ApplicationContext context = mock(ApplicationContext.class);
+        service = new SystemMonitoringService(new SimpleMeterRegistry(), context);
     }
 
     @Test

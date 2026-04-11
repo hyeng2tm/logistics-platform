@@ -554,6 +554,16 @@
         }
       },
       "glossary_title": "Guide: SRE 4 Golden Signals",
-      "glossary_desc": "The four essential dimensions of system monitoring as defined in the Google SRE handbook. These help identify bottlenecks and early signs of failure."
+      "glossary_desc": "The four essential dimensions of system monitoring as defined in the Google SRE handbook. These help identify bottlenecks and early signs of failure.",
+      "database_monitoring": "DB Monitoring",
+      "db_status": "DB Status",
+      "db_master": "Master DB",
+      "db_replica": "Replica DB",
+      "active_connections": "Active Connections",
+      "idle_connections": "Idle Connections",
+      "total_connections": "Total Connections",
+      "awaiting_threads": "Awaiting Threads",
+      "connection_pool_usage": "Connection Pool Usage",
+      "replication_lag": "Replication Lag"
     }
 }

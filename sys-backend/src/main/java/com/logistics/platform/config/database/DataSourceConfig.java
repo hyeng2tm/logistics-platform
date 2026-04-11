@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -30,32 +32,41 @@ public class DataSourceConfig {
     }
 
     /**
-     * Creates the Slave DataSource bean using properties from AppProperties.
-     */
-    @Bean
-    public DataSource slaveDataSource(AppProperties appProperties) {
-        return appProperties.getDatasource().getSlave()
-                .initializeDataSourceBuilder()
-                .type(HikariDataSource.class)
-                .build();
-    }
-
-    /**
-     * Creates the routing data source containing both master and slave.
+     * Creates the routing data source containing master and all configured slaves.
      */
     @Bean
     public DataSource routingDataSource(
-            @Qualifier("masterDataSource") @org.springframework.lang.NonNull DataSource masterDataSource,
-            @Qualifier("slaveDataSource") @org.springframework.lang.NonNull DataSource slaveDataSource) {
+            @Qualifier("masterDataSource") DataSource masterDataSource,
+            AppProperties appProperties) {
 
         ReplicationRoutingDataSource routingDataSource = new ReplicationRoutingDataSource();
-
         Map<Object, Object> dataSourceMap = new HashMap<>();
+        
+        // Add master
         dataSourceMap.put(MASTER, masterDataSource);
-        dataSourceMap.put(SLAVE, slaveDataSource);
+        
+        // Add all slaves
+        List<org.springframework.boot.autoconfigure.jdbc.DataSourceProperties> slaveConfigs = appProperties.getDatasource().getSlaves();
+        List<String> slaveKeys = new ArrayList<>();
+        for (int i = 0; i < slaveConfigs.size(); i++) {
+            DataSource slaveDs = slaveConfigs.get(i)
+                    .initializeDataSourceBuilder()
+                    .type(HikariDataSource.class)
+                    .build();
+            String key = SLAVE + (i + 1);
+            dataSourceMap.put(key, slaveDs);
+            slaveKeys.add(key);
+        }
+        
+        // Fallback for backward compatibility or if list is empty
+        if (slaveConfigs.isEmpty()) {
+            dataSourceMap.put(SLAVE, masterDataSource); // or a default slave
+            slaveKeys.add(SLAVE);
+        }
 
         routingDataSource.setTargetDataSources(dataSourceMap);
-        routingDataSource.setDefaultTargetDataSource(masterDataSource);
+        routingDataSource.setDefaultTargetDataSource(java.util.Objects.requireNonNull(masterDataSource));
+        routingDataSource.setSlaveKeys(slaveKeys);
 
         return routingDataSource;
     }

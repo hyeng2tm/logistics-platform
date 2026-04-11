@@ -1,8 +1,10 @@
 package com.logistics.health.controller;
 
+import com.logistics.health.domain.DatabaseMetricsLog;
 import com.logistics.health.domain.MonitoringLog;
 import com.logistics.health.domain.MonitoringSummary;
 import com.logistics.health.domain.SystemMetricsLog;
+import com.logistics.health.repository.DatabaseMetricsLogRepository;
 import com.logistics.health.repository.MonitoringLogRepository;
 import com.logistics.health.repository.MonitoringSummaryRepository;
 import com.logistics.health.repository.SystemMetricsLogRepository;
@@ -22,6 +24,7 @@ public class HealthController {
     private final SystemMetricsLogRepository metricsRepository;
     private final MonitoringLogRepository monitoringRepository;
     private final MonitoringSummaryRepository summaryRepository;
+    private final DatabaseMetricsLogRepository dbMetricsRepository;
 
     @PostMapping("/metrics")
     public void collectMetrics(@RequestBody SystemMetricsLog metrics) {
@@ -78,6 +81,16 @@ public class HealthController {
         return summaryRepository.findAll();
     }
 
+    @PostMapping("/sre-analysis")
+    public void saveSreAnalysis(@RequestBody List<MonitoringSummary> summaries) {
+        saveSummary(summaries);
+    }
+
+    @GetMapping("/sre-analysis")
+    public List<MonitoringSummary> getSreAnalysis() {
+        return summaryRepository.findAll();
+    }
+
     @GetMapping("/history")
     public List<SystemMetricsLog> getHistory() {
         return metricsRepository.findTop1440ByOrderByTimestampDesc();
@@ -106,6 +119,35 @@ public class HealthController {
         return Map.of(
             "latestMetrics", latestByApp,
             "timestamp", Instant.now().toString()
+        );
+    }
+
+    @PostMapping("/db-metrics")
+    public void collectDbMetrics(@RequestBody List<DatabaseMetricsLog> metrics) {
+        metrics.forEach(m -> {
+            if (m.getId() == null) {
+                m.setId(UUID.randomUUID().toString());
+            }
+            if (m.getTimestamp() == null) {
+                m.setTimestamp(Instant.now());
+            }
+        });
+        dbMetricsRepository.saveAll(metrics);
+        log.debug("Collected {} DB metrics logs", metrics.size());
+    }
+
+    @GetMapping("/db-metrics")
+    public List<DatabaseMetricsLog> getDbMetrics() {
+        return dbMetricsRepository.findTop1440ByOrderByTimestampDesc();
+    }
+
+    @GetMapping("/db-metrics/raw")
+    public List<DatabaseMetricsLog> getRawDbMetrics(
+            @RequestParam("startTime") String startTime,
+            @RequestParam("endTime") String endTime) {
+        return dbMetricsRepository.findByTimestampBetween(
+                Instant.parse(startTime),
+                Instant.parse(endTime)
         );
     }
 }

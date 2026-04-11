@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../../components/common/PageHeader';
 import { Card } from '../../../components/common/Card';
-import { Layout, MessageSquare, RefreshCcw, Server, Activity, Filter, AlertCircle, Play, Pause } from 'lucide-react';
+import { Layout, MessageSquare, RefreshCcw, Server, Activity, Filter, AlertCircle, Play, Pause, Database, LayoutTemplate } from 'lucide-react';
 import { apiClient } from '../../../utils/apiClient';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -107,6 +107,20 @@ interface ChartPoint {
   traceMaxMemory?: number;
 }
 
+interface DatabaseMetrics {
+  id: string;
+  timestamp: string;
+  appId: string;
+  dbType: string; // master, slave
+  activeConnections: number;
+  idleConnections: number;
+  totalConnections: number;
+  threadsAwaitingConnection: number;
+  status: string;
+  cpuUsage?: number;
+  memoryUsage?: number;
+}
+
 const transformSnapshotToChartPoint = (snapshot: SystemSummary): ChartPoint => {
   const date = new Date(snapshot.timestamp);
   const label = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
@@ -151,6 +165,7 @@ export default function SystemMonitoringPage() {
   const [traceHourFilter, setTraceHourFilter] = useState<string>(new Date().getHours().toString().padStart(2, '0'));
   const [tracePage, setTracePage] = useState<number>(1);
   const [sreDateFilter, setSreDateFilter] = useState('2026-03-25');
+  const [dbMetrics, setDbMetrics] = useState<DatabaseMetrics[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -390,6 +405,15 @@ export default function SystemMonitoringPage() {
     }
   };
 
+  const fetchDbMetrics = async () => {
+    try {
+      const data = await apiClient.get<DatabaseMetrics[]>('/api/v1/system/monitoring/db-metrics');
+      setDbMetrics(data || []);
+    } catch (e) {
+      console.error('Failed to fetch DB metrics', e);
+    }
+  };
+
   const loadData = async (force: boolean = false) => {
     if (!autoRefresh && !force) return;
     setLoading(true);
@@ -399,6 +423,7 @@ export default function SystemMonitoringPage() {
     if (activeTab === 'execution' || force) tasks.push(fetchExecutionLogs());
     if (activeTab === 'logs' || force) tasks.push(fetchLogs());
     if (activeTab === 'sre' || force) tasks.push(fetchSreAnalysis());
+    if (activeTab === 'database' || force) tasks.push(fetchDbMetrics());
     
     await Promise.all(tasks);
     setLoading(false);
@@ -419,16 +444,16 @@ export default function SystemMonitoringPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sreDateFilter]);
 
-  const renderServerCard = (id: string, stats: ServerStats | undefined, iconColor: string = 'text-primary') => {
+  const renderServerCard = (id: string, stats: ServerStats | undefined, iconColor: string = 'text-primary', extraClass: string = '') => {
     if (!stats) return null;
-    
-    // Determine glow class based on server type
-    const glowClass = id.includes('backend') ? 'neon-glow-indigo' : 
-                      id.includes('db') ? 'neon-glow-cyan' : 
-                      id.includes('auth') ? 'neon-glow-magenta' : 'neon-glow-indigo';
+
+    // Determine glow class based on server type 
+    const glowClass = id.toLowerCase().includes('backend') ? 'neon-glow-indigo' : 
+                      id.toLowerCase().includes('db') ? 'neon-glow-cyan' : 
+                      id.toLowerCase().includes('auth') ? 'neon-glow-magenta' : 'neon-glow-indigo';
 
     return (
-      <Card key={id} title={
+      <Card key={id} className={extraClass} title={
         <div className="flex items-center gap-12">
           <Server size={20} className={iconColor + " " + glowClass} />
           <span className="font-bold tracking-tight">{stats.name || id.toUpperCase()}</span>
@@ -532,6 +557,12 @@ export default function SystemMonitoringPage() {
             onClick={() => setActiveTab('sre_performance')}
           >
             <Activity size={18} className="text-accent-gold" /> {t('monitoring.sre_performance', 'SRE 성능 분석')}
+          </button>
+          <button 
+            className={`tab-item ${activeTab === 'database' ? 'active' : ''}`}
+            onClick={() => setActiveTab('database')}
+          >
+            <Server size={18} className="text-neon-cyan" /> {t('monitoring.database_monitoring', 'DB 모니터링')}
           </button>
         </div>
 
@@ -719,9 +750,9 @@ export default function SystemMonitoringPage() {
                   <span className="text-[10px] text-tertiary">수집 시각: {new Date(summary.timestamp).toLocaleTimeString()}</span>
                 </div>
                 <div className="dashboard-grid-top opacity-80">
-                  {renderServerCard('sysBackend', summary.sysBackend, 'chart-text-backend')}
-                  {renderServerCard('authServer', summary.authServer, 'chart-text-auth')}
-                  {renderServerCard('batchServer', summary.batchServer, 'chart-text-batch')}
+                  {renderServerCard('sysBackend', summary.sysBackend, 'chart-text-backend', 'dense-card')}
+                  {renderServerCard('authServer', summary.authServer, 'chart-text-auth', 'dense-card')}
+                  {renderServerCard('batchServer', summary.batchServer, 'chart-text-batch', 'dense-card')}
                 </div>
               </div>
             ) : (
@@ -1108,7 +1139,7 @@ export default function SystemMonitoringPage() {
 
                 <Card title="CPU Percentile Analysis (P95, P50 추이)">
                   <div className="sre-chart-wrapper">
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={300} minWidth={0}>
                       <LineChart data={displaySreData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                         <XAxis 
@@ -1319,6 +1350,203 @@ export default function SystemMonitoringPage() {
                   </div>
                 </Card>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'database' && (
+            <div className="tab-content-area mt-4 pb-48 fade-in flex flex-col gap-32">
+              {/* Dynamic DB Node Discovery and Adaptive Grid */}
+              <div className={Array.from(new Set(dbMetrics.map(m => m.dbType))).length > 3 ? "db-nodes-list" : "dashboard-grid-top"}>
+                {Array.from(new Set(dbMetrics.map(m => m.dbType))).sort().map(type => {
+                  const latest = dbMetrics.find(m => m.dbType === type);
+                  if (!latest) return null;
+
+                  const dbTypeCount = Array.from(new Set(dbMetrics.map(m => m.dbType))).length;
+                  const isCompact = dbTypeCount > 3;
+
+                  const typeLower = latest.dbType.toLowerCase();
+                  const typeLabel = typeLower.includes('master') ? 'Master' : 
+                                  (typeLower.startsWith('slave') ? `Replica ${typeLower.replace('slave', '').trim() || '1'}` : 
+                                  (typeLower.includes('routing') ? 'Router' : latest.dbType));
+
+                  if (isCompact) {
+                    return (
+                      <div key={type} className="compact-db-node-row card glass-card">
+                        <div className="flex items-center gap-16 w-full">
+                          <div className={`status-indicator ${latest.status === 'UP' ? 'success' : 'danger'}`}></div>
+                          <Database size={16} className="opacity-40" />
+                          <div className="node-info flex-1">
+                            <div className="node-type font-bold text-xs">{typeLabel}</div>
+                            <div className="node-status text-[10px] opacity-40">{latest.status}</div>
+                          </div>
+                          <div className="node-metrics text-right">
+                            <div className="text-xs font-mono">{latest.activeConnections} / {latest.totalConnections}</div>
+                            <div className="text-[10px] opacity-40">Active Conn.</div>
+                          </div>
+                          <div className="flex-1 max-w-[100px] h-20">
+                            {/* Simple Load Bar */}
+                            <div className="w-full h-4 bg-white/5 rounded-full overflow-hidden mt-4">
+                              <div 
+                                className={`dynamic-progress-bar ${type === 'master' ? 'bg-neon-magenta' : 'bg-neon-cyan'} wp-${Math.round((latest.activeConnections / (latest.totalConnections || 1)) * 20) * 5}`} 
+                              ></div>
+                            </div>
+                            {/* Resource mini indicators */}
+                            <div className="flex gap-8 mt-4 opacity-60">
+                              <div className="flex items-center gap-4">
+                                <span className="text-[8px] font-bold text-dim">CPU</span>
+                                <div className="w-24 h-2 bg-white/5 rounded-full overflow-hidden">
+                                  <div className={`h-full cpu-bar wp-${Math.round((latest.cpuUsage || 10) / 5) * 5}`}></div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <span className="text-[8px] font-bold text-dim">MEM</span>
+                                <div className="w-24 h-2 bg-white/5 rounded-full overflow-hidden">
+                                  <div className={`h-full mem-bar wp-${Math.round((latest.memoryUsage || 20) / 5) * 5}`}></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const colorClass = type === 'master' ? 'db-master-text' : 'db-replica-text';
+                  const glowClass = type === 'master' ? 'db-card-glow-master' : 'db-card-glow-replica';
+                  const color = type === 'master' ? 'var(--neon-magenta)' : 'var(--neon-cyan)';
+
+                  return (
+                    <div key={type} className={`card premium-metric-card ${glowClass}`}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="card-label">{typeLabel.toUpperCase()}</div>
+                          <div className={`card-value ${colorClass}`}>{latest.activeConnections} <span className="opacity-30">/ {latest.totalConnections}</span></div>
+                        </div>
+                        <div className={`status-badge ${latest.status === 'UP' ? 'success' : 'danger'}`}>
+                          {latest.status}
+                        </div>
+                      </div>
+                      
+                      <div className="circular-gauge-wrapper h-140 mt-12">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: 'Active', value: latest.activeConnections },
+                                { name: 'Idle', value: latest.idleConnections },
+                                { name: 'Awaiting', value: latest.threadsAwaitingConnection }
+                              ]}
+                              innerRadius={45}
+                              outerRadius={60}
+                              paddingAngle={8}
+                              dataKey="value"
+                              isAnimationActive={true}
+                              animationDuration={1500}
+                              stroke="none"
+                            >
+                              <Cell fill={color} />
+                              <Cell fill="rgba(255,255,255,0.05)" />
+                              <Cell fill="var(--accent-danger)" />
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="circular-gauge-info">
+                          <div className="percentage">{((latest.activeConnections / (latest.totalConnections || 1)) * 100).toFixed(0)}%</div>
+                          <div className="label">Load</div>
+                        </div>
+                      </div>
+
+                      <div className="resource-indicator-group mt-16 px-8">
+                        <div className="resource-bar-wrapper">
+                          <div className="resource-label">CPU</div>
+                          <div className="resource-bar-bg">
+                            <div className={`h-full cpu-bar wp-${Math.round((latest.cpuUsage || 10) / 5) * 5}`}></div>
+                          </div>
+                          <div className="resource-value">{(latest.cpuUsage || 0).toFixed(1)}%</div>
+                        </div>
+                        <div className="resource-bar-wrapper">
+                          <div className="resource-label">MEM</div>
+                          <div className="resource-bar-bg">
+                            <div className={`h-full mem-bar wp-${Math.round((latest.memoryUsage || 20) / 5) * 5}`}></div>
+                          </div>
+                          <div className="resource-value">{(latest.memoryUsage || 0).toFixed(1)}%</div>
+                        </div>
+                      </div>
+
+                      <div className="connection-mini-stats">
+                        <div className="mini-stat-item">
+                          <span className="mini-stat-label">Idle</span>
+                          <span className="mini-stat-value">{latest.idleConnections}</span>
+                        </div>
+                        <div className="mini-stat-item">
+                          <span className="mini-stat-label">Wait</span>
+                          <span className={`mini-stat-value ${latest.threadsAwaitingConnection > 0 ? 'text-accent-danger' : 'opacity-40'}`}>
+                            {latest.threadsAwaitingConnection}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <Card title="Database Performance Trends (Aggregation)" className="db-trend-card">
+                <div className="trace-chart-container h-400 mt-4">
+                  {dbMetrics.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                      <AreaChart data={[...dbMetrics].reverse()}>
+                        <defs>
+                          <linearGradient id="colorMaster" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--neon-magenta)" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="var(--neon-magenta)" stopOpacity={0}/>
+                          </linearGradient>
+                          <linearGradient id="colorSlave" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--neon-cyan)" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="var(--neon-cyan)" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                        <XAxis 
+                          dataKey="timestamp" 
+                          tickFormatter={(ts) => new Date(ts).getHours() + ':' + String(new Date(ts).getMinutes()).padStart(2, '0')}
+                          fontSize={10}
+                          tick={{fill: 'var(--text-dim)'}}
+                          axisLine={{stroke: 'var(--glass-border)'}}
+                        />
+                        <YAxis fontSize={10} tick={{fill: 'var(--text-dim)'}} axisLine={{stroke: 'var(--glass-border)'}} />
+                        <Tooltip 
+                          labelFormatter={(ts) => new Date(ts).toLocaleString()}
+                          contentStyle={{background: 'rgba(13, 17, 23, 0.9)', border: '1px solid var(--glass-border)', borderRadius: '12px', backdropFilter: 'blur(10px)', fontSize: '10px'}}
+                        />
+                        <Legend wrapperStyle={{fontSize: '10px', paddingTop: '20px'}} />
+                        <Area 
+                          name="Master Connections" 
+                          type="monotone" 
+                          dataKey="activeConnections" 
+                          data={dbMetrics.filter(m => m.dbType === 'master').reverse()}
+                          stroke="var(--neon-magenta)" 
+                          fill="url(#colorMaster)" 
+                          strokeWidth={3} 
+                        />
+                        <Area 
+                          name="Replica Connections" 
+                          type="monotone" 
+                          dataKey="activeConnections" 
+                          data={dbMetrics.filter(m => m.dbType === 'slave').reverse()}
+                          stroke="var(--neon-cyan)" 
+                          fill="url(#colorSlave)" 
+                          strokeWidth={3} 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="no-data-display">
+                      <LayoutTemplate className="no-data-icon animate-spin-slow" size={48} />
+                      <p>Waiting for time-series aggregation data...</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
             </div>
           )}
 

@@ -569,6 +569,16 @@
         }
       },
       "glossary_title": "가이드: SRE 4대 황금 신호 (Golden Signals)",
-      "glossary_desc": "Google SRE 서적에서 정의한 시스템 모니터링의 핵심 4요소입니다. 이 지표들을 통해 성능 병목과 장애 징후를 조기에 발견할 수 있습니다."
+      "glossary_desc": "Google SRE 서적에서 정의한 시스템 모니터링의 핵심 4요소입니다. 이 지표들을 통해 성능 병목과 장애 징후를 조기에 발견할 수 있습니다.",
+      "database_monitoring": "DB 모니터링",
+      "db_status": "DB 상태",
+      "db_master": "마스터 DB",
+      "db_replica": "복제(Replica) DB",
+      "active_connections": "활성 연결",
+      "idle_connections": "대기 연결",
+      "total_connections": "전체 연결",
+      "awaiting_threads": "연결 대기 스레드",
+      "connection_pool_usage": "커넥션 풀 사용률",
+      "replication_lag": "복제 지연 (Lag)"
     }
 }

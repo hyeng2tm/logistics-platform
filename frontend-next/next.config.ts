@@ -4,9 +4,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   async rewrites() {
     // In Docker, we use service names. Outside, we use localhost.
-    // We prioritize environment variables, but fallback to service names for reliability.
-    const backendUrl = process.env.BACKEND_URL || 'http://sys-backend:8080';
-    const authServerUrl = process.env.AUTH_SERVER_URL || 'http://auth-server:9000';
+    const isDev = process.env.NODE_ENV === 'development';
+    const defaultBackend = isDev ? 'http://localhost:8080' : 'http://sys-backend:8080';
+    const defaultAuth = isDev ? 'http://localhost:9000' : 'http://auth-server:9000';
+
+    const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || defaultBackend;
+    const authServerUrl = process.env.AUTH_SERVER_URL || process.env.NEXT_PUBLIC_AUTH_SERVER || defaultAuth;
     
     console.log('[NextConfig] Backend URL:', backendUrl);
     console.log('[NextConfig] Auth Server URL:', authServerUrl);

@@ -42,4 +42,9 @@ public class SystemMonitoringController {
     public ResponseEntity<List<Map<String, Object>>> getSreAnalysis() {
         return ResponseEntity.ok(monitoringService.getSreAnalysis());
     }
+
+    @GetMapping("/db-metrics")
+    public ResponseEntity<List<Map<String, Object>>> getDatabaseMetrics() {
+        return ResponseEntity.ok(monitoringService.getDatabaseMetrics());
+    }
 }

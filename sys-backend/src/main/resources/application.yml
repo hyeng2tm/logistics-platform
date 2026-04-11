@@ -77,11 +77,13 @@ app:
       url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
       username: ENC(mxw0D2i3raf4c9MlhY39M1fDErmNNthO0TBYyKls1CPe4EOr8hIabtZ/9nmVVxFc)
       password: ENC(Z5t8mLe+jOeRMgWmyiIf0DfYNSVPFG1yn93xKgRYo7Aqb3xhJPl19w4VGMM5BwVs)
-    slave:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ENC(mxw0D2i3raf4c9MlhY39M1fDErmNNthO0TBYyKls1CPe4EOr8hIabtZ/9nmVVxFc)
-      password: ENC(Z5t8mLe+jOeRMgWmyiIf0DfYNSVPFG1yn93xKgRYo7Aqb3xhJPl19w4VGMM5BwVs)
+    slaves:
+      - url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+        username: ENC(mxw0D2i3raf4c9MlhY39M1fDErmNNthO0TBYyKls1CPe4EOr8hIabtZ/9nmVVxFc)
+        password: ENC(Z5t8mLe+jOeRMgWmyiIf0DfYNSVPFG1yn93xKgRYo7Aqb3xhJPl19w4VGMM5BwVs)
+      - url: "jdbc:mysql://localhost:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+        username: ENC(mxw0D2i3raf4c9MlhY39M1fDErmNNthO0TBYyKls1CPe4EOr8hIabtZ/9nmVVxFc)
+        password: ENC(Z5t8mLe+jOeRMgWmyiIf0DfYNSVPFG1yn93xKgRYo7Aqb3xhJPl19w4VGMM5BwVs)
   health-service:
     url: http://localhost:8081
   cors:
@@ -123,11 +125,13 @@ app:
       url: "jdbc:mysql://mysql:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
       username: ${DB_USERNAME:user}
       password: ${DB_PASSWORD:password}
-    slave:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: "jdbc:mysql://mysql-replica:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-      username: ${DB_USERNAME:user}
-      password: ${DB_PASSWORD:password}
+    slaves:
+      - url: "jdbc:mysql://mysql-replica:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+        username: ${DB_USERNAME:user}
+        password: ${DB_PASSWORD:password}
+      - url: "jdbc:mysql://mysql-replica:3306/logistics_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+        username: ${DB_USERNAME:user}
+        password: ${DB_PASSWORD:password}
   health-service:
     url: http://hea-backend:8081
   cors:
