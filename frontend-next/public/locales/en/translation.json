@@ -70,7 +70,14 @@
     "system_development": "System Development",
     "frontend_guide": "Frontend App Dev Guide",
     "manage_favorites": "Manage My Favorites",
-    "favorites_list": "Favorites List"
+    "favorites_list": "Favorites List",
+    "master_management": "Master Data Management",
+    "corporation_management": "Corporation Management",
+    "branch_management": "Branch Management",
+    "warehouse_management": "Warehouse Management",
+    "mapping_management": "Mapping Management",
+    "customer_management": "Customer Management",
+    "partner_management": "Partner Management"
   },
   "dashboard": {
     "welcome_title": "Welcome! Admin",
@@ -172,398 +179,484 @@
       "status_toggle_tooltip": "Toggle use/unused"
     },
     "page_desc": "Easily manage classification systems and dropdown reference information used throughout the application."
+  },
+  "user": {
+    "page_title": "User List & Management",
+    "page_desc": "View and control all user accounts (employees/partners) registered in the system.",
+    "list_title": "All Accounts List",
+    "add_btn": "Register New User",
+    "edit_title": "Edit User Information",
+    "excel_btn": "Export Accounts to Excel",
+    "fields": {
+      "id": "Employee ID",
+      "username": "Login ID",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "dept": "Department",
+      "role": "Role ID",
+      "status": "Account Status",
+      "language": "Language",
+      "last_login": "Last Login",
+      "actions": "Actions"
     },
-    "user": {
-      "page_title": "User List & Management",
-      "page_desc": "View and control all user accounts (employees/partners) registered in the system.",
-      "list_title": "All Accounts List",
-      "add_btn": "Register New User",
-      "edit_title": "Edit User Information",
-      "excel_btn": "Export Accounts to Excel",
+    "filter": {
+      "title": "Search Filter",
+      "dept": "Department",
+      "role": "Role",
+      "status": "Status",
+      "search": "Keyword (Name/ID)",
+      "search_placeholder": "Enter name or employee ID...",
+      "apply": "Apply Filter",
+      "all_dept": "All Departments",
+      "all_role": "All Roles",
+      "all_status": "All"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Locked/Inactive",
+      "active_label": "Active",
+      "inactive_label": "Inactive"
+    },
+    "messages": {
+      "required": "Please enter Employee ID, Login ID, Name, and Role ID.",
+      "delete_confirm": "Are you sure you want to delete account [{{name}}]?",
+      "password_hint": "Enter only to change"
+    }
+  },
+  "role": {
+    "page_title": "Role & Group Management",
+    "page_desc": "Create system access role groups and map detailed permissions by menu.",
+    "list_title": "Role Groups List",
+    "add_btn": "Create New Role",
+    "edit_title": "Edit Role Group",
+    "new_title": "Create New Role Group",
+    "setup_title": "Detail Settings (To be updated)",
+    "empty_msg": "Select a Role Group",
+    "empty_hint": "Click a role group from the list on the left.",
+    "fields": {
+      "id": "Role ID",
+      "id_label": "Role ID (UPPERCASE recommended)",
+      "name": "Display Name",
+      "name_label": "Role Group Name",
+      "actions": "Actions"
+    },
+    "messages": {
+      "required": "Please enter both Role ID and Role Group Name.",
+      "delete_confirm": "Are you sure you want to delete role [{{name}}]? It cannot be deleted if users are linked to it.",
+      "placeholder_box": "This area will be integrated with a detailed access permission tree view per resource (menu, button, function, etc.) in the future."
+    }
+  },
+  "inventory": {
+    "common": {
+      "client": "Client (Shipper)",
+      "sku": "SKU Code",
+      "item_name": "Item Name",
+      "category": "Category",
+      "location": "Storage Location",
+      "status": "Status",
+      "quantity": "Quantity",
+      "expected_date": "Expected Date",
+      "total": "Total",
+      "search_btn": "Search",
+      "save_btn": "Save",
+      "cancel_btn": "Cancel",
+      "actions": "Actions",
+      "loading": "Loading data..."
+    },
+    "stock": {
+      "title": "Stock Status (Status/Location)",
+      "desc": "Monitor stock quantities and locations of all clients in the logistics center in real-time.",
+      "filter_title": "Stock Inquiry / Search Filter",
+      "total_skus": "Total SKUs",
+      "total_available": "Total Available Quantity",
+      "total_allocated": "Total Allocated (Outbound) Quantity",
+      "shortage_items": "Stockout / Low Stock Items",
+      "filter_keyword": "Keyword",
+      "filter_keyword_placeholder": "Code or Name...",
+      "filter_zone": "Center/Zone",
+      "filter_zone_all": "All Zones",
+      "col_total": "Total Stock",
+      "col_available": "Available Stock",
+      "col_allocated": "Allocated Stock",
+      "col_updated": "Last Updated",
+      "btn_move": "Move Location",
+      "btn_excel": "Excel Download",
+      "move_confirm_title": "Relocation / Move",
+      "move_confirm_msg": "Do you want to move [{{name}}] from current location '{{location}}' to another?\n(Limited to available stock: {{qty}} items)",
+      "move_next_phase": "Relocation and physical inventory counting functions will be implemented in the next phase."
+    },
+    "inbound": {
+      "title": "Inbound Work Management",
+      "desc": "Inspect items arriving from partners/clients and process inbound performance.",
+      "work_panel": "Physical Inbound Registration",
+      "asn_info": "Expected Inbound Info (ASN)",
+      "asn_list": "Inbound List & ASN Status",
+      "qty_input_label": "Inbound Quantity (Remaining: {{qty}} items)",
+      "loc_input_label": "Loading Location (Barcode)",
+      "loc_placeholder": "e.g. A-01-01-01",
+      "btn_save_work": "Save Inbound Record",
+      "btn_cancel_work": "Cancel Work",
+      "save_confirm_title": "Confirm Inbound Registration",
+      "save_confirm_msg": "Do you want to process {{qty}} items of [{{name}}] into '{{location}}'?",
+      "save_success": "Inbound performance has been successfully updated.",
+      "status_expected": "Expected",
+      "status_receiving": "Receiving",
+      "status_completed": "Completed",
+      "status_discrepancy": "Discrepancy",
+      "col_progress": "Progress (Qty)",
+      "btn_work": "Process Inbound",
+      "btn_view": "View Details"
+    },
+    "outbound": {
+      "title": "Outbound & Picking Management",
+      "desc": "Process picking and packing for outbound orders within the warehouse.",
+      "work_panel": "Pick/Outbound Physical Work Registration",
+      "order_detail": "Outbound Order Details",
+      "pick_list": "Pending Outbound (Pick List)",
+      "pick_qty_label": "Picking/Packing Quantity (Remaining: {{qty}} items)",
+      "pick_warning": "Always verify that physical items match the quantity.",
+      "btn_complete_pick": "Complete Picking",
+      "btn_close_work": "Close Work",
+      "save_confirm_title": "Confirm Outbound Registration",
+      "save_confirm_msg": "Do you want to complete picking and packing for {{qty}} items of [{{name}}]?",
+      "save_success": "Outbound (Picking) record has been registered.",
+      "status_pending": "Pending",
+      "status_picking": "Picking",
+      "status_packed": "Packed/Ready",
+      "status_shipped": "Shipped/Outgoing",
+      "status_shortage": "Stockout",
+      "btn_pick": "Picking",
+      "btn_ship": "Confirm Shipment",
+      "ship_confirm_title": "Confirm Ship-Out",
+      "ship_confirm_msg": "Do you want to confirm shipment for order [{{id}}] and finalize shipping process?",
+      "ship_success": "Shipment confirmation and outbound instruction have been completed successfully."
+    }
+  },
+  "sales": {
+    "common": {
+      "client": "Client",
+      "order_no": "Order No.",
+      "status": "Status",
+      "loading": "Loading data...",
+      "actions": "Actions",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "client": {
+      "title": "Client (Shipper) Management",
+      "desc": "Register and manage shipper and client information using logistics services.",
+      "filter_title": "Search Filter",
+      "search_placeholder": "Enter name and press enter...",
+      "list_title": "All Clients List",
+      "add_btn": "Register New Client",
+      "name_placeholder": "Client Name (e.g. Logistics Partners)",
+      "manager_placeholder": "Manager Name",
+      "edit_title": "Edit Client Information",
+      "new_title": "Register New Client",
+      "code_placeholder": "CST-0001",
+      "biz_no_placeholder": "123-45-67890",
+      "phone_placeholder": "010-1234-5678",
+      "email_placeholder": "admin@partner.com",
       "fields": {
-        "id": "Employee ID",
-        "username": "Login ID",
-        "name": "Name",
+        "code": "Client Code",
+        "name": "Client Name",
+        "biz_no": "Business Number",
+        "manager": "Manager",
+        "phone": "Phone",
         "email": "Email",
-        "password": "Password",
-        "dept": "Department",
-        "role": "Role ID",
-        "status": "Account Status",
-        "language": "Language",
-        "last_login": "Last Login",
-        "actions": "Actions"
+        "status": "Trade Status"
       },
-      "filter": {
-        "title": "Search Filter",
-        "dept": "Department",
-        "role": "Role",
-        "status": "Status",
-        "search": "Keyword (Name/ID)",
-        "search_placeholder": "Enter name or employee ID...",
-        "apply": "Apply Filter",
-        "all_dept": "All Departments",
-        "all_role": "All Roles",
-        "all_status": "All"
+      "status_active": "Active",
+      "status_inactive": "Inactive",
+      "messages": {
+        "required": "Client code and name are required.",
+        "delete_confirm": "Are you sure you want to delete [{{name}}]?\nIt may fail if there are related order histories."
+      }
+    },
+    "order": {
+      "title": "Order Collection Management",
+      "desc": "Manage cargo delivery instructions and order details collected from shippers.",
+      "filter_title": "Order Detail Search/Filter",
+      "search_placeholder": "ORD-...",
+      "list_title": "All Orders List",
+      "add_btn": "Register New Order",
+      "destination_placeholder": "Enter delivery address...",
+      "edit_title": "Edit Order Details",
+      "new_title": "Register New Order",
+      "order_no_placeholder": "ORD-...",
+      "fields": {
+        "order_no": "Order Number",
+        "client": "Client (Shipper)",
+        "order_date": "Order Date",
+        "delivery_date": "Request Delivery Date",
+        "destination": "Delivery Destination Address",
+        "amount": "Fee / Amount (KRW)",
+        "status": "Progress Status"
       },
       "status": {
-        "active": "Active",
-        "inactive": "Locked/Inactive",
-        "active_label": "Active",
-        "inactive_label": "Inactive"
+        "pending": "Pending",
+        "processing": "Processing",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
       },
       "messages": {
-        "required": "Please enter Employee ID, Login ID, Name, and Role ID.",
-        "delete_confirm": "Are you sure you want to delete account [{{name}}]?",
-        "password_hint": "Enter only to change"
+        "required": "Client, destination, and order date are required.",
+        "delete_confirm": "Are you sure you want to delete order [{{id}}]?\nDeletion may be restricted if shipment is already in progress.",
+        "date_range_hint": "Work Date Range (To be implemented)"
       }
-    },
-    "role": {
-      "page_title": "Role & Group Management",
-      "page_desc": "Create system access role groups and map detailed permissions by menu.",
-      "list_title": "Role Groups List",
-      "add_btn": "Create New Role",
-      "edit_title": "Edit Role Group",
-      "new_title": "Create New Role Group",
-      "setup_title": "Detail Settings (To be updated)",
-      "empty_msg": "Select a Role Group",
-      "empty_hint": "Click a role group from the list on the left.",
-      "fields": {
-        "id": "Role ID",
-        "id_label": "Role ID (UPPERCASE recommended)",
-        "name": "Display Name",
-        "name_label": "Role Group Name",
-        "actions": "Actions"
-      },
-      "messages": {
-        "required": "Please enter both Role ID and Role Group Name.",
-        "delete_confirm": "Are you sure you want to delete role [{{name}}]? It cannot be deleted if users are linked to it.",
-        "placeholder_box": "This area will be integrated with a detailed access permission tree view per resource (menu, button, function, etc.) in the future."
-      }
-    },
-    "inventory": {
-      "common": {
-        "client": "Client (Shipper)",
-        "sku": "SKU Code",
-        "item_name": "Item Name",
-        "category": "Category",
-        "location": "Storage Location",
-        "status": "Status",
-        "quantity": "Quantity",
-        "expected_date": "Expected Date",
-        "total": "Total",
-        "search_btn": "Search",
-        "save_btn": "Save",
-        "cancel_btn": "Cancel",
-        "actions": "Actions",
-        "loading": "Loading data..."
-      },
-      "stock": {
-        "title": "Stock Status (Status/Location)",
-        "desc": "Monitor stock quantities and locations of all clients in the logistics center in real-time.",
-        "filter_title": "Stock Inquiry / Search Filter",
-        "total_skus": "Total SKUs",
-        "total_available": "Total Available Quantity",
-        "total_allocated": "Total Allocated (Outbound) Quantity",
-        "shortage_items": "Stockout / Low Stock Items",
-        "filter_keyword": "Keyword",
-        "filter_keyword_placeholder": "Code or Name...",
-        "filter_zone": "Center/Zone",
-        "filter_zone_all": "All Zones",
-        "col_total": "Total Stock",
-        "col_available": "Available Stock",
-        "col_allocated": "Allocated Stock",
-        "col_updated": "Last Updated",
-        "btn_move": "Move Location",
-        "btn_excel": "Excel Download",
-        "move_confirm_title": "Relocation / Move",
-        "move_confirm_msg": "Do you want to move [{{name}}] from current location '{{location}}' to another?\n(Limited to available stock: {{qty}} items)",
-        "move_next_phase": "Relocation and physical inventory counting functions will be implemented in the next phase."
-      },
-      "inbound": {
-        "title": "Inbound Work Management",
-        "desc": "Inspect items arriving from partners/clients and process inbound performance.",
-        "work_panel": "Physical Inbound Registration",
-        "asn_info": "Expected Inbound Info (ASN)",
-        "asn_list": "Inbound List & ASN Status",
-        "qty_input_label": "Inbound Quantity (Remaining: {{qty}} items)",
-        "loc_input_label": "Loading Location (Barcode)",
-        "loc_placeholder": "e.g. A-01-01-01",
-        "btn_save_work": "Save Inbound Record",
-        "btn_cancel_work": "Cancel Work",
-        "save_confirm_title": "Confirm Inbound Registration",
-        "save_confirm_msg": "Do you want to process {{qty}} items of [{{name}}] into '{{location}}'?",
-        "save_success": "Inbound performance has been successfully updated.",
-        "status_expected": "Expected",
-        "status_receiving": "Receiving",
-        "status_completed": "Completed",
-        "status_discrepancy": "Discrepancy",
-        "col_progress": "Progress (Qty)",
-        "btn_work": "Process Inbound",
-        "btn_view": "View Details"
-      },
-      "outbound": {
-        "title": "Outbound & Picking Management",
-        "desc": "Process picking and packing for outbound orders within the warehouse.",
-        "work_panel": "Pick/Outbound Physical Work Registration",
-        "order_detail": "Outbound Order Details",
-        "pick_list": "Pending Outbound (Pick List)",
-        "pick_qty_label": "Picking/Packing Quantity (Remaining: {{qty}} items)",
-        "pick_warning": "Always verify that physical items match the quantity.",
-        "btn_complete_pick": "Complete Picking",
-        "btn_close_work": "Close Work",
-        "save_confirm_title": "Confirm Outbound Registration",
-        "save_confirm_msg": "Do you want to complete picking and packing for {{qty}} items of [{{name}}]?",
-        "save_success": "Outbound (Picking) record has been registered.",
-        "status_pending": "Pending",
-        "status_picking": "Picking",
-        "status_packed": "Packed/Ready",
-        "status_shipped": "Shipped/Outgoing",
-        "status_shortage": "Stockout",
-        "btn_pick": "Picking",
-        "btn_ship": "Confirm Shipment",
-        "ship_confirm_title": "Confirm Ship-Out",
-        "ship_confirm_msg": "Do you want to confirm shipment for order [{{id}}] and finalize shipping process?",
-        "ship_success": "Shipment confirmation and outbound instruction have been completed successfully."
-      }
-    },
-    "sales": {
-      "common": {
-        "client": "Client",
-        "order_no": "Order No.",
-        "status": "Status",
-        "loading": "Loading data...",
-        "actions": "Actions",
-        "save": "Save",
-        "cancel": "Cancel",
-        "edit": "Edit",
-        "delete": "Delete"
-      },
-      "client": {
-        "title": "Client (Shipper) Management",
-        "desc": "Register and manage shipper and client information using logistics services.",
-        "filter_title": "Search Filter",
-        "search_placeholder": "Enter name and press enter...",
-        "list_title": "All Clients List",
-        "add_btn": "Register New Client",
-        "name_placeholder": "Client Name (e.g. Logistics Partners)",
-        "manager_placeholder": "Manager Name",
-        "edit_title": "Edit Client Information",
-        "new_title": "Register New Client",
-        "code_placeholder": "CST-0001",
-        "biz_no_placeholder": "123-45-67890",
-        "phone_placeholder": "010-1234-5678",
-        "email_placeholder": "admin@partner.com",
-        "fields": {
-          "code": "Client Code",
-          "name": "Client Name",
-          "biz_no": "Business Number",
-          "manager": "Manager",
-          "phone": "Phone",
-          "email": "Email",
-          "status": "Trade Status"
-        },
-        "status_active": "Active",
-        "status_inactive": "Inactive",
-        "messages": {
-          "required": "Client code and name are required.",
-          "delete_confirm": "Are you sure you want to delete [{{name}}]?\nIt may fail if there are related order histories."
-        }
-      },
-      "order": {
-        "title": "Order Collection Management",
-        "desc": "Manage cargo delivery instructions and order details collected from shippers.",
-        "filter_title": "Order Detail Search/Filter",
-        "search_placeholder": "ORD-...",
-        "list_title": "All Orders List",
-        "add_btn": "Register New Order",
-        "destination_placeholder": "Enter delivery address...",
-        "edit_title": "Edit Order Details",
-        "new_title": "Register New Order",
-        "order_no_placeholder": "ORD-...",
-        "fields": {
-          "order_no": "Order Number",
-          "client": "Client (Shipper)",
-          "order_date": "Order Date",
-          "delivery_date": "Request Delivery Date",
-          "destination": "Delivery Destination Address",
-          "amount": "Fee / Amount (KRW)",
-          "status": "Progress Status"
-        },
-        "status": {
-          "pending": "Pending",
-          "processing": "Processing",
-          "shipped": "Shipped",
-          "delivered": "Delivered",
-          "cancelled": "Cancelled"
-        },
-        "messages": {
-          "required": "Client, destination, and order date are required.",
-          "delete_confirm": "Are you sure you want to delete order [{{id}}]?\nDeletion may be restricted if shipment is already in progress.",
-          "date_range_hint": "Work Date Range (To be implemented)"
-        }
-      }
-    },
-    "dispatch": {
-      "common": {
-        "search": "Search",
-        "loading": "Loading data...",
-        "no_data": "No data available."
-      },
-      "allocation": {
-        "title": "Dispatch & Vehicle Allocation",
-        "desc": "Allocate the most efficient vehicles and drivers for received delivery orders.",
-        "search_title": "Search Pending Orders",
-        "list_title": "Pending Orders List",
-        "order_no_search": "Search Order No.",
-        "dest_search": "Search Destination",
-        "deadline_label": "By Deadline",
-        "all_today": "Today (Show All)",
-        "empty_msg": "No pending orders available for dispatch.",
-        "panel_title": "Dispatch Instruction",
-        "selected_count": "Selected Orders",
-        "vehicle_select": "Select Vehicle",
-        "vehicle_placeholder": "Select a vehicle",
-        "vehicle_detail_title": "Selected Vehicle Details",
-        "vehicle_no": "Vehicle No.",
-        "vehicle_capacity": "Capacity",
-        "driver_assigned": "Driver Assigned",
-        "confirm_btn": "Confirm & Send Instructions",
-        "helper_title": "Dispatch Helper",
-        "helper_msg": "Smart dispatch function grouping similar delivery areas will be activated soon.",
-        "fields": {
-          "order_no": "Order No.",
-          "order_date": "Order Date",
-          "client": "Client",
-          "destination": "Destination",
-          "status": "Status"
-        },
-        "status_waiting": "Pending",
-        "messages": {
-          "error_title": "Dispatch Error",
-          "select_order": "Please select orders to dispatch first.",
-          "select_vehicle": "Please select a vehicle and driver.",
-          "confirm_title": "Confirm Dispatch",
-          "confirm_msg": "Dispatch {{count}} selected orders to vehicle '{{vehicle}}'?",
-          "execute_btn": "Execute",
-          "success_title": "Dispatch Complete",
-          "success_msg": "Vehicle allocation and dispatch processed successfully.",
-          "fail_title": "Dispatch Failed",
-          "fail_msg": "An error occurred during dispatch processing."
-        }
-      },
-      "routing": {
-        "title": "Delivery Routing Setup",
-        "desc": "Set and monitor delivery stops and optimal sequences for allocated vehicles.",
-        "search_title": "Search Routes",
-        "search_placeholder": "Vehicle/Driver Name",
-        "status_label": "Route Status",
-        "status_all": "Show All",
-        "list_title": "Dispatch & Operation List",
-        "detail_title": "Route Detail & Stops",
-        "optimize_btn": "Optimize Sequence",
-        "empty_msg": "Select a route from the list to view details.",
-        "current_loc": "Current Location",
-        "no_info": "No Info",
-        "no_stops": "No stops assigned.",
-        "stop_label": "Stop {{seq}}",
-        "status_unloaded": "Unloaded",
-        "status_arrived": "Arrived",
-        "status_pending": "Pending",
-        "fields": {
-          "vehicle_no": "Vehicle No.",
-          "driver": "Driver",
-          "order_count": "Orders",
-          "status": "Status",
-          "departure": "Departure",
-          "actions": "Manage"
-        },
-        "btn_details": "View Details",
-        "status": {
-          "waiting": "Waiting",
-          "in_transit": "In Transit",
-          "completed": "Completed"
-        },
-        "messages": {
-          "opt_fail_title": "Cannot Optimize",
-          "opt_fail_msg": "Please select a route to optimize (excluding completed).",
-          "opt_progress_title": "Optimization in Progress",
-          "opt_progress_msg": "AI routing engine is calculating the optimal sequence.\n(Please wait.)",
-          "opt_success_title": "Optimization Complete",
-          "opt_success_msg": "Re-arranged to efficient delivery sequence. Changes applied after saving."
-        }
-      }
-    },
-    "development": {
-      "frontend": {
-        "title": "Frontend App Development Guide",
-        "desc": "Standard guide for logistics platform frontend development and tech stack.",
-        "tech_stack": "Core Tech Stack",
-        "structure": "Project Structure",
-        "conventions": "Development Conventions",
-        "ui_standard": "UI/UX Standards"
-      },
-      "backend": {
-        "title": "Backend Development Guide",
-        "desc": "Standard guide for logistics platform backend API and database development.",
-        "tech_stack": "Backend Tech Stack",
-        "db_standard": "Database Standards",
-        "api_standard": "API Design Standards",
-        "security": "Security & Authorization"
-      },
-      "auth": {
-        "title": "Auth Server Guide",
-        "desc": "Standard guide for logistics platform authentication and authorization.",
-        "architecture": "Authentication Architecture",
-        "structure": "Auth-Server Source Structure",
-        "config": "Configuration Details"
-      }
-    },
-    "monitoring": {
-      "dashboard_summary": "Dashboard Summary",
-      "execution_trace": "Execution Trace",
-      "system_logs": "System Logs",
-      "sre_analysis": "SRE Analysis Report",
-      "active_instances": "Active Instances",
-      "auto_refresh": "Auto Refresh",
-      "refresh_paused": "Refresh Paused",
-      "refresh_interval_60s": "Refreshes every 60 seconds.",
-      "metrics": {
-        "latency": {
-          "label": "Latency",
-          "desc": "The time it takes to service a request."
-        },
-        "traffic": {
-          "label": "Traffic (TPS)",
-          "desc": "A measure of how much demand is being placed on the system (Transactions Per Second)."
-        },
-        "errors": {
-          "label": "Errors",
-          "desc": "The rate of requests that fail."
-        },
-        "saturation": {
-          "label": "Saturation",
-          "desc": "How 'full' your service is (e.g., CPU, Memory usage)."
-        },
-        "p95": {
-          "label": "P95 Percentile",
-          "desc": "The latency experienced by the 95th percentile of requests. Useful for identifying performance tails."
-        },
-        "p50": {
-          "label": "P50 (Median)",
-          "desc": "The median latency. Half of the requests are faster than this value."
-        }
-      },
-      "glossary_title": "Guide: SRE 4 Golden Signals",
-      "glossary_desc": "The four essential dimensions of system monitoring as defined in the Google SRE handbook. These help identify bottlenecks and early signs of failure.",
-      "database_monitoring": "DB Monitoring",
-      "db_status": "DB Status",
-      "db_master": "Master DB",
-      "db_replica": "Replica DB",
-      "active_connections": "Active Connections",
-      "idle_connections": "Idle Connections",
-      "total_connections": "Total Connections",
-      "awaiting_threads": "Awaiting Threads",
-      "connection_pool_usage": "Connection Pool Usage",
-      "replication_lag": "Replication Lag"
     }
+  },
+  "dispatch": {
+    "common": {
+      "search": "Search",
+      "loading": "Loading data...",
+      "no_data": "No data available."
+    },
+    "allocation": {
+      "title": "Dispatch & Vehicle Allocation",
+      "desc": "Allocate the most efficient vehicles and drivers for received delivery orders.",
+      "search_title": "Search Pending Orders",
+      "list_title": "Pending Orders List",
+      "order_no_search": "Search Order No.",
+      "dest_search": "Search Destination",
+      "deadline_label": "By Deadline",
+      "all_today": "Today (Show All)",
+      "empty_msg": "No pending orders available for dispatch.",
+      "panel_title": "Dispatch Instruction",
+      "selected_count": "Selected Orders",
+      "vehicle_select": "Select Vehicle",
+      "vehicle_placeholder": "Select a vehicle",
+      "vehicle_detail_title": "Selected Vehicle Details",
+      "vehicle_no": "Vehicle No.",
+      "vehicle_capacity": "Capacity",
+      "driver_assigned": "Driver Assigned",
+      "confirm_btn": "Confirm & Send Instructions",
+      "helper_title": "Dispatch Helper",
+      "helper_msg": "Smart dispatch function grouping similar delivery areas will be activated soon.",
+      "fields": {
+        "order_no": "Order No.",
+        "order_date": "Order Date",
+        "client": "Client",
+        "destination": "Destination",
+        "status": "Status"
+      },
+      "status_waiting": "Pending",
+      "messages": {
+        "error_title": "Dispatch Error",
+        "select_order": "Please select orders to dispatch first.",
+        "select_vehicle": "Please select a vehicle and driver.",
+        "confirm_title": "Confirm Dispatch",
+        "confirm_msg": "Dispatch {{count}} selected orders to vehicle '{{vehicle}}'?",
+        "execute_btn": "Execute",
+        "success_title": "Dispatch Complete",
+        "success_msg": "Vehicle allocation and dispatch processed successfully.",
+        "fail_title": "Dispatch Failed",
+        "fail_msg": "An error occurred during dispatch processing."
+      }
+    },
+    "routing": {
+      "title": "Delivery Routing Setup",
+      "desc": "Set and monitor delivery stops and optimal sequences for allocated vehicles.",
+      "search_title": "Search Routes",
+      "search_placeholder": "Vehicle/Driver Name",
+      "status_label": "Route Status",
+      "status_all": "Show All",
+      "list_title": "Dispatch & Operation List",
+      "detail_title": "Route Detail & Stops",
+      "optimize_btn": "Optimize Sequence",
+      "empty_msg": "Select a route from the list to view details.",
+      "current_loc": "Current Location",
+      "no_info": "No Info",
+      "no_stops": "No stops assigned.",
+      "stop_label": "Stop {{seq}}",
+      "status_unloaded": "Unloaded",
+      "status_arrived": "Arrived",
+      "status_pending": "Pending",
+      "fields": {
+        "vehicle_no": "Vehicle No.",
+        "driver": "Driver",
+        "order_count": "Orders",
+        "status": "Status",
+        "departure": "Departure",
+        "actions": "Manage"
+      },
+      "btn_details": "View Details",
+      "status": {
+        "waiting": "Waiting",
+        "in_transit": "In Transit",
+        "completed": "Completed"
+      },
+      "messages": {
+        "opt_fail_title": "Cannot Optimize",
+        "opt_fail_msg": "Please select a route to optimize (excluding completed).",
+        "opt_progress_title": "Optimization in Progress",
+        "opt_progress_msg": "AI routing engine is calculating the optimal sequence.\n(Please wait.)",
+        "opt_success_title": "Optimization Complete",
+        "opt_success_msg": "Re-arranged to efficient delivery sequence. Changes applied after saving."
+      }
+    }
+  },
+  "development": {
+    "frontend": {
+      "title": "Frontend App Development Guide",
+      "desc": "Standard guide for logistics platform frontend development and tech stack.",
+      "tech_stack": "Core Tech Stack",
+      "structure": "Project Structure",
+      "conventions": "Development Conventions",
+      "ui_standard": "UI/UX Standards"
+    },
+    "backend": {
+      "title": "Backend Development Guide",
+      "desc": "Standard guide for logistics platform backend API and database development.",
+      "tech_stack": "Backend Tech Stack",
+      "db_standard": "Database Standards",
+      "api_standard": "API Design Standards",
+      "security": "Security & Authorization"
+    },
+    "auth": {
+      "title": "Auth Server Guide",
+      "desc": "Standard guide for logistics platform authentication and authorization.",
+      "architecture": "Authentication Architecture",
+      "structure": "Auth-Server Source Structure",
+      "config": "Configuration Details"
+    }
+  },
+  "monitoring": {
+    "dashboard_summary": "Dashboard Summary",
+    "execution_trace": "Execution Trace",
+    "system_logs": "System Logs",
+    "sre_analysis": "SRE Analysis Report",
+    "active_instances": "Active Instances",
+    "auto_refresh": "Auto Refresh",
+    "refresh_paused": "Refresh Paused",
+    "refresh_interval_60s": "Refreshes every 60 seconds.",
+    "metrics": {
+      "latency": {
+        "label": "Latency",
+        "desc": "The time it takes to service a request."
+      },
+      "traffic": {
+        "label": "Traffic (TPS)",
+        "desc": "A measure of how much demand is being placed on the system (Transactions Per Second)."
+      },
+      "errors": {
+        "label": "Errors",
+        "desc": "The rate of requests that fail."
+      },
+      "saturation": {
+        "label": "Saturation",
+        "desc": "How 'full' your service is (e.g., CPU, Memory usage)."
+      },
+      "p95": {
+        "label": "P95 Percentile",
+        "desc": "The latency experienced by the 95th percentile of requests. Useful for identifying performance tails."
+      },
+      "p50": {
+        "label": "P50 (Median)",
+        "desc": "The median latency. Half of the requests are faster than this value."
+      }
+    },
+    "glossary_title": "Guide: SRE 4 Golden Signals",
+    "glossary_desc": "The four essential dimensions of system monitoring as defined in the Google SRE handbook. These help identify bottlenecks and early signs of failure.",
+    "database_monitoring": "DB Monitoring",
+    "db_status": "DB Status",
+    "db_master": "Master DB",
+    "db_replica": "Replica DB",
+    "active_connections": "Active Connections",
+    "idle_connections": "Idle Connections",
+    "total_connections": "Total Connections",
+    "awaiting_threads": "Awaiting Threads",
+    "connection_pool_usage": "Connection Pool Usage",
+    "replication_lag": "Replication Lag"
+  },
+  "master": {
+    "common": {
+      "code": "Code",
+      "name": "Name",
+      "use_yn": "Use Y/N",
+      "address": "Address",
+      "actions": "Manage",
+      "biz_no": "Business No.",
+      "status": "Status",
+      "type": "Type",
+      "contact": "Contact",
+      "search_btn": "Search",
+      "add_btn": "Add New",
+      "save_success": "Save Complete",
+      "delete_success": "Delete Complete"
+    },
+    "corp": {
+      "title": "Corporation Management",
+      "desc": "Register and manage all corporations registered in the system.",
+      "filter_name": "Corporation Name",
+      "list_title": "Corporation List",
+      "code": "Corp Code",
+      "name": "Corp Name",
+      "biz_no": "Business Number",
+      "address": "Corp Address",
+      "use_yn": "Use Y/N"
+    },
+    "branch": {
+      "title": "Branch Management",
+      "desc": "Manage branch offices under each corporation.",
+      "filter_name": "Branch Name",
+      "list_title": "Branch List",
+      "code": "Branch Code",
+      "name": "Branch Name",
+      "corp": "Parent Corporation",
+      "address": "Branch Address",
+      "use_yn": "Use Y/N"
+    },
+    "warehouse": {
+      "title": "Warehouse Management",
+      "desc": "Manage warehouses and distribution centers operated by each corporation.",
+      "filter_name": "Warehouse Name",
+      "list_title": "Warehouse List",
+      "code": "Warehouse Code",
+      "name": "Warehouse Name",
+      "corp": "Parent Corporation",
+      "type": "Warehouse Type (Dry/Chilled/Frozen)",
+      "address": "Warehouse Address",
+      "use_yn": "Use Y/N"
+    },
+    "mapping": {
+      "title": "Corp-Branch-User-Warehouse Mapping",
+      "desc": "Set and retrieve relational mapping authorities among corporations, branches, users, and warehouses.",
+      "filter_user": "User ID",
+      "list_title": "Mapping List",
+      "corp": "Corporation",
+      "branch": "Branch",
+      "user": "User ID / Name",
+      "warehouse": "Assigned Warehouse",
+      "use_yn": "Use Y/N"
+    },
+    "customer": {
+      "title": "Customer Management",
+      "desc": "Manage shipper and client master data requesting logistics services.",
+      "filter_name": "Customer Name",
+      "list_title": "Customer List",
+      "code": "Customer Code",
+      "name": "Customer Name",
+      "biz_no": "Business No.",
+      "contact": "Contact",
+      "address": "Address",
+      "use_yn": "Use Y/N"
+    },
+    "partner": {
+      "title": "Partner Management",
+      "desc": "Manage partners in cooperation such as shipping, logistics, and stevedoring.",
+      "filter_name": "Partner Name",
+      "list_title": "Partner List",
+      "code": "Partner Code",
+      "name": "Partner Name",
+      "biz_no": "Business No.",
+      "type": "Partner Type (Logistics/Delivery/Stevedore)",
+      "contact": "Contact",
+      "use_yn": "Use Y/N"
+    }
+  }
 }

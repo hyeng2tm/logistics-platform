@@ -70,7 +70,14 @@
     "system_development": "システム開発",
     "frontend_guide": "フロントエンドガイド",
     "manage_favorites": "お気に入り管理",
-    "favorites_list": "お気に入り一覧"
+    "favorites_list": "お気に入り一覧",
+    "master_management": "基準情報管理",
+    "corporation_management": "法人管理",
+    "branch_management": "支店管理",
+    "warehouse_management": "倉庫情報管理",
+    "mapping_management": "マッピング管理",
+    "customer_management": "顧客管理",
+    "partner_management": "パートナー管理"
   },
   "dashboard": {
     "welcome_title": "ようこそ！管理者様",
@@ -172,350 +179,436 @@
       "status_toggle_tooltip": "使用/未使用の切り替え"
     },
     "page_desc": "アプリケーション全体で使用される分類体系とドロップダウン基準情報を簡単に管理できます。"
+  },
+  "user": {
+    "page_title": "ユーザー一覧および管理",
+    "page_desc": "システムに登録された全ユーザー（従業員/パートナー）のアカウントを照会し、制御します。",
+    "list_title": "全アカウント一覧",
+    "add_btn": "新規ユーザー登録",
+    "edit_title": "ユーザー情報修正",
+    "excel_btn": "アカウントエクセルダウンロード",
+    "fields": {
+      "id": "社員番号/ID",
+      "username": "ログインID",
+      "name": "名前",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "dept": "所属部署",
+      "role": "権限グループ(Role ID)",
+      "status": "アカウント状態",
+      "language": "言語 (Language)",
+      "last_login": "最終接続日時",
+      "actions": "管理"
     },
-    "user": {
-      "page_title": "ユーザー一覧および管理",
-      "page_desc": "システムに登録された全ユーザー（従業員/パートナー）のアカウントを照会し、制御します。",
-      "list_title": "全アカウント一覧",
-      "add_btn": "新規ユーザー登録",
-      "edit_title": "ユーザー情報修正",
-      "excel_btn": "アカウントエクセルダウンロード",
+    "filter": {
+      "title": "検索フィルター",
+      "dept": "所属部署",
+      "role": "権限パート",
+      "status": "アカウント状態",
+      "search": "検索語 (名前/社員番号)",
+      "search_placeholder": "名前または社員番号を入力...",
+      "apply": "フィルター適用",
+      "all_dept": "全部署",
+      "all_role": "全権限",
+      "all_status": "全て"
+    },
+    "status": {
+      "active": "正常 (有効)",
+      "inactive": "ロック/退職 (無効)",
+      "active_label": "正常 (有効)",
+      "inactive_label": "停止 (無効)"
+    },
+    "messages": {
+      "required": "社員番号/ID、ログインID、名前、権限グループをすべて入力してください。",
+      "delete_confirm": "本当に [{{name}}] アカウントを削除しますか？",
+      "password_hint": "変更時のみ入力"
+    }
+  },
+  "role": {
+    "page_title": "権限/グループ管理",
+    "page_desc": "システムアクセス権限グループを作成し、メニュー別の詳細権限をマッピングします。",
+    "list_title": "権限グループ一覧",
+    "add_btn": "新規権限作成",
+    "edit_title": "権限グループ修正",
+    "new_title": "新規権限グループ作成",
+    "setup_title": "詳細項目設定 (アップデート予定)",
+    "empty_msg": "権限グループを選択してください",
+    "empty_hint": "左側のリストから権限グループをクリックしてください。",
+    "fields": {
+      "id": "権限ID",
+      "id_label": "権限ID (英字/大文字推奨)",
+      "name": "権限表示名",
+      "name_label": "権限グループ名 (表示名)",
+      "actions": "管理"
+    },
+    "messages": {
+      "required": "権限IDと権限グループ名の両方を入力してください。",
+      "delete_confirm": "本当に [{{name}}] 権限を削除しますか？ 権限が設定されたユーザーがいる場合、削除できないことがあります。",
+      "placeholder_box": "このエリアには将来、リソース別（メニュー、ボタン、機能など）の詳細アクセス権限ツリービューが連動される予定です。"
+    }
+  },
+  "inventory": {
+    "common": {
+      "client": "荷主(顧客社)",
+      "sku": "品目コード(SKU)",
+      "item_name": "品目名",
+      "category": "カテゴリー",
+      "location": "積載ロケーション",
+      "status": "状態",
+      "quantity": "数量",
+      "expected_date": "予定日",
+      "total": "合計",
+      "search_btn": "検索",
+      "save_btn": "保存",
+      "cancel_btn": "キャンセル",
+      "actions": "操作",
+      "loading": "データを読み込んでいます..."
+    },
+    "stock": {
+      "title": "商品の在庫状況 (Status/Location)",
+      "desc": "物流センター内の全顧客社の商品の在庫数量と位置をリアルタイムで監視します。",
+      "filter_title": "在庫照会 / 検索フィルター",
+      "total_skus": "全品目数 (SKUs)",
+      "total_available": "総有効在庫数量",
+      "total_allocated": "出庫割当(予定)数量",
+      "shortage_items": "欠品/在庫不足品目",
+      "filter_keyword": "検索キーワード",
+      "filter_keyword_placeholder": "コードまたは名称...",
+      "filter_zone": "センター/区域",
+      "filter_zone_all": "全区域",
+      "col_total": "総在庫 (Total)",
+      "col_available": "有効在庫 (Available)",
+      "col_allocated": "割当在庫 (Allocated)",
+      "col_updated": "最終更新",
+      "btn_move": "位置移動",
+      "btn_excel": "エクセルダウンロード",
+      "move_confirm_title": "倉庫/ロケーション移動",
+      "move_confirm_msg": "[{{name}}] 実物の積載位置を現在の '{{location}}' から別の場所に移動しますか？\n(有効在庫: {{qty}}個限定)",
+      "move_next_phase": "ロケーション移動および在庫実査機能は、次のフェーズで実装されます。"
+    },
+    "inbound": {
+      "title": "入庫 (Inbound) 作業管理",
+      "desc": "協力会社および荷主から入庫される商品、資材を検収し、実績を処理します。",
+      "work_panel": "実物入庫登録",
+      "asn_info": "入庫予定情報 (ASN)",
+      "asn_list": "入庫リストおよび指示(ASN)現況",
+      "qty_input_label": "入庫数量登録 (残り: {{qty}}個)",
+      "loc_input_label": "積載ロケーション (位置バーコード)",
+      "loc_placeholder": "例: A-01-01-01",
+      "btn_save_work": "入庫実績保存",
+      "btn_cancel_work": "作業キャンセル",
+      "save_confirm_title": "入庫実績登録の確認",
+      "save_confirm_msg": "[{{name}}] {{qty}}個を '{{location}}' ロケーションに入庫処理しますか？",
+      "save_success": "入庫実績が正常に反映されました。",
+      "status_expected": "入庫予定",
+      "status_receiving": "作業中",
+      "status_completed": "入庫完了",
+      "status_discrepancy": "数量不一致",
+      "col_progress": "進行率 (数量)",
+      "btn_work": "入庫作業",
+      "btn_view": "履歴表示"
+    },
+    "outbound": {
+      "title": "出庫指示およびピッキング (Outbound/Picking)",
+      "desc": "注文の収集に応じた倉庫内の商品のピッキング(Picking)および出庫パッキング作業を処理します。",
+      "work_panel": "出庫(ピッキング)実物作業登録",
+      "order_detail": "出庫オーダー詳細",
+      "pick_list": "出庫待機 (ピッキング指示) リスト",
+      "pick_qty_label": "ピッキング/パッキング作業数量 (残り: {{qty}}個)",
+      "pick_warning": "現物と数量が一致しているか必ず確認してください。",
+      "btn_complete_pick": "ピッキング完了処理",
+      "btn_close_work": "作業を閉じる",
+      "save_confirm_title": "出庫実績登録の確認",
+      "save_confirm_msg": "[{{name}}] {{qty}}個のピッキングおよび出庫パッキング(Packing)作業を完了しますか？",
+      "save_success": "出庫(ピッキング)実績が登録されました。",
+      "status_pending": "出庫待機",
+      "status_picking": "ピッキング中",
+      "status_packed": "パッキング完了/待機",
+      "status_shipped": "積み込み/出港",
+      "status_shortage": "在庫不足",
+      "btn_pick": "ピッキング (Pick)",
+      "btn_ship": "積み込み確定",
+      "ship_confirm_title": "積み込み処理 (出荷確定)",
+      "ship_confirm_msg": "選択した注文 [{{id}}] に対して配送車両への積み込みを確定し、貨物の出荷処理を進行しますか？",
+      "ship_success": "正常に積み込みおよび出荷指示が完了しました。"
+    }
+  },
+  "sales": {
+    "common": {
+      "client": "顧客社",
+      "order_no": "注文番号",
+      "status": "状態",
+      "loading": "データ読み込み中...",
+      "actions": "操作",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "edit": "編集",
+      "delete": "削除"
+    },
+    "client": {
+      "title": "顧客社(荷主)管理",
+      "desc": "物流サービスを利用する荷主および顧客社の情報を登録し管理します。",
+      "filter_title": "検索フィルター",
+      "search_placeholder": "名前を入力してエンター...",
+      "list_title": "全顧客社リスト",
+      "add_btn": "新規顧客社登録",
+      "name_placeholder": "顧客社名を入力...",
+      "manager_placeholder": "担当者名",
+      "edit_title": "顧客社情報修正",
+      "new_title": "新規顧客社登録",
+      "code_placeholder": "CST-0001",
+      "biz_no_placeholder": "123-45-67890",
+      "phone_placeholder": "010-1234-5678",
+      "email_placeholder": "admin@partner.com",
       "fields": {
-        "id": "社員番号/ID",
-        "username": "ログインID",
-        "name": "名前",
-        "email": "メールアドレス",
-        "password": "パスワード",
-        "dept": "所属部署",
-        "role": "権限グループ(Role ID)",
-        "status": "アカウント状態",
-        "language": "言語 (Language)",
-        "last_login": "最終接続日時",
-        "actions": "管理"
+        "code": "顧客社コード",
+        "name": "顧客社名",
+        "biz_no": "事業者番号",
+        "manager": "担当者",
+        "phone": "連絡先",
+        "email": "メール",
+        "status": "取引状態"
       },
-      "filter": {
-        "title": "検索フィルター",
-        "dept": "所属部署",
-        "role": "権限パート",
-        "status": "アカウント状態",
-        "search": "検索語 (名前/社員番号)",
-        "search_placeholder": "名前または社員番号を入力...",
-        "apply": "フィルター適用",
-        "all_dept": "全部署",
-        "all_role": "全権限",
-        "all_status": "全て"
+      "status_active": "正常(取引中)",
+      "status_inactive": "停止(取引終了)",
+      "messages": {
+        "required": "顧客社コードと顧客社名は必須です。",
+        "delete_confirm": "[{{name}}] 顧客社を削除しますか？\n関連するオーダー履歴がある場合、失敗することがあります。"
+      }
+    },
+    "order": {
+      "title": "注文/オーダー収集管理",
+      "desc": "荷主から収集された貨物配送指示および注文内容を管理します。",
+      "filter_title": "注文履歴詳細照会/フィルター",
+      "search_placeholder": "ORD-...",
+      "list_title": "全注文リスト",
+      "add_btn": "新規注文登録",
+      "destination_placeholder": "配送先住所を入力...",
+      "edit_title": "注文内容修正",
+      "new_title": "新規注文登録",
+      "order_no_placeholder": "ORD-...",
+      "fields": {
+        "order_no": "注文番号",
+        "client": "顧客社 (荷主)",
+        "order_date": "注文日",
+        "delivery_date": "納品依頼日",
+        "destination": "配送先住所",
+        "amount": "総賦課手数料 / 金額 (円)",
+        "status": "進行状態"
       },
       "status": {
-        "active": "正常 (有効)",
-        "inactive": "ロック/退職 (無効)",
-        "active_label": "正常 (有効)",
-        "inactive_label": "停止 (無効)"
+        "pending": "受付待機",
+        "processing": "処理中",
+        "shipped": "配送中",
+        "delivered": "配送完了",
+        "cancelled": "注文キャンセル"
       },
       "messages": {
-        "required": "社員番号/ID、ログインID、名前、権限グループをすべて入力してください。",
-        "delete_confirm": "本当に [{{name}}] アカウントを削除しますか？",
-        "password_hint": "変更時のみ入力"
-      }
-    },
-    "role": {
-      "page_title": "権限/グループ管理",
-      "page_desc": "システムアクセス権限グループを作成し、メニュー別の詳細権限をマッピングします。",
-      "list_title": "権限グループ一覧",
-      "add_btn": "新規権限作成",
-      "edit_title": "権限グループ修正",
-      "new_title": "新規権限グループ作成",
-      "setup_title": "詳細項目設定 (アップデート予定)",
-      "empty_msg": "権限グループを選択してください",
-      "empty_hint": "左側のリストから権限グループをクリックしてください。",
-      "fields": {
-        "id": "権限ID",
-        "id_label": "権限ID (英字/大文字推奨)",
-        "name": "権限表示名",
-        "name_label": "権限グループ名 (表示名)",
-        "actions": "管理"
-      },
-      "messages": {
-        "required": "権限IDと権限グループ名の両方を入力してください。",
-        "delete_confirm": "本当に [{{name}}] 権限を削除しますか？ 権限が設定されたユーザーがいる場合、削除できないことがあります。",
-        "placeholder_box": "このエリアには将来、リソース別（メニュー、ボタン、機能など）の詳細アクセス権限ツリービューが連動される予定です。"
-      }
-    },
-    "inventory": {
-      "common": {
-        "client": "荷主(顧客社)",
-        "sku": "品目コード(SKU)",
-        "item_name": "品目名",
-        "category": "カテゴリー",
-        "location": "積載ロケーション",
-        "status": "状態",
-        "quantity": "数量",
-        "expected_date": "予定日",
-        "total": "合計",
-        "search_btn": "検索",
-        "save_btn": "保存",
-        "cancel_btn": "キャンセル",
-        "actions": "操作",
-        "loading": "データを読み込んでいます..."
-      },
-      "stock": {
-        "title": "商品の在庫状況 (Status/Location)",
-        "desc": "物流センター内の全顧客社の商品の在庫数量と位置をリアルタイムで監視します。",
-        "filter_title": "在庫照会 / 検索フィルター",
-        "total_skus": "全品目数 (SKUs)",
-        "total_available": "総有効在庫数量",
-        "total_allocated": "出庫割当(予定)数量",
-        "shortage_items": "欠品/在庫不足品目",
-        "filter_keyword": "検索キーワード",
-        "filter_keyword_placeholder": "コードまたは名称...",
-        "filter_zone": "センター/区域",
-        "filter_zone_all": "全区域",
-        "col_total": "総在庫 (Total)",
-        "col_available": "有効在庫 (Available)",
-        "col_allocated": "割当在庫 (Allocated)",
-        "col_updated": "最終更新",
-        "btn_move": "位置移動",
-        "btn_excel": "エクセルダウンロード",
-        "move_confirm_title": "倉庫/ロケーション移動",
-        "move_confirm_msg": "[{{name}}] 実物の積載位置を現在の '{{location}}' から別の場所に移動しますか？\n(有効在庫: {{qty}}個限定)",
-        "move_next_phase": "ロケーション移動および在庫実査機能は、次のフェーズで実装されます。"
-      },
-      "inbound": {
-        "title": "入庫 (Inbound) 作業管理",
-        "desc": "協力会社および荷主から入庫される商品、資材を検収し、実績を処理します。",
-        "work_panel": "実物入庫登録",
-        "asn_info": "入庫予定情報 (ASN)",
-        "asn_list": "入庫リストおよび指示(ASN)現況",
-        "qty_input_label": "入庫数量登録 (残り: {{qty}}個)",
-        "loc_input_label": "積載ロケーション (位置バーコード)",
-        "loc_placeholder": "例: A-01-01-01",
-        "btn_save_work": "入庫実績保存",
-        "btn_cancel_work": "作業キャンセル",
-        "save_confirm_title": "入庫実績登録の確認",
-        "save_confirm_msg": "[{{name}}] {{qty}}個を '{{location}}' ロケーションに入庫処理しますか？",
-        "save_success": "入庫実績が正常に反映されました。",
-        "status_expected": "入庫予定",
-        "status_receiving": "作業中",
-        "status_completed": "入庫完了",
-        "status_discrepancy": "数量不一致",
-        "col_progress": "進行率 (数量)",
-        "btn_work": "入庫作業",
-        "btn_view": "履歴表示"
-      },
-      "outbound": {
-        "title": "出庫指示およびピッキング (Outbound/Picking)",
-        "desc": "注文の収集に応じた倉庫内の商品のピッキング(Picking)および出庫パッキング作業を処理します。",
-        "work_panel": "出庫(ピッキング)実物作業登録",
-        "order_detail": "出庫オーダー詳細",
-        "pick_list": "出庫待機 (ピッキング指示) リスト",
-        "pick_qty_label": "ピッキング/パッキング作業数量 (残り: {{qty}}個)",
-        "pick_warning": "現物と数量が一致しているか必ず確認してください。",
-        "btn_complete_pick": "ピッキング完了処理",
-        "btn_close_work": "作業を閉じる",
-        "save_confirm_title": "出庫実績登録の確認",
-        "save_confirm_msg": "[{{name}}] {{qty}}個のピッキングおよび出庫パッキング(Packing)作業を完了しますか？",
-        "save_success": "出庫(ピッキング)実績が登録されました。",
-        "status_pending": "出庫待機",
-        "status_picking": "ピッキング中",
-        "status_packed": "パッキング完了/待機",
-        "status_shipped": "積み込み/出港",
-        "status_shortage": "在庫不足",
-        "btn_pick": "ピッキング (Pick)",
-        "btn_ship": "積み込み確定",
-        "ship_confirm_title": "積み込み処理 (出荷確定)",
-        "ship_confirm_msg": "選択した注文 [{{id}}] に対して配送車両への積み込みを確定し、貨物の出荷処理を進行しますか？",
-        "ship_success": "正常に積み込みおよび出荷指示が完了しました。"
-      }
-    },
-    "sales": {
-      "common": {
-        "client": "顧客社",
-        "order_no": "注文番号",
-        "status": "状態",
-        "loading": "データ読み込み中...",
-        "actions": "操作",
-        "save": "保存",
-        "cancel": "キャンセル",
-        "edit": "編集",
-        "delete": "削除"
-      },
-      "client": {
-        "title": "顧客社(荷主)管理",
-        "desc": "物流サービスを利用する荷主および顧客社の情報を登録し管理します。",
-        "filter_title": "検索フィルター",
-        "search_placeholder": "名前を入力してエンター...",
-        "list_title": "全顧客社リスト",
-        "add_btn": "新規顧客社登録",
-        "name_placeholder": "顧客社名を入力...",
-        "manager_placeholder": "担当者名",
-        "edit_title": "顧客社情報修正",
-        "new_title": "新規顧客社登録",
-        "code_placeholder": "CST-0001",
-        "biz_no_placeholder": "123-45-67890",
-        "phone_placeholder": "010-1234-5678",
-        "email_placeholder": "admin@partner.com",
-        "fields": {
-          "code": "顧客社コード",
-          "name": "顧客社名",
-          "biz_no": "事業者番号",
-          "manager": "担当者",
-          "phone": "連絡先",
-          "email": "メール",
-          "status": "取引状態"
-        },
-        "status_active": "正常(取引中)",
-        "status_inactive": "停止(取引終了)",
-        "messages": {
-          "required": "顧客社コードと顧客社名は必須です。",
-          "delete_confirm": "[{{name}}] 顧客社を削除しますか？\n関連するオーダー履歴がある場合、失敗することがあります。"
-        }
-      },
-      "order": {
-        "title": "注文/オーダー収集管理",
-        "desc": "荷主から収集された貨物配送指示および注文内容を管理します。",
-        "filter_title": "注文履歴詳細照会/フィルター",
-        "search_placeholder": "ORD-...",
-        "list_title": "全注文リスト",
-        "add_btn": "新規注文登録",
-        "destination_placeholder": "配送先住所を入力...",
-        "edit_title": "注文内容修正",
-        "new_title": "新規注文登録",
-        "order_no_placeholder": "ORD-...",
-        "fields": {
-          "order_no": "注文番号",
-          "client": "顧客社 (荷主)",
-          "order_date": "注文日",
-          "delivery_date": "納品依頼日",
-          "destination": "配送先住所",
-          "amount": "総賦課手数料 / 金額 (円)",
-          "status": "進行状態"
-        },
-        "status": {
-          "pending": "受付待機",
-          "processing": "処理中",
-          "shipped": "配送中",
-          "delivered": "配送完了",
-          "cancelled": "注文キャンセル"
-        },
-        "messages": {
-          "required": "顧客社、配送先、注文日は必須項目です。",
-          "delete_confirm": "[{{id}}] 注文を削除しますか？\nすでに出荷が進行中の注文の場合、削除が制限されることがあります。",
-          "date_range_hint": "作業日期間 (後日実装)"
-        }
-      }
-    },
-    "dispatch": {
-      "common": {
-        "search": "照会",
-        "loading": "データを読み込み中です...",
-        "no_data": "データがありません。"
-      },
-      "allocation": {
-        "title": "配車および車両割り当て",
-        "desc": "受付された配送注文に対して最も効率적인車両と運転手を割り当てます。",
-        "search_title": "配車待機注文検索",
-        "list_title": "配차待機注文リスト",
-        "order_no_search": "注文番号検索",
-        "dest_search": "目的地検索",
-        "deadline_label": "納期基準",
-        "all_today": "今日 (全体表示)",
-        "empty_msg": "現在、配車可能な待機注文はありません。",
-        "panel_title": "配車指示",
-        "selected_count": "選択された注文件수",
-        "vehicle_select": "運行車両選択",
-        "vehicle_placeholder": "車両を選択してください",
-        "vehicle_detail_title": "選択された車両詳細情報",
-        "vehicle_no": "車両番号",
-        "vehicle_capacity": "車両トン数",
-        "driver_assigned": "運転手割り当て",
-        "confirm_btn": "配車確定および指示送信",
-        "helper_title": "配車ヘルパー",
-        "helper_msg": "輸送地域の類似した配送件を自動的にグループ化して表示するスマート配車機能がまもなく有効になります。",
-        "fields": {
-          "order_no": "注文番号",
-          "order_date": "注文日付",
-          "client": "顧客社",
-          "destination": "配送先",
-          "status": "注文状態"
-        },
-        "status_waiting": "配車待機",
-        "messages": {
-          "error_title": "配車エラー",
-          "select_order": "配車する注文を先に選択してください。",
-          "select_vehicle": "割り当てる車両と運転手を選択してください。",
-          "confirm_title": "配車指示確認",
-          "confirm_msg": "選択した {{count}}件の注文を '{{vehicle}}' 車両に配車しますか？",
-          "execute_btn": "配車実行",
-          "success_title": "配車完了",
-          "success_msg": "車両の配車および割り当てが正常に処理されました。",
-          "fail_title": "配車失敗",
-          "fail_msg": "配車処理中にエラーが発生しました。"
-        }
-      },
-      "routing": {
-        "title": "配送ルーティング(路線)設定",
-        "desc": "割り当てられた車両の配送経由地と最適な配送順序を設定および監視します。",
-        "search_title": "路線検索",
-        "search_placeholder": "車両/運転手名検索",
-        "status_label": "運行状態",
-        "status_all": "全体表示",
-        "list_title": "車両配車および運行リスト",
-        "detail_title": "運行路線の詳細および経由地",
-        "optimize_btn": "順序の最適化",
-        "empty_msg": "左側のリストから運行路線を選択すると詳細情報が表示されます。",
-        "current_loc": "現在位置",
-        "no_info": "情報なし",
-        "no_stops": "割り当てられた経由地はありません。",
-        "stop_label": "経由地 {{seq}}",
-        "status_unloaded": "降車完了",
-        "status_arrived": "到着(作業中)",
-        "status_pending": "予定",
-        "fields": {
-          "vehicle_no": "車両番号",
-          "driver": "担当運転手",
-          "order_count": "割り当て件数",
-          "status": "運行状態",
-          "departure": "出発状況",
-          "actions": "管理"
-        },
-        "btn_details": "路線の詳細表示",
-        "status": {
-          "waiting": "待機中",
-          "in_transit": "運行中",
-          "completed": "運行終了"
-        },
-        "messages": {
-          "opt_fail_title": "最適化不可",
-          "opt_fail_msg": "最適化を実行する配車路線を選択してください。(完了した路線を除く)",
-          "opt_progress_title": "路線最適化の進行",
-          "opt_progress_msg": "AIルーティングエンジンが最適な経由順序を計算します。\n(少々お待ちください。)",
-          "opt_success_title": "最適化完了",
-          "opt_success_msg": "効率的な配送順序に再配置されました。保存後に反映されます。"
-        }
-      }
-    },
-    "development": {
-      "frontend": {
-        "title": "フロントエンド開発標準ガイド",
-        "desc": "物流プラットフォームのフロントエンド開発のための標準および技術スタックガイドです。",
-        "tech_stack": "コア技術スタック",
-        "structure": "プロジェクト構造",
-        "conventions": "開発規約",
-        "ui_standard": "UI標準"
-      },
-      "backend": {
-        "title": "バックエンド開発標準ガイド",
-        "desc": "物流プラットフォームのバックエンドAPIおよびデータベース開発のための標準ガイドです。",
-        "tech_stack": "バックエンド技術スタック",
-        "db_standard": "データベース設計標準",
-        "api_standard": "API設計標準",
-        "security": "セキュリティと権限"
-      },
-      "auth": {
-        "title": "認証サーバーガイド",
-        "desc": "物流プラットフォームの認証と権限付与のための標準ガイドです。",
-        "architecture": "認証アーキテクチャ",
-        "structure": "Auth-Serverソース構造",
-        "config": "設定の詳細"
+        "required": "顧客社、配送先、注文日は必須項目です。",
+        "delete_confirm": "[{{id}}] 注文を削除しますか？\nすでに出荷が進行中の注文の場合、削除が制限されることがあります。",
+        "date_range_hint": "作業日期間 (後日実装)"
       }
     }
+  },
+  "dispatch": {
+    "common": {
+      "search": "照会",
+      "loading": "データを読み込み中です...",
+      "no_data": "データがありません。"
+    },
+    "allocation": {
+      "title": "配車および車両割り当て",
+      "desc": "受付された配送注文に対して最も効率적인車両と運転手を割り当てます。",
+      "search_title": "配車待機注文検索",
+      "list_title": "配차待機注文リスト",
+      "order_no_search": "注文番号検索",
+      "dest_search": "目的地検索",
+      "deadline_label": "納期基準",
+      "all_today": "今日 (全体表示)",
+      "empty_msg": "現在、配車可能な待機注文はありません。",
+      "panel_title": "配車指示",
+      "selected_count": "選択された注文件수",
+      "vehicle_select": "運行車両選択",
+      "vehicle_placeholder": "車両を選択してください",
+      "vehicle_detail_title": "選択された車両詳細情報",
+      "vehicle_no": "車両番号",
+      "vehicle_capacity": "車両トン数",
+      "driver_assigned": "運転手割り当て",
+      "confirm_btn": "配車確定および指示送信",
+      "helper_title": "配車ヘルパー",
+      "helper_msg": "輸送地域の類似した配送件を自動的にグループ化して表示するスマート配車機能がまもなく有効になります。",
+      "fields": {
+        "order_no": "注文番号",
+        "order_date": "注文日付",
+        "client": "顧客社",
+        "destination": "配送先",
+        "status": "注文状態"
+      },
+      "status_waiting": "配車待機",
+      "messages": {
+        "error_title": "配車エラー",
+        "select_order": "配車する注文を先に選択してください。",
+        "select_vehicle": "割り当てる車両と運転手を選択してください。",
+        "confirm_title": "配車指示確認",
+        "confirm_msg": "選択した {{count}}件の注文を '{{vehicle}}' 車両に配車しますか？",
+        "execute_btn": "配車実行",
+        "success_title": "配車完了",
+        "success_msg": "車両の配車および割り当てが正常に処理されました。",
+        "fail_title": "配車失敗",
+        "fail_msg": "配車処理中にエラーが発生しました。"
+      }
+    },
+    "routing": {
+      "title": "配送ルーティング(路線)設定",
+      "desc": "割り当てられた車両の配送経由地と最適な配送順序を設定および監視します。",
+      "search_title": "路線検索",
+      "search_placeholder": "車両/運転手名検索",
+      "status_label": "運行状態",
+      "status_all": "全体表示",
+      "list_title": "車両配車および運行リスト",
+      "detail_title": "運行路線の詳細および経由地",
+      "optimize_btn": "順序の最適化",
+      "empty_msg": "左側のリストから運行路線を選択すると詳細情報が表示されます。",
+      "current_loc": "現在位置",
+      "no_info": "情報なし",
+      "no_stops": "割り当てられた経由地はありません。",
+      "stop_label": "経由地 {{seq}}",
+      "status_unloaded": "降車完了",
+      "status_arrived": "到着(作業中)",
+      "status_pending": "予定",
+      "fields": {
+        "vehicle_no": "車両番号",
+        "driver": "担当運転手",
+        "order_count": "割り当て件数",
+        "status": "運行状態",
+        "departure": "出発状況",
+        "actions": "管理"
+      },
+      "btn_details": "路線の詳細表示",
+      "status": {
+        "waiting": "待機中",
+        "in_transit": "運行中",
+        "completed": "運行終了"
+      },
+      "messages": {
+        "opt_fail_title": "最適化不可",
+        "opt_fail_msg": "最適化を実行する配車路線を選択してください。(完了した路線を除く)",
+        "opt_progress_title": "路線最適化の進行",
+        "opt_progress_msg": "AIルーティングエンジンが最適な経由順序を計算します。\n(少々お待ちください。)",
+        "opt_success_title": "最適化完了",
+        "opt_success_msg": "効率的な配送順序に再配置されました。保存後に反映されます。"
+      }
+    }
+  },
+  "development": {
+    "frontend": {
+      "title": "フロントエンド開発標準ガイド",
+      "desc": "物流プラットフォームのフロントエンド開発のための標準および技術スタックガイドです。",
+      "tech_stack": "コア技術スタック",
+      "structure": "プロジェクト構造",
+      "conventions": "開発規約",
+      "ui_standard": "UI標準"
+    },
+    "backend": {
+      "title": "バックエンド開発標準ガイド",
+      "desc": "物流プラットフォームのバックエンドAPIおよびデータベース開発のための標準ガイドです。",
+      "tech_stack": "バックエンド技術スタック",
+      "db_standard": "データベース設計標準",
+      "api_standard": "API設計標準",
+      "security": "セキュリティと権限"
+    },
+    "auth": {
+      "title": "認証サーバーガイド",
+      "desc": "物流プラットフォームの認証と権限付与のための標準ガイドです。",
+      "architecture": "認証アーキテクチャ",
+      "structure": "Auth-Serverソース構造",
+      "config": "設定の詳細"
+    }
+  },
+  "master": {
+    "common": {
+      "code": "コード",
+      "name": "名称",
+      "use_yn": "使用の有無",
+      "address": "住所",
+      "actions": "操作",
+      "biz_no": "事業者番号",
+      "status": "状態",
+      "type": "区分",
+      "contact": "連絡先",
+      "search_btn": "検索",
+      "add_btn": "新規登録",
+      "save_success": "保存完了",
+      "delete_success": "削除完了"
+    },
+    "corp": {
+      "title": "法人管理",
+      "desc": "システムに登録されているすべての法人/企業情報を登録および管理します。",
+      "filter_name": "法人名",
+      "list_title": "法人一覧",
+      "code": "法人コード",
+      "name": "法人名",
+      "biz_no": "事業者番号",
+      "address": "住所",
+      "use_yn": "使用の有無"
+    },
+    "branch": {
+      "title": "支店管理",
+      "desc": "各法人傘下の支店およびオフィスの情報を管理します。",
+      "filter_name": "支店名",
+      "list_title": "支店一覧",
+      "code": "支店コード",
+      "name": "支店名",
+      "corp": "所属法人",
+      "address": "住所",
+      "use_yn": "使用の有無"
+    },
+    "warehouse": {
+      "title": "倉庫情報管理",
+      "desc": "法人傘下で運営する倉庫および拠点の情報を管理します。",
+      "filter_name": "倉庫名",
+      "list_title": "倉庫一覧",
+      "code": "倉庫コード",
+      "name": "倉庫名",
+      "corp": "所属法人",
+      "type": "倉庫タイプ",
+      "address": "住所",
+      "use_yn": "使用の有無"
+    },
+    "mapping": {
+      "title": "法人-支店-ユーザー-倉庫マッピング",
+      "desc": "法人、支店、ユーザー、および担当倉庫の関連性を設定・照会します。",
+      "filter_user": "ユーザーID",
+      "list_title": "マッピング一覧",
+      "corp": "法人",
+      "branch": "支店",
+      "user": "ユーザーID / 名前",
+      "warehouse": "担当倉庫",
+      "use_yn": "使用の有無"
+    },
+    "customer": {
+      "title": "顧客管理",
+      "desc": "物流サービスを利用する顧客（荷主）のマスター情報を管理します。",
+      "filter_name": "顧客名",
+      "list_title": "顧客一覧",
+      "code": "顧客コード",
+      "name": "顧客名",
+      "biz_no": "事業者番号",
+      "contact": "連絡先",
+      "address": "住所",
+      "use_yn": "使用の有無"
+    },
+    "partner": {
+      "title": "パートナー管理",
+      "desc": "配送、輸送、荷役など協業関係の物流パートナー情報を管理します。",
+      "filter_name": "パートナー名",
+      "list_title": "パートナー一覧",
+      "code": "パートナーコード",
+      "name": "パートナー名",
+      "biz_no": "事業者番号",
+      "type": "パートナータイプ",
+      "contact": "連絡先",
+      "use_yn": "使用の有無"
+    }
+  }
 }

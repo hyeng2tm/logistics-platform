@@ -134,6 +134,24 @@ services:
         condition: service_started
 
 
+  mdm-backend:
+    build:
+      context: ./mdm-backend
+      dockerfile: Dockerfile
+    container_name: logistics-mdm-backend
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      JASYPT_ENCRYPTOR_PASSWORD: logistics-master-secret-key
+      DB_USERNAME: user
+      DB_PASSWORD: password
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+
   frontend-next:
     build:
       context: ./frontend-next
@@ -144,10 +162,12 @@ services:
     environment:
       - BACKEND_URL=http://sys-backend:8080
       - AUTH_SERVER_URL=http://auth-server:9000
+      - MDM_BACKEND_URL=http://mdm-backend:8082
     depends_on:
       - sys-backend
       - auth-server
       - hea-backend
+      - mdm-backend
 
 volumes:
   mysql_data:

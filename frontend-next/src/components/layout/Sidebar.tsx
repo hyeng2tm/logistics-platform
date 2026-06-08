@@ -27,6 +27,7 @@ const mapIcon = (iconName: string | null, isUI: boolean) => {
       case 'Settings': return <Settings size={18} />;
       case 'ShieldAlert': return <ShieldAlert size={18} />;
       case 'LayoutTemplate': return <LayoutTemplate size={18} />;
+      case 'Layers': return <Layers size={18} />;
     }
   }
   return isUI ? <Minus size={16} /> : <Folder size={18} />;

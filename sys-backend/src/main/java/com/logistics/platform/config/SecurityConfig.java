@@ -34,6 +34,8 @@ public class SecurityConfig {
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .requestMatchers("/api/health").permitAll()
+                                                .requestMatchers("/api/v1/system/codes/detail/**").permitAll()
+                                                .requestMatchers("/api/v1/system/codes/master").permitAll()
                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer(oauth2 -> oauth2
                                                 .jwt(jwt -> jwt
