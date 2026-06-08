@@ -233,19 +233,20 @@ public class SystemMonitoringService {
 
     private Map<String, Object> convertToSnapshotMap(Map<String, Object> logData) {
         String ts = (String) logData.get("timestamp");
-        return Map.of(
-            "sysBackend", createServiceStats("System Backend", 
+        Map<String, Object> result = new HashMap<>();
+        result.put("sysBackend", createServiceStats("System Backend", 
                 ((Number)logData.get("cpuUsage")).doubleValue(), 
                 ((Number)logData.get("memoryUsage")).intValue(), 
                 "Healthy", 
                 ((Number)logData.get("latency")).doubleValue(), 
                 ((Number)logData.get("tps")).doubleValue(), 
-                ((Number)logData.get("errorRate")).doubleValue(), 3),
-            "authServer", createServiceStats("Auth Server", 30.0, 60, "Healthy", 50.0, 120.0, 0.02, 2),
-            "batchServer", createServiceStats("Batch Server", 15.0, 40, "Healthy", 0.0, 0.0, 0.0, 1),
-            "dbServer", createServiceStats("Database Server", 10.0, 35, "Healthy", 15.0, 400.0, 0.0, 2),
-            "timestamp", ts
-        );
+                ((Number)logData.get("errorRate")).doubleValue(), 3));
+        result.put("authServer", createServiceStats("Auth Server", 30.0, 60, "Healthy", 50.0, 120.0, 0.02, 2));
+        result.put("batchServer", createServiceStats("Batch Server", 15.0, 40, "Healthy", 0.0, 0.0, 0.0, 1));
+        result.put("mdmBackend", createServiceStats("MDM Backend", 20.0, 45, "Healthy", 30.0, 80.0, 0.01, 1));
+        result.put("dbServer", createServiceStats("Database Server", 10.0, 35, "Healthy", 15.0, 400.0, 0.0, 2));
+        result.put("timestamp", ts);
+        return result;
     }
 
     public List<Map<String, Object>> getHistory() {
@@ -319,13 +320,26 @@ public class SystemMonitoringService {
         double sysTps = getTps();
         double sysErrorRate = getErrorRate();
 
-        return Map.of(
-            "sysBackend", createServiceStats("System Backend", cpuLoad, (int)systemMemoryUsage, "Healthy", sysLatency, sysTps, sysErrorRate, 3),
-            "authServer", createServiceStats("Auth Server", 30 + random.nextInt(10), 55 + random.nextInt(5), "Healthy", 45.0 + random.nextInt(10), 120.0 + random.nextFloat() * 10, 0.01, 2),
-            "batchServer", createServiceStats("Batch Server", 15.0, 40, "Healthy", 0.0, 0.0, 0.0, 1),
-            "dbServer", getDbServerStats(),
-            "timestamp", Instant.now().toString()
-        );
+        // Probe mdm-backend health
+        String mdmStatus = "Offline";
+        double mdmLatency = 0.0;
+        try {
+            long start = System.currentTimeMillis();
+            restTemplate.getForObject("http://localhost:8082/api/health", String.class);
+            mdmLatency = System.currentTimeMillis() - start;
+            mdmStatus = "Healthy";
+        } catch (Exception e) {
+            log.debug("MDM Backend health check failed: {}", e.getMessage());
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("sysBackend", createServiceStats("System Backend", cpuLoad, (int)systemMemoryUsage, "Healthy", sysLatency, sysTps, sysErrorRate, 3));
+        result.put("authServer", createServiceStats("Auth Server", 30 + random.nextInt(10), 55 + random.nextInt(5), "Healthy", 45.0 + random.nextInt(10), 120.0 + random.nextFloat() * 10, 0.01, 2));
+        result.put("batchServer", createServiceStats("Batch Server", 15.0, 40, "Healthy", 0.0, 0.0, 0.0, 1));
+        result.put("mdmBackend", createServiceStats("MDM Backend", 20 + random.nextInt(8), 40 + random.nextInt(10), mdmStatus, mdmLatency, 60.0 + random.nextFloat() * 20, 0.01, 1));
+        result.put("dbServer", getDbServerStats());
+        result.put("timestamp", Instant.now().toString());
+        return result;
     }
 
     private Map<String, Object> getDbServerStats() {

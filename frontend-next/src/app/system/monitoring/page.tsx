@@ -34,6 +34,7 @@ interface SystemSummary {
   sysBackend: ServerStats;
   authServer: ServerStats;
   batchServer: ServerStats;
+  mdmBackend: ServerStats;
   dbServer: ServerStats;
   traceCount?: number;
   traceAvgDuration?: number;
@@ -89,18 +90,22 @@ interface ChartPoint {
   sysLatency: number | undefined;
   authLatency: number | undefined;
   batchLatency: number | undefined;
+  mdmLatency: number | undefined;
   dbLatency: number | undefined;
   sysTps: number | undefined;
   authTps: number | undefined;
   batchTps: number | undefined;
+  mdmTps: number | undefined;
   dbTps: number | undefined;
   sysCpu: number | undefined;
   authCpu: number | undefined;
   batchCpu: number | undefined;
+  mdmCpu: number | undefined;
   dbCpu: number | undefined;
   sysMem: number | undefined;
   authMem: number | undefined;
   batchMem: number | undefined;
+  mdmMem: number | undefined;
   dbMem: number | undefined;
   traceCount?: number;
   traceAvgDuration?: number;
@@ -130,18 +135,22 @@ const transformSnapshotToChartPoint = (snapshot: SystemSummary): ChartPoint => {
     sysLatency: snapshot.sysBackend.latency,
     authLatency: snapshot.authServer.latency,
     batchLatency: snapshot.batchServer.latency,
+    mdmLatency: snapshot.mdmBackend?.latency,
     dbLatency: snapshot.dbServer.latency,
     sysTps: snapshot.sysBackend.tps,
     authTps: snapshot.authServer.tps,
     batchTps: snapshot.batchServer.tps,
+    mdmTps: snapshot.mdmBackend?.tps,
     dbTps: snapshot.dbServer.tps,
     sysCpu: snapshot.sysBackend.cpu,
     authCpu: snapshot.authServer.cpu,
     batchCpu: snapshot.batchServer.cpu,
+    mdmCpu: snapshot.mdmBackend?.cpu,
     dbCpu: snapshot.dbServer.cpu,
     sysMem: snapshot.sysBackend.memory,
     authMem: snapshot.authServer.memory,
     batchMem: snapshot.batchServer.memory,
+    mdmMem: snapshot.mdmBackend?.memory,
     dbMem: snapshot.dbServer.memory,
     traceCount: snapshot.traceCount,
     traceAvgDuration: snapshot.traceAvgDuration,
@@ -299,18 +308,22 @@ export default function SystemMonitoringPage() {
               sysLatency: undefined,
               authLatency: undefined,
               batchLatency: undefined,
+              mdmLatency: undefined,
               dbLatency: undefined,
               sysTps: undefined,
               authTps: undefined,
               batchTps: undefined,
+              mdmTps: undefined,
               dbTps: undefined,
               sysCpu: undefined,
               authCpu: undefined,
               batchCpu: undefined,
+              mdmCpu: undefined,
               dbCpu: undefined,
               sysMem: undefined,
               authMem: undefined,
               batchMem: undefined,
+              mdmMem: undefined,
               dbMem: undefined,
             });
           }
@@ -346,18 +359,22 @@ export default function SystemMonitoringPage() {
                 sysLatency: undefined,
                 authLatency: undefined,
                 batchLatency: undefined,
+                mdmLatency: undefined,
                 dbLatency: undefined,
                 sysTps: undefined,
                 authTps: undefined,
                 batchTps: undefined,
+                mdmTps: undefined,
                 dbTps: undefined,
                 sysCpu: undefined,
                 authCpu: undefined,
                 batchCpu: undefined,
+                mdmCpu: undefined,
                 dbCpu: undefined,
                 sysMem: undefined,
                 authMem: undefined,
                 batchMem: undefined,
+                mdmMem: undefined,
                 dbMem: undefined,
               });
             }
@@ -752,6 +769,7 @@ export default function SystemMonitoringPage() {
                 <div className="dashboard-grid-top opacity-80">
                   {renderServerCard('sysBackend', summary.sysBackend, 'chart-text-backend', 'dense-card')}
                   {renderServerCard('authServer', summary.authServer, 'chart-text-auth', 'dense-card')}
+                  {renderServerCard('mdmBackend', summary.mdmBackend, 'text-accent-success', 'dense-card')}
                   {renderServerCard('batchServer', summary.batchServer, 'chart-text-batch', 'dense-card')}
                 </div>
               </div>
