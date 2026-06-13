@@ -5,6 +5,7 @@ import com.logistics.mdm.domain.Mapping;
 import com.logistics.mdm.service.MdmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,18 +28,18 @@ public class MdmController {
     }
 
     @PostMapping("/corporations")
-    public ResponseEntity<Corporation> saveCorporation(@RequestBody Corporation corporation) {
+    public ResponseEntity<Corporation> saveCorporation(@RequestBody @NonNull Corporation corporation) {
         return ResponseEntity.ok(mdmService.saveCorporation(corporation));
     }
 
     @PutMapping("/corporations/{id}")
-    public ResponseEntity<Corporation> updateCorporation(@PathVariable("id") Long id, @RequestBody Corporation corporation) {
+    public ResponseEntity<Corporation> updateCorporation(@PathVariable("id") @NonNull Long id, @RequestBody @NonNull Corporation corporation) {
         corporation.setId(id);
         return ResponseEntity.ok(mdmService.saveCorporation(corporation));
     }
 
     @DeleteMapping("/corporations/{id}")
-    public ResponseEntity<Void> deleteCorporation(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteCorporation(@PathVariable("id") @NonNull Long id) {
         mdmService.deleteCorporation(id);
         return ResponseEntity.ok().build();
     }
@@ -53,18 +54,18 @@ public class MdmController {
     }
 
     @PostMapping("/branches")
-    public ResponseEntity<Branch> saveBranch(@RequestBody Branch branch) {
+    public ResponseEntity<Branch> saveBranch(@RequestBody @NonNull Branch branch) {
         return ResponseEntity.ok(mdmService.saveBranch(branch));
     }
 
     @PutMapping("/branches/{id}")
-    public ResponseEntity<Branch> updateBranch(@PathVariable("id") Long id, @RequestBody Branch branch) {
+    public ResponseEntity<Branch> updateBranch(@PathVariable("id") @NonNull Long id, @RequestBody @NonNull Branch branch) {
         branch.setId(id);
         return ResponseEntity.ok(mdmService.saveBranch(branch));
     }
 
     @DeleteMapping("/branches/{id}")
-    public ResponseEntity<Void> deleteBranch(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteBranch(@PathVariable("id") @NonNull Long id) {
         mdmService.deleteBranch(id);
         return ResponseEntity.ok().build();
     }
@@ -79,18 +80,18 @@ public class MdmController {
     }
 
     @PostMapping("/warehouses")
-    public ResponseEntity<Warehouse> saveWarehouse(@RequestBody Warehouse warehouse) {
+    public ResponseEntity<Warehouse> saveWarehouse(@RequestBody @NonNull Warehouse warehouse) {
         return ResponseEntity.ok(mdmService.saveWarehouse(warehouse));
     }
 
     @PutMapping("/warehouses/{id}")
-    public ResponseEntity<Warehouse> updateWarehouse(@PathVariable("id") Long id, @RequestBody Warehouse warehouse) {
+    public ResponseEntity<Warehouse> updateWarehouse(@PathVariable("id") @NonNull Long id, @RequestBody @NonNull Warehouse warehouse) {
         warehouse.setId(id);
         return ResponseEntity.ok(mdmService.saveWarehouse(warehouse));
     }
 
     @DeleteMapping("/warehouses/{id}")
-    public ResponseEntity<Void> deleteWarehouse(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteWarehouse(@PathVariable("id") @NonNull Long id) {
         mdmService.deleteWarehouse(id);
         return ResponseEntity.ok().build();
     }
@@ -105,18 +106,18 @@ public class MdmController {
     }
 
     @PostMapping("/mappings")
-    public ResponseEntity<Mapping> saveMapping(@RequestBody Mapping mapping) {
+    public ResponseEntity<Mapping> saveMapping(@RequestBody @NonNull Mapping mapping) {
         return ResponseEntity.ok(mdmService.saveMapping(mapping));
     }
 
     @PutMapping("/mappings/{id}")
-    public ResponseEntity<Mapping> updateMapping(@PathVariable("id") Long id, @RequestBody Mapping mapping) {
+    public ResponseEntity<Mapping> updateMapping(@PathVariable("id") @NonNull Long id, @RequestBody @NonNull Mapping mapping) {
         mapping.setId(id);
         return ResponseEntity.ok(mdmService.saveMapping(mapping));
     }
 
     @DeleteMapping("/mappings/{id}")
-    public ResponseEntity<Void> deleteMapping(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteMapping(@PathVariable("id") @NonNull Long id) {
         mdmService.deleteMapping(id);
         return ResponseEntity.ok().build();
     }
@@ -131,18 +132,18 @@ public class MdmController {
     }
 
     @PostMapping("/customers")
-    public ResponseEntity<Customer> saveCustomer(@RequestBody Customer customer) {
+    public ResponseEntity<Customer> saveCustomer(@RequestBody @NonNull Customer customer) {
         return ResponseEntity.ok(mdmService.saveCustomer(customer));
     }
 
     @PutMapping("/customers/{id}")
-    public ResponseEntity<Customer> updateCustomer(@PathVariable("id") Long id, @RequestBody Customer customer) {
+    public ResponseEntity<Customer> updateCustomer(@PathVariable("id") @NonNull Long id, @RequestBody @NonNull Customer customer) {
         customer.setId(id);
         return ResponseEntity.ok(mdmService.saveCustomer(customer));
     }
 
     @DeleteMapping("/customers/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteCustomer(@PathVariable("id") @NonNull Long id) {
         mdmService.deleteCustomer(id);
         return ResponseEntity.ok().build();
     }
@@ -157,18 +158,18 @@ public class MdmController {
     }
 
     @PostMapping("/partners")
-    public ResponseEntity<Partner> savePartner(@RequestBody Partner partner) {
+    public ResponseEntity<Partner> savePartner(@RequestBody @NonNull Partner partner) {
         return ResponseEntity.ok(mdmService.savePartner(partner));
     }
 
     @PutMapping("/partners/{id}")
-    public ResponseEntity<Partner> updatePartner(@PathVariable("id") Long id, @RequestBody Partner partner) {
+    public ResponseEntity<Partner> updatePartner(@PathVariable("id") @NonNull Long id, @RequestBody @NonNull Partner partner) {
         partner.setId(id);
         return ResponseEntity.ok(mdmService.savePartner(partner));
     }
 
     @DeleteMapping("/partners/{id}")
-    public ResponseEntity<Void> deletePartner(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deletePartner(@PathVariable("id") @NonNull Long id) {
         mdmService.deletePartner(id);
         return ResponseEntity.ok().build();
     }
