@@ -3,6 +3,7 @@ package com.logistics.mdm.service;
 import com.logistics.mdm.domain.*;
 import com.logistics.mdm.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,12 +31,12 @@ public class MdmService {
     }
 
     @Transactional
-    public Corporation saveCorporation(Corporation corporation) {
+    public Corporation saveCorporation(@NonNull Corporation corporation) {
         return corporationRepository.save(corporation);
     }
 
     @Transactional
-    public void deleteCorporation(Long id) {
+    public void deleteCorporation(@NonNull Long id) {
         corporationRepository.deleteById(id);
     }
 
@@ -49,12 +50,12 @@ public class MdmService {
     }
 
     @Transactional
-    public Branch saveBranch(Branch branch) {
+    public Branch saveBranch(@NonNull Branch branch) {
         return branchRepository.save(branch);
     }
 
     @Transactional
-    public void deleteBranch(Long id) {
+    public void deleteBranch(@NonNull Long id) {
         branchRepository.deleteById(id);
     }
 
@@ -68,12 +69,12 @@ public class MdmService {
     }
 
     @Transactional
-    public Warehouse saveWarehouse(Warehouse warehouse) {
+    public Warehouse saveWarehouse(@NonNull Warehouse warehouse) {
         return warehouseRepository.save(warehouse);
     }
 
     @Transactional
-    public void deleteWarehouse(Long id) {
+    public void deleteWarehouse(@NonNull Long id) {
         warehouseRepository.deleteById(id);
     }
 
@@ -87,12 +88,12 @@ public class MdmService {
     }
 
     @Transactional
-    public Mapping saveMapping(Mapping mapping) {
+    public Mapping saveMapping(@NonNull Mapping mapping) {
         return mappingRepository.save(mapping);
     }
 
     @Transactional
-    public void deleteMapping(Long id) {
+    public void deleteMapping(@NonNull Long id) {
         mappingRepository.deleteById(id);
     }
 
@@ -106,12 +107,12 @@ public class MdmService {
     }
 
     @Transactional
-    public Customer saveCustomer(Customer customer) {
+    public Customer saveCustomer(@NonNull Customer customer) {
         return customerRepository.save(customer);
     }
 
     @Transactional
-    public void deleteCustomer(Long id) {
+    public void deleteCustomer(@NonNull Long id) {
         customerRepository.deleteById(id);
     }
 
@@ -125,12 +126,12 @@ public class MdmService {
     }
 
     @Transactional
-    public Partner savePartner(Partner partner) {
+    public Partner savePartner(@NonNull Partner partner) {
         return partnerRepository.save(partner);
     }
 
     @Transactional
-    public void deletePartner(Long id) {
+    public void deletePartner(@NonNull Long id) {
         partnerRepository.deleteById(id);
     }
 }
